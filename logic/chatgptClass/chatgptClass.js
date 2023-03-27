@@ -1,6 +1,21 @@
 const axios = require('axios')
 const http = require('http');
-
+const {SocksProxyAgent} = require('socks-proxy-agent');
+const httpsProxyAgent = require('https-proxy-agent')
+const { HttpsProxyAgent } = httpsProxyAgent
+// const proxyAgent = new SocksProxyAgent({
+//     hostname: 'geo.iproyal.com',
+//     port: '42324',
+//     username: 'baicai',
+//     password: 'baicai666_country-us',
+//     protocol: 'socks5',
+//   });
+  const proxyAgent = new HttpsProxyAgent({
+    hostname: 'geo.iproyal.com',
+    port: '12321',
+    username: 'baicai',
+    password:'baicai666_country-us'
+  })
 class ChatGpt {
     constructor(options,message) {
         if (!message) {
@@ -27,6 +42,8 @@ class ChatGpt {
                     "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`,
                     "Content-Type": "application/json",
                 },
+                // httpAgent : proxyAgent,
+                httpsAgent: proxyAgent,
                 data:{
                     "model": "gpt-3.5-turbo",
                     "max_tokens": maxtokens?(maxtokens>=4000?4000:maxtokens):4000,
