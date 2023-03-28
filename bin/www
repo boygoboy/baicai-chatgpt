@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 //导入 db 函数
+// 配置全局process.env
+const dotenv = require("dotenv")
+dotenv.config()
 const db = require('../db/db');
 
 //调用 db 函数
@@ -11,9 +14,6 @@ db(() => {
   var app = require('../app');
   var debug = require('debug')('accounts:server');
   var http = require('http');
-// 配置全局process.env
-const dotenv = require("dotenv")
-dotenv.config()
   /**
    * Get port from environment and store in Express.
    */

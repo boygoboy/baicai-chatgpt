@@ -3,18 +3,22 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const md5 = require('md5');
+const {secret}=require('./config/config')
 
-const authApiRouter = require('./routes/api/auth');
-//导入 account 接口路由文件
-const accountRouter = require('./routes/api/account');
 const chagptapi=require('./routes/api/chatgpt')
-//导入 express-session 
-const session = require("express-session");
-const MongoStore = require('connect-mongo');
+const user = require('./routes/api/user')
+const role = require('./routes/api/role')
+const menus=require('./routes/api/menus')
+
 //导入配置项
-const {DBHOST, DBPORT, DBNAME} = require('./config/config');
-
-
+const {createFirstUser} = require("./controller/systemModule/user")
+createFirstUser({
+  username:process.env.ADMIN_NAME || 'admin',
+  password: md5(process.env.ADMIN_PASSWORD + md5(secret)) || '123456',
+  role:0
+})
+// '/api/user'
 var app = express();
 
 app.use(logger('dev'));
@@ -23,9 +27,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api', accountRouter);
-app.use('/api', authApiRouter);
-app.use('/api',chagptapi)
+app.use('/api/chatgpt',chagptapi)
+app.use('/api/user',user)
+app.use('/api/role',role)
+app.use('/api/menus',menus)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   //响应 404 

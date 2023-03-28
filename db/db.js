@@ -14,13 +14,12 @@ module.exports = function (success, error) {
   //2. 导入 mongoose
   const mongoose = require('mongoose');
   //导入 配置文件
-  const {DBHOST, DBPORT, DBNAME} = require('../config/config.js');
-
+  const {DB_HOST, DB_PORT, DB_NAME} = process.env;
   //设置 strictQuery 为 true
   mongoose.set('strictQuery', true);
 
   //3. 连接 mongodb 服务                        数据库的名称
-  mongoose.connect(`mongodb://${DBHOST}:${DBPORT}/${DBNAME}`);
+  mongoose.connect(`mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`);
 
   //4. 设置回调
   // 设置连接成功的回调  once 一次   事件回调函数只执行一次
