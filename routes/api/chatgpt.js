@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 let checkTokenMiddleware = require('../../middlewares/checkTokenMiddleware');
 
 const router = express.Router();
-const ChatGpt3=require('../../logic/chatgptClass/chatgptClass')
+const ChatGpt3=require('../../controller/chatgptClass/chatgptClass')
 
 //获取chatgpt聊天信息
 router.post('/ask',   (req,res)=>{
