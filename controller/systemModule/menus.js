@@ -51,19 +51,19 @@ const queryMenus = async (req, res) => {
         if (result) {
             const menuArr = getMenuTree(result, null, [])
             return res.json({
-                code: '200',
-                msg: '查询成功!',
+                errorCode: '0000',
+                message: '查询成功!',
                 data: menuArr
             })
         }
         return res.json({
-            code: '2001',
-            msg:'查询失败!'
+            errorCode: '9999',
+            message:'查询失败!'
         })
     }catch(error){
         res.json({
-            code:'500',
-            msg:'系统出错！',
+            errorCode:'500',
+            message:'系统出错！',
             data:error
         })
     }
@@ -86,21 +86,21 @@ const addMenus = async (req,res) => {
             const doc = await Counter.findOneAndUpdate({ id: 'menuId' }, { $inc: { sequence_value: 1 } }, { new: true })
             if (!doc) {
                 return res.json({
-                    code: '2001',
-                    msg: '新增菜单失败!',
+                    errorCode: '9999',
+                    message: '新增菜单失败!',
                     data:null
                 })
             }
             await Menus.create({ id: doc.sequence_value, ...body })
             return res.json({
-                code: '200',
-                msg: '新增菜单成功!',
+                errorCode: '0000',
+                message: '新增菜单成功!',
                 data:null
             })
         } catch (error) {
             res.json({
-                code: '500',
-                msg:'系统出错！',
+                errorCode: '500',
+                message:'系统出错！',
                 data:null
             })
             throw error
@@ -115,20 +115,20 @@ const updateMenus=async (req,res)=>{
         const result = await Menus.findOneAndUpdate({ _id }, body)
         if (!result) {
             return res.json({
-                code: '2001',
-                msg: '更新菜单失败!',
+                errorCode: '9999',
+                message: '更新菜单失败!',
                 data:null
             })
         }
         return res.json({
-            code: '200',
-            msg: '更新菜单成功!',
+            errorCode: '0000',
+            message: '更新菜单成功!',
             data:null
         })
     } catch (error) {
         res.json({
-            code: '500',
-            msg:'系统出错！',
+            errorCode: '500',
+            message:'系统出错！',
             data:null
         })
         throw error
@@ -137,23 +137,30 @@ const updateMenus=async (req,res)=>{
 
 //删除菜单
 const delMenuList = async (req,res) => {
-    let _id=req.params.id
+    try{
+        let _id=req.params.id
     const result = await Menus.find()
     const _ids = delMenuTree(result, _id, [])
-    console.log(_ids)
     const delIts = await Menus.deleteMany({ _id: _ids })
-    console.log(delIts)
     if (delIts&&delIts.deletedCount) {
         return res.json({
-            code: '200',
-            msg: '删除成功!',
+            errorCode: '0000',
+            message: '删除成功!',
             data:null
         })
     }
     res.json({
-        code: '2001',
-        msg: '删除失败!',
+        errorCode: '9999',
+        message: '删除失败!',
         data:null
     })
+    }catch(error){
+        res.json({
+            errorCode: '500',
+            message: '服务器出错!',
+            data:error
+        })
+        throw error
+    }
 }
 module.exports = { queryMenus, addMenus,updateMenus, delMenuList }

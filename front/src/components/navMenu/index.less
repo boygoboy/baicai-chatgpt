@@ -1,0 +1,56 @@
+@import '@/style/_variable.less';
+
+.k-and311 {
+   
+    /*隐藏文字*/
+    .el-menu--collapse .el-submenu__title span {
+        display: none;
+    }
+
+    /*隐藏 > */
+    .el-menu--collapse .el-submenu__title .el-submenu__icon-arrow {
+        display: none;
+
+    }
+    .el-menu-vertical-demo{
+        height: 100%;
+        width: 200px;
+    }
+    .el-menu--collapse{
+        width: 64px;
+    }
+    
+    position: absolute;
+    top: 50px;
+    bottom: 0;
+    background: @k-menuBackground;
+
+    .el-submenu__title {
+        color: @k-menuColor;
+    }
+
+    .el-submenu__title:hover {
+        background-color: @k-hoverBackground;
+    }
+
+    i {
+        color: @k-menuColor;
+    }
+
+    .el-menu {
+        background-color: @k-menuBackground;
+    }
+
+    .el-menu-item {
+        color: @k-menuColor;
+    }
+
+    .el-menu-item:hover {
+        background-color: @k-hoverBackground;
+    }
+
+    .is-active {
+        background-color: @k-activeBackground;
+        color: @k-activeColor;
+    }
+}

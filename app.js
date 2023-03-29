@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const md5 = require('md5');
 const {secret}=require('./config/config')
+const cors = require('cors')
 
 const chagptapi=require('./routes/api/chatgpt')
 const user = require('./routes/api/user')
@@ -21,6 +22,7 @@ createFirstUser({
 // '/api/user'
 var app = express();
 
+app.use(cors())
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

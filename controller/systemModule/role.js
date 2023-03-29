@@ -16,20 +16,20 @@ const rolelist = async (req,res) => {
         console.log(rolelist)
         if (rolelist) { 
             return res.json({
-                code: '200',
-                msg: '查询角色列表成功!',
+                errorCode: '0000',
+                message: '查询角色列表成功!',
                 data: { rolelist, pager }
             })
      }
         return res.json({
-            code: '2001',
-            msg: '查询角色列表失败!',
+            errorCode: '9999',
+            message: '查询角色列表失败!',
             data:null
         })
     }catch(error){
         res.json({
-            code: '500',
-            msg: '服务器错误!',
+            errorCode: '500',
+            message: '服务器错误!',
             data: error
         })
     }
@@ -41,16 +41,16 @@ const addrole = async (req,res) => {
     //新增角色
     if (!updataPrams.roleName) {
         return res.json({
-            code: '2001',
-            msg: '角色名不能为空!',
+            errorCode: '1001',
+            message: '角色名不能为空!',
             data: null
         })
     }
     const result = await Role.findOne({ $or: [{ roleName:updataPrams.roleName }] })
     if (result) {
         return res.json({
-            code: '2001',
-            msg: '新增角色已存在!',
+            errorCode: '1001',
+            message: '新增角色已存在!',
             data: null
         })
     }
@@ -70,14 +70,14 @@ const addrole = async (req,res) => {
         })
         await Roles.save();
         return res.json({
-            code: '200',
-            msg: '新增角色成功!',
+            errorCode: '0000',
+            message: '新增角色成功!',
             data: null
         })
     } catch (error) {
          res.json({
-            code: '500',
-            msg: '服务器错误!',
+            errorCode: '500',
+            message: '服务器错误!',
             data: error
         })
         throw error
@@ -91,20 +91,20 @@ const updaterole = async (req,res) => {
             const userList = await Role.findOneAndUpdate({ _id }, updataPrams)
             if (userList) {
                 return res.json({
-                    code: '200',
-                    msg: '修改成功!',
+                    errorCode: '0000',
+                    message: '修改成功!',
                     data:null
                 })
             }
             return res.json({
-                code: '2001',
-                msg: '修改角色失败!',
+                errorCode: '9999',
+                message: '修改角色失败!',
                 data: null
             })
         } catch (error) {
             return res.json({
-                code: '500',
-                msg: '服务器错误!',
+                errorCode: '500',
+                message: '服务器错误!',
                 data: error
             })
         }
@@ -116,8 +116,8 @@ const deleterole = async (req,res) => {
     let _id=req.params.id
     if (!_id) {
         return res.json({
-            code: '2001',
-            msg: '参数错误',
+            errorCode: '1001',
+            message: '参数错误',
             data: null
         })
     }
@@ -125,14 +125,14 @@ const deleterole = async (req,res) => {
     try {
         await Role.deleteMany({ _id: { $in: _id } })
          return res.json({
-            code: '200',
-            msg:'删除角色成功！',
+            errorCode: '0000',
+            message:'删除角色成功！',
             data: null
          })
     } catch (error) {
        res.json({
-        code: '500',
-        msg: '服务器错误!',
+        errorCode: '500',
+        message: '服务器错误!',
         data: error
        })
     }

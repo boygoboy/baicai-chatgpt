@@ -15,8 +15,8 @@ const login = (req, res) => {
         //判断
         if (err) {
             res.json({
-                code: '2001',
-                msg: '数据库读取失败!',
+                errorCode: '1005',
+                message: '数据库读取失败!',
                 data: null
             })
             return
@@ -24,8 +24,8 @@ const login = (req, res) => {
         //判断 data
         if (!data) {
             return res.json({
-                code: '2002',
-                msg: '用户名或密码错误!',
+                errorCode: '1002',
+                message: '用户名或密码错误!',
                 data: null
             })
         }
@@ -35,8 +35,8 @@ const login = (req, res) => {
             //判断
             if (err) {
                 res.json({
-                    code: '2001',
-                    msg: '数据库读取失败!',
+                    errorCode: '1005',
+                    message: '数据库读取失败!',
                     data: null
                 })
                 return
@@ -44,8 +44,8 @@ const login = (req, res) => {
             //判断 data
             if (!data) {
                 return res.json({
-                    code: '2002',
-                    msg: '角色列表为空！',
+                    errorCode: '1001',
+                    message: '角色列表为空！',
                     data: null
                 })
             }
@@ -65,8 +65,8 @@ const login = (req, res) => {
 
             //响应 token
             res.json({
-                code: '200',
-                msg: '登录成功!',
+                errorCode: '0000',
+                message: '登录成功!',
                 data: {
                     token,
                     permSign
@@ -92,21 +92,21 @@ const userlist = async (req,res) => {
         pager.pageNum = parseInt(pageNum)
         if (userList) {
             return res.json({
-                code: '200',
-                msg: '查询用户列表成功!',
+                errorCode: '0000',
+                message: '查询用户列表成功!',
                 data: { userList, pager }
             })
         } else {
             return res.json({
-                code: '2002',
-                msg: '用户名或者密码失败!',
+                errorCode: '1002',
+                message: '用户名或者密码失败!',
                 data: null
             })
         }
     } catch (error) {
         res.json({
-            code: '500',
-            msg: '服务器错误!',
+            errorCode: '500',
+            message: '服务器错误!',
             data: error
         })
         throw error
@@ -133,16 +133,16 @@ const addlist = async (req, res) => {
     //新增用户
     if(!params.username || !params.mobile || !params.userEmail || !password) {
         return res.json({
-            code: '2002',
-            msg: '参数错误',
+            errorCode: '2002',
+            message: '参数错误',
             data: null
         })
     }
     const result = await User.findOne({ $or: [{ username: params.username }, { userEmail: params.userEmail }] })
     if (result) {
         return res.json({
-            code: '2002',
-            msg: '用户名或者邮箱已存在',
+            errorCode: '2002',
+            message: '用户名或者邮箱已存在',
             data: null
         })
     }
@@ -162,14 +162,14 @@ const addlist = async (req, res) => {
         })
         await user.save();
         res.json({
-            code: '200',
-            msg: '新增用户成功!',
+            errorCode: '0000',
+            message: '新增用户成功!',
             data: null
         })
     } catch (error) {
         res.json({
-            code: '500',
-            msg: '服务器错误',
+            errorCode: '500',
+            message: '服务器错误',
             data: error
         })
     }
@@ -182,21 +182,21 @@ const updatelist = async (req, res) => {
             const userList = await User.findOneAndUpdate({ _id }, {password: md5(password + md5(secret)), ...params })
             if (userList) {
                 res.json({
-                    code: '200',
-                    msg: '修改用户成功!',
+                    errorCode: '0000',
+                    message: '修改用户成功!',
                     data: null
                 })
                 return
             }
             return res.json({
-                code: '2002',
-                msg: '修改用户失败!',
+                errorCode: '2002',
+                message: '修改用户失败!',
                 data: null
             })
         } catch (error) {
             res.json({
-                code: '500',
-                msg: '服务器错误!',
+                errorCode: '500',
+                message: '服务器错误!',
                 data: error
             })
             throw error
@@ -207,8 +207,8 @@ const dellist = async (req, res) => {
      let _id = req.params.id;
     if (!_id) {
         return res.json({
-            code: '2002',
-            msg: '参数错误!',
+            errorCode: '2002',
+            message: '参数错误!',
             data: null
         })
     }
@@ -216,14 +216,14 @@ const dellist = async (req, res) => {
     try {
         const result = await User.deleteMany({ _id: { $in: _id } })
         return res.json({
-            code: '200',
-            msg: `删除成功${result.deletedCount}条`,
+            errorCode: '200',
+            message: `删除成功${result.deletedCount}条`,
             data: null
         })
     } catch (error) {
         res.json({
-            code: '500',
-            msg: '服务器错误!',
+            errorCode: '500',
+            message: '服务器错误!',
             data: error
         })
         throw error
@@ -237,28 +237,28 @@ const isactiveuser = async (req, res) => {
         const userList = await User.findOneAndUpdate({_id},{active})
         if(userList.username === process.env.ADMIN_NAME){
             return res.json({
-                code: '2002',
-                msg: '超级管理员不可禁用!',
+                errorCode: '2002',
+                message: '超级管理员不可禁用!',
                 data: null
             })
         }
         if (userList) {
             res.json({
-                code: '200',
-                msg: '操作成功!',
+                errorCode: '200',
+                message: '操作成功!',
                 data: null
             })
             return
         }
         return res.json({
-            code: '2002',
-            msg: '操作失败!',
+            errorCode: '2002',
+            message: '操作失败!',
             data: null
         })
       }catch(error){
         res.json({
-            code: '500',
-            msg: '服务器错误!',
+            errorCode: '500',
+            message: '服务器错误!',
             data: error
         })
         throw error
