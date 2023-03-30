@@ -32,7 +32,7 @@
       <el-table-column label="操作" fixed="right" width="150">
         <template slot-scope="scope">
           <!-- 传入设置按钮时候的权限标识edit -->
-          <per-button size="mini" perm="edit"  @click="handleEdit(scope.row)">编辑</per-button>
+          <per-button size="mini" perm="editRole"  @click="handleEdit(scope.row)">编辑</per-button>
           <el-button size="mini" type="danger" @click="handleDel(scope.row)"
             >删除</el-button
           >

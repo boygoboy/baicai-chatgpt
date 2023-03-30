@@ -4,7 +4,10 @@
       <div class="k-j2nnc8-cos" @click="setCollapse(!collapse)">
         <i :class="collapse?'el-icon-s-unfold':'el-icon-s-fold'"></i>
       </div>
-      <div class="k-j2nnc8-loginout" @click="loginOut">退出</div>
+      <div class="action-box">
+      <div class="k-j2nnc8-loginout" @click="loginOut" style="margin-right:20px;cursor:pointer;">退出</div>
+      <div class="k-j2nnc8-loginout" @click="openChat" style="cursor:pointer;">聊天</div>
+      </div>
     </div>
   </div>
 </template>
@@ -38,7 +41,16 @@ export default {
         this.$router.push({path:'/login'})
         })
     },
+    openChat(){
+     
+    },
   },
 };
 </script>
 <style src="./index.less" lang="less"></style>
+<style scoped lang="less">
+.action-box{
+  display: flex;
+  padding-right: 20px;
+}
+</style>

@@ -31,7 +31,6 @@ const login = (req, res) => {
         }
 
         Role.find({ _id: data.roleNames }, (err, data) => {
-            console.log("xxx", data)
             //判断
             if (err) {
                 res.json({
@@ -85,7 +84,6 @@ const userlist = async (req,res) => {
     if (mobile) params.mobile = mobile
     try {
         const query =  User.find(params)
-        console.log(query)
         const userList = await query.skip(pagerFun(pageNum, pageSize).skipIndex).limit(pagerFun(pageNum, pageSize).pager.pageSize)
         const total = await User.countDocuments(params)
         pager.total = total

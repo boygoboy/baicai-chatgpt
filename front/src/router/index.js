@@ -20,6 +20,11 @@ const router = new VueRouter({
          }
       ]
     },
+    {
+     name:'聊天',
+     path:'/chat',
+     component:()=>import('@/view/default/chat.vue')
+    },
     ...user,
   ]
 })

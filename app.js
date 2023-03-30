@@ -6,6 +6,7 @@ var logger = require('morgan');
 const md5 = require('md5');
 const {secret}=require('./config/config')
 const cors = require('cors')
+const checkTokenMiddleware=require('./middlewares/checkTokenMiddleware')
 
 const chagptapi=require('./routes/api/chatgpt')
 const user = require('./routes/api/user')
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(checkTokenMiddleware)
 
 app.use('/api/chatgpt',chagptapi)
 app.use('/api/user',user)
