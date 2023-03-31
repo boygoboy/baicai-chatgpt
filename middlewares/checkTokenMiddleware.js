@@ -1,5 +1,6 @@
 //导入 jwt
 const jwt = require('jsonwebtoken');
+const { ConnectionStates } = require('mongoose');
 //读取配置项
 const {secret} = require('../config/config');
 const excludeRoutes = ['/api/user/login'];
@@ -14,7 +15,7 @@ module.exports = (req, res, next) => {
   //判断
   if (!token) {
     return res.json({
-      errorCode: '1001',
+      errorCode: '401',
       msg: 'token 缺失',
       data: null
     })
@@ -34,7 +35,7 @@ module.exports = (req, res, next) => {
     //如果 token 校验成功
     console.log("---------------------")
     let whiteList=await checkWhiteListRouter(req,res)
-   if(!whiteList.includes(req.path)){
+   if(! whiteList.filter(item=>req.path.startsWith(item))){
     return res.json({
       errorCode: '401',
       message: '没有权限',

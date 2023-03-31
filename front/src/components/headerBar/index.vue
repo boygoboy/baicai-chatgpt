@@ -42,7 +42,9 @@ export default {
         })
     },
     openChat(){
-     
+     this.$router.push({
+      path:'/chat'
+     })
     },
   },
 };

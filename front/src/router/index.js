@@ -12,13 +12,13 @@ const router = new VueRouter({
       name: '首页',
       path: '/',
       component: () => import(/* webpackChunkName: "content" */'@/view/content'), 
-      children:[
-        {
-          name: '默认首页',
-          path: '',
-          component:()=>import('@/view/default/index.vue')
-         }
-      ]
+      // children:[
+      //   {
+      //     name: '默认首页',
+      //     path: '',
+      //     component:()=>import('@/view/default/index.vue')
+      //    }
+      // ]
     },
     {
      name:'聊天',

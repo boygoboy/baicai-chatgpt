@@ -68,6 +68,11 @@ const allRouterObj=[
         routerUrl:'/api/menus/menulist',
         menuUrl:'/sys/menu',
         permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/ask',
+        menuUrl:'/chat',
+        permit:null
     }
 ]
 

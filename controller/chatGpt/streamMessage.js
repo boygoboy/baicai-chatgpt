@@ -16,14 +16,11 @@ const { HttpsProxyAgent } = httpsProxyAgent
     username: 'baicai',
     password:'baicai666_country-us'
   })
-class ChatGpt {
-    constructor(options) {
-        this.options = options
-    }
+
     //   获取聊天消息
-    getChat3Message(message) {
+   function getStreamGptMessage(options) {
+    let {temperature,maxtokens,message}=options
         return new Promise((resolve, reject) => {
-            let {temperature,maxtokens}=this.options
             let config={
                 method: "POST",
                 // baseURL: "https://api.openai.com/v1/chat/completions",
@@ -44,10 +41,10 @@ class ChatGpt {
                     "max_tokens": maxtokens?(maxtokens>=4000?4000:maxtokens):4000,
                     "temperature": temperature || 0.9,
                     "messages": [{role: "user", content: message}],
+                     "stream":true
                 },
             }
             axios(config).then(res=>{
-                console.log(res.data)
                 resolve(res.data)
             }).catch(err=>{
                 // console.log(err)
@@ -56,6 +53,8 @@ class ChatGpt {
 
         })
     }
-}
 
-module.exports=ChatGpt
+
+module.exports={
+    getStreamGptMessage
+}
