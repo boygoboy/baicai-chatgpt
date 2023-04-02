@@ -1,5 +1,6 @@
 var createError = require('http-errors');
 var express = require('express');
+var expressWs = require('express-ws');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -22,6 +23,8 @@ createFirstUser({
 })
 // '/api/user'
 var app = express();
+// 这里是websocket的路由要放在  之后
+const chatgptWs=require('./routes/ws/chatgpt')
 
 app.use(cors())
 app.use(logger('dev'));
@@ -29,6 +32,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//注意这里的ws路由注册需要放在httptoken认证前面，否则token对其无法验证，导致误拦截
+app.use('/api/ws/chatgpt',chatgptWs)
 app.use(checkTokenMiddleware)
 
 app.use('/api/chatgpt',chagptapi)

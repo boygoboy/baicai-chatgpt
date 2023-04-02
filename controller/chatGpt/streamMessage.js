@@ -3,6 +3,8 @@ const http = require('http');
 const {SocksProxyAgent} = require('socks-proxy-agent');
 const httpsProxyAgent = require('https-proxy-agent')
 const { HttpsProxyAgent } = httpsProxyAgent
+
+
 // const proxyAgent = new SocksProxyAgent({
 //     hostname: 'geo.iproyal.com',
 //     port: '42324',
@@ -18,9 +20,8 @@ const { HttpsProxyAgent } = httpsProxyAgent
   })
 
     //   获取聊天消息
-   function getStreamGptMessage(options) {
+    function getStreamGptMessage(options ,handleMessage) {
     let {temperature,maxtokens,message}=options
-        return new Promise((resolve, reject) => {
             let config={
                 method: "POST",
                 // baseURL: "https://api.openai.com/v1/chat/completions",
@@ -33,9 +34,15 @@ const { HttpsProxyAgent } = httpsProxyAgent
                 headers:{
                     "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`,
                     "Content-Type": "application/json",
+                     "Accept": "text/event-stream",
+                    //  "Transfer-Encoding": "chunked",
+                     "Cache-Control": "no-cache",
+                     "Connection": "keep-alive",
+                    // "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                    //  "Access-Control-Allow-Headers": "Content-Type"
                 },
                 // httpAgent : proxyAgent,
-                httpsAgent: proxyAgent,
+                // httpsAgent: proxyAgent,
                 data:{
                     "model": "gpt-3.5-turbo",
                     "max_tokens": maxtokens?(maxtokens>=4000?4000:maxtokens):4000,
@@ -43,15 +50,29 @@ const { HttpsProxyAgent } = httpsProxyAgent
                     "messages": [{role: "user", content: message}],
                      "stream":true
                 },
+                responseType: "stream"
             }
             axios(config).then(res=>{
-                resolve(res.data)
+               res.data.on('data',(chunck)=>{
+                const lines = chunck.toString().split('\n').filter(line => line.trim() !== '');
+                for (const line of lines) {
+                    const message = line.replace(/^data: /, '');
+                    if (message === '[DONE]') {
+                        handleMessage(message)
+                        return; // Stream finished
+                    }
+                    try {
+                            console.log(`Receive stream message: ${message}`)
+                            handleMessage(message)
+                    } catch(error) {
+                        console.error('Could not JSON parse stream message', message, error);
+                    }
+                }
+               })
             }).catch(err=>{
-                // console.log(err)
-                reject(err)
+                console.log(err)
+               throw err
             })
-
-        })
     }
 
 

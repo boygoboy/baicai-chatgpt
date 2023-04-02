@@ -46,6 +46,8 @@ const showStatus = (status) => {
     return `${message}，请检查网络或联系管理员！`
 }
 
+const excludeRoutes = ["/api/chatgpt/ask"];
+
 const service = axios.create({
     method: 'get',
     //判断是请求代理服务器还是直接请求后端服务，直接请求需后端配置跨域
@@ -63,10 +65,11 @@ let loadingInstance;
 // 请求拦截器
 service.interceptors.request.use((config) => {
     let { data } = config
+    
     if (data.isShowToast) { isShowToast = data.isShowToast; delete data.isShowToast }
     if (data.loading) { loading = data.loading; delete data.loading }
     //可以开启全局loading
-    if (loading) loadingInstance = Loading.service({ background: 'rgba(0, 0, 0, 0.3)' });
+    if (loading&&!excludeRoutes.includes(config.url)) loadingInstance = Loading.service({ background: 'rgba(0, 0, 0, 0.3)' });
 
     const token = Cookies.get('token')
     //判断token
