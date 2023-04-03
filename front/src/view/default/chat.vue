@@ -200,7 +200,6 @@ export default {
     },
 // 添加消息数据
 addMessageData(){
-  
   let botItem={
     content:marked(this.inputText),
     type:'bot',
