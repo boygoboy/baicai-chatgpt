@@ -11,6 +11,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.3",
     "axios": "^0.18.0",
     "core-js": "^3.6.5",
+    "dexie": "^3.2.3",
     "easy-typer-js": "^2.1.0",
     "element-ui": "^2.15.5",
     "event-stream": "^4.0.1",

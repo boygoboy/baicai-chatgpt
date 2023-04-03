@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const { ConnectionStates } = require('mongoose');
 //读取配置项
 const {secret} = require('../config/config');
-const excludeRoutes = ['/api/user/login'];
+const excludeRoutes = ['/api/user/login','/api/chatgpt/ask'];
 const {checkWhiteListRouter}=require('../utils/checkWhiteListRouter')
 //声明中间件
 module.exports = (req, res, next) => {

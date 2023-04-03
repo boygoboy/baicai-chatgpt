@@ -86,7 +86,6 @@ export default {
         this.setPermSign(data.permSign);
         await this.addMenuList(1)
         this.$router.push("/chat");
-        location.reload()
       }
     },
     reset() {

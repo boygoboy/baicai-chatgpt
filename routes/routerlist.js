@@ -1,4 +1,5 @@
 const allRouterObj=[
+    // 用户模块
     {
         routerUrls:'/api/user/login',
         menuUrl:'/sys/user',
@@ -29,6 +30,7 @@ const allRouterObj=[
         menuUrl:'/sys/user',
         permit:null
     },
+    // 角色模块
     {
         routerUrl:'/api/role/addrole',
         menuUrl:'/sys/role',
@@ -49,6 +51,7 @@ const allRouterObj=[
         menuUrl:'/sys/role',
         permit:null
     },
+    // 菜单模块
     {
         routerUrl:'/api/menus/addmenulist',
         menuUrl:'/sys/menu',

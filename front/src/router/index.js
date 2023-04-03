@@ -30,6 +30,10 @@ const router = new VueRouter({
 })
 router.beforeEach(async (to, from, next) => {
   const token = Cookies.get('token')
+  if(to.path==='/chat'){
+    next()
+    return
+  }
   if (to.path === '/login') {
     // 如果是访问登录界面，如果token信息存在，代表已登录过，跳转到主页
     if (token) {
@@ -41,7 +45,7 @@ router.beforeEach(async (to, from, next) => {
   }
   // 如果访问非登录界面，token不存在，则跳转到登录界面
   if (!token) {
-    next({ path: '/login' })
+    next({ path: '/chat' })
     return
   }
   // 加载动态菜单和路由

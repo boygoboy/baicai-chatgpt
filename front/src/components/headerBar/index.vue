@@ -30,7 +30,7 @@ export default {
         }).then(()=>{
         Cookies.remove("token");
         sessionStorage.clear();
-        this.$router.push("/login");
+        this.$router.push("/chat");
         this.$store.state.navMenu.navTre=''
         this.$store.state.tabs.bars= {
             tabsValue: "0",
@@ -38,7 +38,7 @@ export default {
             tabsList: [
             ]
         }
-        this.$router.push({path:'/login'})
+        this.$router.push({path:'/chat'})
         })
     },
     openChat(){
