@@ -92,7 +92,7 @@
                   <div style="position: absolute; left: -40px; top: -15px">
                     <el-avatar
                       :size="30"
-                      src="https://imgurl-1301237494.cos.accelerate.myqcloud.com/imgs/2023/04/02/0274ffcf2ad54e96.png"
+                      src="https://imgurl-1301237494.cos.accelerate.myqcloud.com/imgs/2023/04/03/e06ac96787602371.png"
                     ></el-avatar>
                   </div>
                 </div>
@@ -108,7 +108,7 @@
                   <div style="position: absolute; right: -30px; top: -15px">
                     <el-avatar
                       :size="30"
-                      src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+                      src="https://imgurl-1301237494.cos.accelerate.myqcloud.com/imgs/2023/04/03/da98ec6ccdcf12e2.png"
                     ></el-avatar>
                   </div>
                 </div>
