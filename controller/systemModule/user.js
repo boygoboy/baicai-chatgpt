@@ -1,4 +1,3 @@
-const { code } = require('../../utils/stateModel')
 const User = require('../../db/models/userSchema')
 const Counter = require('../../db/models/counterSchema')
 const Role = require('../../db/models/roleSchema')
@@ -173,6 +172,54 @@ const addlist = async (req, res) => {
     }
 }
 
+// 用户注册
+const registerUser= async(req,res)=>{
+    let { _id,password, ...params } = req.body
+    //新增用户
+    if(!params.username || !params.mobile || !params.userEmail || !password) {
+        return res.json({
+            errorCode: '2002',
+            message: '参数错误',
+            data: null
+        })
+    }
+    const result = await User.findOne({ $or: [{ username: params.username }, { userEmail: params.userEmail }] })
+    if (result) {
+        return res.json({
+            errorCode: '2002',
+            message: '用户名或者邮箱已存在',
+            data: null
+        })
+    }
+    try {
+        //这一步运行一次就可以注释掉，自增需要有个初始值
+        const result = await Counter.findOne({ id: "userId" })
+        if (!result) {
+            await Counter.create({
+                "id": "userId",
+                "sequence_value": 1
+            })
+        }
+        //处理自增userId
+        const count = await Counter.findOneAndUpdate({ id: 'userId' }, { $inc: { sequence_value: 1 } }, { new: true })
+        const user = await new User({
+            userId: count.sequence_value,password: md5(password + md5(secret)), ...params
+        })
+        await user.save();
+        res.json({
+            errorCode: '0000',
+            message: '新增用户成功!',
+            data: null
+        })
+    } catch (error) {
+        res.json({
+            errorCode: '500',
+            message: '服务器错误',
+            data: error
+        })
+    }
+}
+
 // 更新用户
 const updatelist = async (req, res) => {
     let { _id,password, ...params } = req.body
@@ -269,5 +316,6 @@ module.exports = {
     updatelist,
     dellist,
     createFirstUser,
-    isactiveuser
+    isactiveuser,
+    registerUser
 }

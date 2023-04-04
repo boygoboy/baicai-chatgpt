@@ -18,7 +18,7 @@
             >
           </div>
           <div class="history-chatbox">
-            <div
+            <div @mouseover="showActionBtn(item)" @mouseleave="hideActionBtn(item)"
               v-for="item in allMessageData"
               :key="item.id"
               class="item"
@@ -26,17 +26,29 @@
               :class="historyItem?item.id == historyItem.id ? 'selct-class' : '':''"
             >
               <span class="fa fa-commenting-o"></span>
-              <span>{{item.messageData[0]?item.messageData[0].content:''}}</span>
+              <el-input ref="historychatinput" class="historychat-input" v-model="item.messageData[0].content" v-if="item.isedit" @blur="saveHistoryItem(item)"></el-input>
+              <span v-else>{{item.messageData[0]?item.messageData[0].content:''}}</span>
+              <div class="action-btn">
+                <span :class="historyItem?(item.id == historyItem.id ) ? 'el-icon-edit' : '':item.hover?'el-icon-edit':''" @click="editHistoryItem(item)"></span>
+              <el-popconfirm cancel-button-type="primary" popper-class="chat-popconfirm" title="确认要删除这条消息聊天吗？" @confirm="deleteHistoryItem(item)">
+              <span slot="reference" :class="historyItem?(item.id == historyItem.id )? 'el-icon-delete' : '':item.hover?'el-icon-delete':''" style="margin-left:5px;"></span>
+              </el-popconfirm>
+              </div>
             </div>
+          </div>
+          <div class="clear-all" v-if="allMessageData.length">
+             <el-popconfirm cancel-button-type="primary" popper-class="chat-popconfirm" title="确认要删除所有消息聊天吗？" @confirm="deleteAllHistoryItem">
+             <span slot="reference"> <span class="el-icon-delete" style="margin-right:5px;color:#ffffff;"></span><span style="color:#ffffff;">清除所有聊天</span></span>
+              </el-popconfirm>
           </div>
           <div class="system-box">
             <div class="user-info">
               <el-avatar
                 :size="45"
-                src="https://imgurl-1301237494.cos.accelerate.myqcloud.com/imgs/2023/04/02/d5e3fab7f333d8d8.png"
+                src="https://imgurl-1301237494.cos.accelerate.myqcloud.com/imgs/2023/04/04/baa46d5e44e75977.png"
               ></el-avatar>
               <div class="user">
-                <div>机皮啼</div>
+                <div>BAICAI-GPT</div>
                 <div>free acount</div>
               </div>
             </div>
@@ -45,7 +57,7 @@
               <span>下载聊天记录</span>
             </div>
             <div class="action-btn">
-              <span class="fa fa-graduation-cap"></span>
+              <span class="fa fa-external-link"></span>
               <span>chatgpt学习</span>
             </div>
             <div class="action-btn" v-if="!token" @click="handleLogin">
@@ -53,7 +65,7 @@
               <span>登录</span>
             </div>
             <div class="action-btn" v-if="!token">
-              <span class="fa fa-address-book"></span>
+              <span class="fa fa-user-circle-o"></span>
               <span>注册</span>
             </div>
             <div class="action-btn" v-if="token" @click="goBack">
@@ -67,8 +79,11 @@
           </div>
         </div>
       </div>
-      <div class="center-box">
+      <div class="center-box" :style="{width:isStrech?'85%':'70%'}">
         <div class="card">
+               <div class="strech-box" @click="switchStretch">
+          <span class="el-icon-d-arrow-left" v-if="isStrech"></span>
+        </div>
           <div class="message-box" ref="messageBox">
             <div
               v-for="(item, index) in messageData"
@@ -137,9 +152,14 @@
           </div>
         </div>
       </div>
-      <div class="right-box">
+      <transition enter-active-class="animate__fadeInRight" leave-active-class="animate__fadeOutRight">
+      <div class="right-box" :style="{width:isStrech?'0px':'15%'}" v-show="!isStrech">
+        <div class="strech-box" @click="switchStretch">
+          <span class="el-icon-d-arrow-right" v-if="!isStrech"></span>
+        </div>
         <div class="card"></div>
       </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -184,15 +204,21 @@ export default {
       historyItem: null,
       allMessageData: [],
       chatdb: null,
+      isStrech:false
     };
   },
   methods: {
+    // 切换伸缩
+    switchStretch(){
+      this.isStrech = !this.isStrech
+    },
     // 退出登录
     logout() {
       this.$confirm("此操作将退出系统, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
+        customClass: 'logout-confirm'
       }).then(() => {
         Cookie.remove("token");
         sessionStorage.clear();
@@ -393,6 +419,38 @@ export default {
       this.historyItem = item;
       this.messageData = item.messageData;
     },
+    // 鼠标移入历史聊天记录
+    showActionBtn(item) {
+      this.$set(item,'hover',true)
+    },
+    // 鼠标移出历史聊天记录
+    hideActionBtn(item) {
+      this.$set(item,'hover',false)
+    },
+    // 编辑历史聊天记录
+    editHistoryItem(item) {
+       this.$set(item,'isedit',true)
+       this.$refs.historychatinput.focus()
+    },
+    // 保存历史聊天记录
+    saveHistoryItem(item) {
+      this.$set(item,'isedit',false)
+      this.updateHistoryChatIndexDb(item)
+    },
+    // 删除历史聊天记录
+    deleteHistoryItem(item){
+        this.deleteOneChatIndexDb(item.id)
+       let index= this.allMessageData.findIndex(obj=>obj.id==item.id)
+       this.allMessageData.splice(index,1)
+       this.messageData=[]
+       this.historyItem=null
+    },
+    deleteAllHistoryItem(){
+      this.deleteAllChatIndexDb()
+       this.messageData=[]
+       this.historyItem=null
+       this.allMessageData=[]
+    },
     // 初始化indexdb数据库
     async initIndexDb() {
       this.chatdb = new Dexie("chatDataBase");
@@ -416,6 +474,14 @@ export default {
     // 删除所有聊天记录
     async deleteAllChatIndexDb() {
       this.chatdb.chats.clear();
+    },
+        // 更新历史聊天记录到indexdb数据库
+    async updateHistoryChatIndexDb(item){
+      this.chatdb.chats.put({
+        id: item.id,
+        time: item.time,
+        messageData: item.messageData,
+      });
     },
     // 更新聊天记录到indexdb数据库
     async updateChatIndexDb() {
@@ -449,6 +515,12 @@ export default {
         time: null,
         messageData: this.messageData,
       });
+      }else{
+        this.allMessageData.push({
+        id: -1,
+        time: null,
+        messageData: this.messageData,
+      });
       }
     },
   },
@@ -456,11 +528,22 @@ export default {
     this.initIndexDb();
   },
   mounted() {
-    this.translateWs();
+    if(!this.token){
+              this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+    }
+    Cookie.get("token")&&this.translateWs();
     this.handleMessagebooxScroll();
   },
   beforeDestroy() {
+    if(newWebSocket.websocket){
     newWebSocket.close();
+    }
     this.$refs.messageBox.removeEventListener("scroll", () => {
       this.scrolling();
     });
@@ -506,11 +589,10 @@ export default {
           }
         }
         .history-chatbox {
-          height: calc(100vh - 350px);
-          border-bottom: solid 1px #463668;
+          height: calc(100vh - 390px);
           overflow-y: scroll;
           padding-top: 60px;
-          .item {
+          .item {     
             height: 40px;
             line-height: 40px;
             margin-top: 5px;
@@ -520,9 +602,6 @@ export default {
             padding-right: 20px;
             display: flex;
             align-items: center;
-            overflow: hidden; //超出的文本隐藏
-            text-overflow: ellipsis; //溢出用省略号显示
-            white-space: nowrap; //溢出不换行
             &:hover {
               background: #39226a;
             }
@@ -530,9 +609,37 @@ export default {
               font-size: 16px;
               margin-right: 10px;
             }
+            span:nth-child(2) {
+                 width: 65%;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+            }
+            .historychat-input{
+               /deep/ .el-input__inner{
+                height: 25px !important;
+                line-height: 25px !important;
+                border: none;
+               }
+            }
+            .action-btn{
+              display: flex;
+              align-items: center;
+              padding-left: 5px;
+            }
           }
         }
+        .clear-all{
+          height: 40px;
+          line-height: 40px;
+          display: flex;
+          align-items: center;
+          padding: 0 20px 5px 27%;
+          cursor: pointer;
+        }
         .system-box {
+          border-top: solid 1px #463668;
           .user-info {
             display: flex;
             padding: 20px;
@@ -549,11 +656,11 @@ export default {
 
           .action-btn {
             color: #ffffff;
-            font-size: 14px;
+            font-size: 13px;
             padding: 0px 50px 20px 50px;
             cursor: pointer;
             span:nth-child(1) {
-              font-size: 19px;
+              font-size: 17px;
               margin-right: 10px;
             }
             span:nth-child(2) {
@@ -570,6 +677,19 @@ export default {
         position: relative;
         background: #170a35 !important;
         padding-top: 10px;
+              .strech-box{
+        position: absolute;
+        top:40px;
+        right: -5px;
+        width: 35px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        background: #2a1651;
+        color: #ffffff;
+        border-top-left-radius: 15px;
+        border-bottom-left-radius: 15px;
+      }
         .message-box {
           height: calc(100vh - 140px);
           overflow-y: scroll;
@@ -639,6 +759,20 @@ export default {
       width: 15%;
       height: 100%;
       background: #170a35;
+      position: relative;
+      .strech-box{
+        position: absolute;
+        top:40px;
+        left: -35px;
+        width: 35px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        background: #2a1651;
+        color: #ffffff;
+        border-top-left-radius: 15px;
+        border-bottom-left-radius: 15px;
+      }
       .card {
         background: #2a1651 !important;
         height: 100%;
@@ -761,5 +895,46 @@ export default {
 }
 .notiyfy .el-notification__group .el-notification__content {
   color: #fff;
+}
+.chat-popconfirm {
+background: #6d3cd9 !important;
+color: #ffffff !important;
+border: none !important;
+}
+.chat-popconfirm .el-popconfirm .el-popconfirm__action{
+  text-align: center !important;
+  padding-top: 8px;
+}
+.chat-popconfirm .el-popconfirm .el-popconfirm__action .el-button:nth-child(1){
+  color: #ffffff !important;
+  border: none !important;
+  background: #524cf7 !important;
+}
+.chat-popconfirm .el-popconfirm .el-popconfirm__action .el-button:nth-child(2){
+  color: #ffffff !important;
+  background: #524cf7 !important;
+  border: none;
+}
+.logout-confirm{
+  background: #6d3cd9 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+.logout-confirm .el-message-box__header .el-message-box__title{
+  color: #ffffff !important;
+}
+.logout-confirm .el-message-box__header .el-message-box__headerbtn .el-message-box__close{
+  color: #ffffff !important;
+}
+.logout-confirm .el-message-box__content{
+  color: #ffffff !important;
+}
+.logout-confirm .el-message-box__btns{
+  text-align: center !important;
+}
+.logout-confirm .el-message-box__btns .el-button{
+  color: #ffffff !important;
+  background: #524cf7 !important;
+  border: none;
 }
 </style>

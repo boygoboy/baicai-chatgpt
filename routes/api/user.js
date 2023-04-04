@@ -1,8 +1,7 @@
-const { login, userlist, addlist,updatelist, dellist,isactiveuser } = require("../../controller/systemModule/user")
+const { login, userlist, addlist,updatelist, dellist,isactiveuser,registerUser} = require("../../controller/systemModule/user")
 var express = require('express');
 var router = express.Router();
-
-const {isExistUser} = require('../../middlewares/authMiddleWares');
+const authEmailCode=require('../../middlewares/authEmailCodeMiddleWares')
 
 router.post('/login',  (req, res) => {
     login(req,res)
@@ -11,9 +10,13 @@ router.post('/login',  (req, res) => {
 router.get('/userlist', (req,res) => {
     userlist(req,res)
 })
-//新增
+//管理员新增
 router.post('/addlist',  (req,res) => {
      addlist(req,res)
+})
+// 用户注册
+router.post('/register',authEmailCode, (req, res) => {
+    registerUser(req,res)
 })
 
 // 编辑
