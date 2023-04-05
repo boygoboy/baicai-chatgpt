@@ -6,6 +6,29 @@ const login = (data) => {
         data
     })
 }
+const register=(data)=>{
+    return $http({
+        url:'/api/user/register',
+        method:'post',
+        data
+    })
+}
+
+const  sendEmailCode=(data)=>{
+    return $http({
+        url:'/api/auth/emailcode',
+        method:'post',
+        data
+    })
+}
+
+const checkIsUser=(data)=>{
+    return $http({
+        url:'/api/auth/hasuser',
+        method:'post',
+        data
+    })
+}
 export default{
-    login
+    login,register,sendEmailCode,checkIsUser
 }

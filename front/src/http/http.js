@@ -132,10 +132,12 @@ service.interceptors.response.use((response) => {
                 default:
                     message = response.data.message
             }
-            Message({
-                message: message,
-                type: 'warning'
-            })
+            if(errorCode!='2003'){
+                Message({
+                    message: message,
+                    type: 'warning'
+                })
+            }
         }
 
 

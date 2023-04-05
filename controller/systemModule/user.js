@@ -126,7 +126,8 @@ const createFirstUser = async (params) => {
 
 
 const addlist = async (req, res) => {
-    let { _id,password, ...params } = req.body
+    let { _id,password,role, ...params } = req.body
+    role=99
     //新增用户
     if(!params.username || !params.mobile || !params.userEmail || !password) {
         return res.json({
@@ -155,7 +156,7 @@ const addlist = async (req, res) => {
         //处理自增userId
         const count = await Counter.findOneAndUpdate({ id: 'userId' }, { $inc: { sequence_value: 1 } }, { new: true })
         const user = await new User({
-            userId: count.sequence_value,password: md5(password + md5(secret)), ...params
+            userId: count.sequence_value,password: md5(password + md5(secret)),role, ...params
         })
         await user.save();
         res.json({
@@ -174,11 +175,11 @@ const addlist = async (req, res) => {
 
 // 用户注册
 const registerUser= async(req,res)=>{
-    let { _id,password, ...params } = req.body
+    let { _id,password,role, ...params } = req.body
     //新增用户
-    if(!params.username || !params.mobile || !params.userEmail || !password) {
+    if(!params.username  || !params.userEmail || !password) {
         return res.json({
-            errorCode: '2002',
+            errorCode: '2003',
             message: '参数错误',
             data: null
         })
@@ -186,7 +187,7 @@ const registerUser= async(req,res)=>{
     const result = await User.findOne({ $or: [{ username: params.username }, { userEmail: params.userEmail }] })
     if (result) {
         return res.json({
-            errorCode: '2002',
+            errorCode: '2003',
             message: '用户名或者邮箱已存在',
             data: null
         })
@@ -202,8 +203,14 @@ const registerUser= async(req,res)=>{
         }
         //处理自增userId
         const count = await Counter.findOneAndUpdate({ id: 'userId' }, { $inc: { sequence_value: 1 } }, { new: true })
+    //   赋予普通用户角色
+        const roleresult=await Role.findOne({roleName:'普通用户'})
+        let roleNames=[]
+       if(roleresult){
+         roleNames=[roleresult._id]
+       }
         const user = await new User({
-            userId: count.sequence_value,password: md5(password + md5(secret)), ...params
+            userId: count.sequence_value,password: md5(password + md5(secret)),role:99,roleNames, ...params
         })
         await user.save();
         res.json({
@@ -224,6 +231,22 @@ const registerUser= async(req,res)=>{
 const updatelist = async (req, res) => {
     let { _id,password, ...params } = req.body
         try {
+            const result=await User.findOne({_id})
+            if(result){
+             if(result.role==0){
+                return res.json({
+                    errorCode: '2002',
+                    message: '超级管理员不允许修改!',
+                    data:null
+                })
+             }
+            }else{
+                return res.json({
+                    errorCode: '2002',
+                    message: '用户不存在!',
+                    data: null
+                })
+            }
             const userList = await User.findOneAndUpdate({ _id }, {password: md5(password + md5(secret)), ...params })
             if (userList) {
                 res.json({
@@ -249,11 +272,28 @@ const updatelist = async (req, res) => {
 }
 //删除用户（一般删除用户并非真正删除，而是改变状态，这里使用了真正的删除）
 const dellist = async (req, res) => {
-     let _id = req.params.id;
-    if (!_id) {
+     let _id = req.params.id.split(',');
+     
+    if (_id.length==0) {
         return res.json({
             errorCode: '2002',
             message: '参数错误!',
+            data: null
+        })
+    }
+    const result=await User.findOne({role:0})
+    if(result){
+     if(_id.includes(result._id.toString())){
+        return res.json({
+            errorCode: '2002',
+            message: '超级管理员不允许删除!',
+            data:null
+        })
+     }
+    }else{
+        return res.json({
+            errorCode: '2002',
+            message: '用户不存在!',
             data: null
         })
     }

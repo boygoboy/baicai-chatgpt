@@ -29,7 +29,6 @@ resultMenus.forEach(item=>{
   })
 })
 whiteList.push('/api/menus/menulist')
-console.log(whiteList)
 return whiteList
 }
 

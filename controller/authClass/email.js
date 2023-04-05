@@ -1,5 +1,6 @@
 const Counter = require('../../db/models/counterSchema')
 const Email = require('../../db/models/emailSchema')
+const User = require('../../db/models/userSchema')
 const nodemailer = require("nodemailer"); // 邮件发送模块
 const smtpTransport = require("nodemailer-smtp-transport");
 const sendEmailCode=async (req,res)=>{
@@ -26,6 +27,15 @@ const sendEmailCode=async (req,res)=>{
 
   /* 发送验证码 */
   let EMAIL = req.body.email;
+let userResult=await User.findOne({userEmail:EMAIL})
+if(userResult){
+  return res.json({
+    errorCode: "2003",
+    message:"该邮箱已注册!",
+    data:null
+})
+}
+
   if (regEmail.test(EMAIL)) {
     transport.sendMail(
       {
@@ -44,7 +54,7 @@ const sendEmailCode=async (req,res)=>{
         if (error) {
           transport.close(); // 如果没用，关闭连接池
           return res.json({
-            errorCode: "1002",
+            errorCode: "2003",
             message:"发送失败!"
           })
         }
@@ -52,7 +62,7 @@ const sendEmailCode=async (req,res)=>{
     );
   }else{
     return res.json({
-        errorCode: "1002",
+        errorCode: "2003",
         message:"邮箱格式不正确!",
         data:null
     })
@@ -95,6 +105,33 @@ await _email.save();
  
 }
 
+const checkIsUser=async (req,res)=>{
+  try{
+    let {username}=req.body
+    let result=await User.findOne({username:username})
+    if(result){
+      return res.json({
+          errorCode: "2003",
+          message:"该用户名已存在!",
+          data:null
+      })
+    }else{
+      return res.json({
+          errorCode: "0000",
+          message:"该用户名可用!",
+          data:null
+      })
+    }
+  }catch(error){
+    res.json({
+        errorCode: '500',
+        message: '服务器错误！',
+        data:error
+    })
+    throw error
+  }
+
+}
 module.exports={
-    sendEmailCode
+    sendEmailCode,checkIsUser
 }

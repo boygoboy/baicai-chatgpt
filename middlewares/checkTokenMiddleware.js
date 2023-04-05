@@ -3,7 +3,8 @@ const jwt = require('jsonwebtoken');
 const { ConnectionStates } = require('mongoose');
 //读取配置项
 const {secret} = require('../config/config');
-const excludeRoutes = ['/api/user/login','/api/chatgpt/ask'];
+const excludeRoutes = ['/api/user/login','/api/chatgpt/ask',
+'/api/auth/emailcode','/api/user/register','/api/auth/hasuser'];
 const {checkWhiteListRouter}=require('../utils/checkWhiteListRouter')
 //声明中间件
 module.exports = (req, res, next) => {
@@ -16,7 +17,7 @@ module.exports = (req, res, next) => {
   if (!token) {
     return res.json({
       errorCode: '401',
-      msg: 'token 缺失',
+      message: 'token 缺失',
       data: null
     })
   }
@@ -32,10 +33,14 @@ module.exports = (req, res, next) => {
     }
     //保存用户的信息
     req.user = data; // req.session  req.body
+    // 说明是超级管理员有所有路由权限
+    if(data.userList.role==0){
+      return next()
+    }
     //如果 token 校验成功
     console.log("---------------------")
     let whiteList=await checkWhiteListRouter(req,res)
-   if(! whiteList.filter(item=>req.path.startsWith(item))){
+   if(whiteList.filter(item=>req.path.startsWith(item)).length==0){
     return res.json({
       errorCode: '401',
       message: '没有权限',

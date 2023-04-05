@@ -49,22 +49,22 @@
               ></el-avatar>
               <div class="user">
                 <div>BAICAI-GPT</div>
-                <div>free acount</div>
+                <!-- <div>free acount</div> -->
               </div>
             </div>
-            <div class="action-btn">
+            <!-- <div class="action-btn">
               <span class="fa fa-download"></span>
               <span>下载聊天记录</span>
             </div>
             <div class="action-btn">
               <span class="fa fa-external-link"></span>
               <span>chatgpt学习</span>
-            </div>
+            </div> -->
             <div class="action-btn" v-if="!token" @click="handleLogin">
               <span class="fa fa-sign-in"></span>
               <span>登录</span>
             </div>
-            <div class="action-btn" v-if="!token">
+            <div class="action-btn" v-if="!token" @click="openRegister">
               <span class="fa fa-user-circle-o"></span>
               <span>注册</span>
             </div>
@@ -81,7 +81,7 @@
       </div>
       <div class="center-box" :style="{width:isStrech?'85%':'70%'}">
         <div class="card">
-               <div class="strech-box" @click="switchStretch">
+               <div class="strech-box" @click="switchStretch" style="cursor:pointer;">
           <span class="el-icon-d-arrow-left" v-if="isStrech"></span>
         </div>
           <div class="message-box" ref="messageBox">
@@ -153,7 +153,7 @@
         </div>
       </div>
       <transition enter-active-class="animate__fadeInRight" leave-active-class="animate__fadeOutRight">
-      <div class="right-box" :style="{width:isStrech?'0px':'15%'}" v-show="!isStrech">
+      <div style="cursor:pointer;" class="right-box" :style="{width:isStrech?'0px':'15%'}" v-show="!isStrech">
         <div class="strech-box" @click="switchStretch">
           <span class="el-icon-d-arrow-right" v-if="!isStrech"></span>
         </div>
@@ -208,6 +208,9 @@ export default {
     };
   },
   methods: {
+    openRegister(){
+      this.$router.push({path:'/login',query:{type:'register'}})
+    },
     // 切换伸缩
     switchStretch(){
       this.isStrech = !this.isStrech
@@ -236,12 +239,21 @@ export default {
     // 去后台管理
     goBack() {
       this.$router.push({ path: "/" });
+      setTimeout(()=>{location.reload();},200) 
     },
     // 处理登录
     handleLogin() {
-      this.$router.push({ path: "/login" });
+      this.$router.push({ path: "/login" ,query:{type:'login'}});
     },
     sendMsg() {
+      if(!this.sendMessage){
+          this.$message.warning({
+          message:'请输入聊天消息！',
+          type:'warning',
+          customClass:'message-warning'
+        })
+        return
+      }
       if (this.notifyInstance) {
         this.notifyInstance.close();
       }
@@ -589,7 +601,7 @@ export default {
           }
         }
         .history-chatbox {
-          height: calc(100vh - 390px);
+          height: calc(100vh - 300px);
           overflow-y: scroll;
           padding-top: 60px;
           .item {     
@@ -646,6 +658,8 @@ export default {
             .user {
               color: white;
               margin-left: 15px;
+              display: flex;
+              align-items: center;
               div:nth-child(1) {
                 font-size: 17px;
                 font-weight: 500;
@@ -936,5 +950,13 @@ border: none !important;
   color: #ffffff !important;
   background: #524cf7 !important;
   border: none;
+}
+.message-warning {
+  background: #524cf7 !important;
+  color: #fff;
+  border: none;
+}
+.message-warning .el-message__content{
+  color: #fff;
 }
 </style>

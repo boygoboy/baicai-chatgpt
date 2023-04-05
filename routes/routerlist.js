@@ -16,6 +16,11 @@ const allRouterObj=[
         permit:null
     },
     {
+        routerUrl:'/api/user/register',
+        menuUrl:'/',
+        permit:null
+    },
+    {
         routerUrl:'/api/user/dellist',
         menuUrl:'/sys/user',
         permit:null
@@ -75,6 +80,11 @@ const allRouterObj=[
     {
         routerUrl:'/api/chatgpt/ask',
         menuUrl:'/chat',
+        permit:null
+    },
+    {
+        routerUrl:'/api/auth/emailcode',
+        menuUrl:'/',
         permit:null
     }
 ]
