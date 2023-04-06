@@ -96,11 +96,20 @@
                 </div>
                 <div style="position: relative">
                   <div class="from-bot">
-                    <div
+                    <!-- <div
                       v-highlight
                       v-html="botobj.output"
                       v-if="inputText && index == messageData.length - 1"
-                    ></div>
+                    ></div> -->
+<!-- <vue-typed-js :strings="[formatMarked(inputText)]"  :typeSpeed="30" v-highlight
+:contentType="'html'" :loop="false" @onComplete="handleMessageOutputEnd" v-if="typeEnable&&index == messageData.length - 1">
+<div class="typing"  v-highlight></div>
+</vue-typed-js> -->
+
+ <markdown-typewriter :content="inputText" :options="typewriterOptions" 
+ v-if="typeEnable&&index == messageData.length - 1"
+ @onComplete="handleMessageOutputEnd"
+ ></markdown-typewriter>
                     <!-- <span class="easy-typed-cursor">|</span> -->
                     <div v-else v-highlight v-html="item.content"></div>
                   </div>
@@ -172,11 +181,18 @@ import EasyTyper from "easy-typer-js";
 // 将markdown转换成html
 import { marked } from "marked";
 // 引入样式
-import "highlight.js/styles/github-dark.css";
+// import "highlight.js/styles/github-dark.css";
 import moment from "moment";
 import Dexie from "dexie";
+import MarkdownIt from 'markdown-it';
+import 'prismjs/themes/prism-tomorrow.css';
+import MarkdownTypewriter from './components/MarkdownTypewriter.vue';
+import ClipboardJS from 'clipboard';
 
 export default {
+  components:{
+    MarkdownTypewriter
+    },
   data() {
     return {
       sendMessage: "",
@@ -204,10 +220,52 @@ export default {
       historyItem: null,
       allMessageData: [],
       chatdb: null,
-      isStrech:false
+      isStrech:false,
+      typeEnable:false,
+      typewriterOptions: {
+        delay: 28,
+      },
+      codeBlockId: 0,
+      md: new MarkdownIt({
+        html: true,
+        highlight: (str, lang) => {
+          const currentId = `code-block-${this.codeBlockId}`;
+          this.codeBlockId++;
+          if (lang && Prism.languages[lang]) {
+            try {
+              return (
+                  '<pre class="code-container" style="position:relative;background:#181616;">'+
+                '<pre style="background:#100f0f;" class="language-' +
+                lang +
+                '" id="'+currentId+'"><code>' +
+                Prism.highlight(str, Prism.languages[lang], lang) +
+                '</code></pre>' +
+                '<button style="position:absolute;top:0;right:0;" class="copy-button" data-clipboard-target="#'+
+                currentId+
+                '"><i class="fa fa-copy"></i> Copy</button>'+'</pre>'
+              );
+            } catch (e) {}
+          }
+          return (
+            '<pre style="position:relative;background:#181616;" class="language-' +
+            lang +
+            '"><code>' +
+            str.replace(/[&<>]/g, (m) => ({
+              '&': '&;',
+              '<': '<;',
+              '>': '>;',
+            })[m]) +
+            '</code></pre>'
+          );
+        },
+      }),
     };
   },
   methods: {
+    // 复制粘贴功能
+         initClipboard() {
+      new ClipboardJS('.copy-button');
+    },
     openRegister(){
       this.$router.push({path:'/login',query:{type:'register'}})
     },
@@ -324,16 +382,26 @@ export default {
             this.scrollToBottom();
           }
         }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance= setInterval(()=>{
+           if(this.inputText){
+          this.typeEnable=true
+          clearInterval(tempIntervalInstance)
+          }
+        },200) 
       }
       if (
         isJSON(data) &&
         jsonobj.choices[0] &&
         jsonobj.choices[0].finish_reason == "stop"
       ) {
-        this.inputText = marked(this.inputText);
-        setTimeout(() => {
-          this.initTyped(this.inputText, this.handleMessageOutputEnd);
-        }, 50);
+        // this.inputText = marked(this.inputText);
+        // setTimeout(() => {
+        //   this.initTyped(this.inputText, this.handleMessageOutputEnd);
+        // }, 50);
+
+        // this.handleMessageOutputEnd()
       }
       if (jsonobj) {
         this.inputText += jsonobj.choices[0].delta.content
@@ -345,12 +413,15 @@ export default {
     // 处理打字机输出结束
     handleMessageOutputEnd() {
       console.log("输出结束");
+      this.typeEnable=false
+      this.initClipboard()
       this.addMessageData();
     },
     // 添加消息数据
     async addMessageData() {
       let botItem = {
-        content: marked(this.inputText),
+        // content: marked(this.inputText),
+        content: this.md.render(this.inputText),
         type: "bot",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
@@ -400,10 +471,7 @@ export default {
         this.scrolling();
       });
     },
-    // 滚动事件
-    scrolling() {
-      console.log("scroll");
-    },
+
     //滚动条保持最底部方法
     scrollToBottom() {
       this.$nextTick(() => {
@@ -430,6 +498,7 @@ export default {
     selectHistoryItem(item) {
       this.historyItem = item;
       this.messageData = item.messageData;
+      this.initClipboard()
     },
     // 鼠标移入历史聊天记录
     showActionBtn(item) {
@@ -535,6 +604,11 @@ export default {
       });
       }
     },
+    // 格式化markdown
+        formatMarked(content){ // msg表示要过滤的数据，a表示传入的参数
+        this.scrollToBottom();
+        return marked(content)
+    }
   },
   created() {
     this.initIndexDb();
@@ -560,6 +634,7 @@ export default {
       this.scrolling();
     });
   },
+
 };
 </script>
 
@@ -723,7 +798,7 @@ export default {
                 max-width: 60%;
                 background: #a865e5;
                 display: inline-block;
-                padding: 20px;
+                padding: 20px 25px;
                 border-radius: 10px;
                 font-size: 13px;
                 line-height: 23px;
@@ -749,7 +824,7 @@ export default {
                 color: black;
                 border-radius: 10px;
                 padding: 10px;
-                text-align: right;
+                text-align: left;
                 font-size: 13px;
                 line-height: 23px;
                 margin-bottom: 20px;
@@ -897,6 +972,9 @@ export default {
 .selct-class {
   background: #39226a;
 }
+
+
+
 </style>
 <style>
 .notiyfy {
@@ -958,5 +1036,26 @@ border: none !important;
 }
 .message-warning .el-message__content{
   color: #fff;
+}
+
+.code-container {
+  position: relative;
+}
+
+.copy-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: none;
+  color: white;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 0 0 0 5px;
+}
+
+.copy-button:hover {
+  background-color: rgba(0, 0, 0, 0.3);
 }
 </style>
