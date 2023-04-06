@@ -72,7 +72,7 @@ export default {
   typewriter
   .typeString(htmlContent)
   .pauseFor(300).callFunction(() => {
-    this.$refs.typewriterContainer.innerHTML = this.$refs.typewriterContainer.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    // this.$refs.typewriterContainer.innerHTML = this.$refs.typewriterContainer.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
        this.$emit('onComplete')
        this.initClipboard()
       })
