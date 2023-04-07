@@ -192,7 +192,8 @@ import { marked } from "marked";
 import moment from "moment";
 import Dexie from "dexie";
 import MarkdownIt from 'markdown-it';
-import Prism from 'prismjs';
+// import Prism from 'prismjs';
+import Prism from '@/utils/prism.js';
 import 'prismjs/themes/prism-tomorrow.css';
 import MarkdownTypewriter from './components/MarkdownTypewriter.vue';
 import ClipboardJS from 'clipboard';
@@ -269,15 +270,19 @@ export default {
             } catch (e) {}
           }
           return (
-            '<pre style="position:relative;background:#181616;" class="language-' +
+             '<pre class="code-container" style="position:relative;background:#181616;">'+
+            '<pre style="background:#100f0f;" class="language-' +
             lang +
-            '"><code>' +
+            '" id="'+currentId+'"><code>' +
             str.replace(/[&<>]/g, (m) => ({
-              '&': '&',
-              '<': '<',
-              '>': '>',
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
             })[m]) +
-            '</code></pre>'
+            '</code></pre>'+
+                           '<button style="position:absolute;top:0;right:0;" class="copy-button" data-clipboard-target="#'+
+                currentId+
+                '"><i class="fa fa-copy"></i> Copy</button>'+'</pre>'
           );
         },
       }),
@@ -656,6 +661,7 @@ export default {
     }
     Cookie.get("token")&&this.translateWs();
     this.handleMessagebooxScroll();
+    Prism.highlightAll()
   },
   beforeDestroy() {
     if(newWebSocket.websocket){

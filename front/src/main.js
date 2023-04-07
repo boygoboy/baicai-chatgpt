@@ -25,6 +25,24 @@ Vue.directive('highlight', (el) => {
 })
 
 
+// Vue.directive('highlight', (el) => {
+//   const escapeHtml = (unsafe) => {
+//     return unsafe
+//       .replace(/&/g, '&amp;')
+//       .replace(/</g, '&lt;')
+//       .replace(/>/g, '&gt;')
+//       .replace(/"/g, '&quot;')
+//       .replace(/'/g, '&#039;');
+//   }
+
+//   let blocks = el.querySelectorAll('pre code')
+//   blocks.forEach((block) => {
+//     block.innerHTML = escapeHtml(block.innerHTML)
+//     highlight.highlightBlock(block)
+//   })
+// })
+
+
 Vue.use($http);
 new Vue({
   router,
