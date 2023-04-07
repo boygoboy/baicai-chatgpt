@@ -106,10 +106,17 @@
 <div class="typing"  v-highlight></div>
 </vue-typed-js> -->
 
- <markdown-typewriter :content="inputText" :options="typewriterOptions" 
+ <!-- <markdown-typewriter :content="inputText" :options="typewriterOptions" 
  v-if="typeEnable&&index == messageData.length - 1"
  @onComplete="handleMessageOutputEnd"
- ></markdown-typewriter>
+ ></markdown-typewriter> -->
+ <vue-typewriter
+  @onComplete="handleMessageOutputEnd"
+    :speed="30"
+    :full-erase="true"
+    :interval="300"
+    :words="[formatMd]" v-if="typeEnable&&index == messageData.length - 1">
+</vue-typewriter>
                     <!-- <span class="easy-typed-cursor">|</span> -->
                     <div v-else v-highlight v-html="item.content"></div>
                   </div>
@@ -185,16 +192,33 @@ import { marked } from "marked";
 import moment from "moment";
 import Dexie from "dexie";
 import MarkdownIt from 'markdown-it';
+import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import MarkdownTypewriter from './components/MarkdownTypewriter.vue';
 import ClipboardJS from 'clipboard';
+import VueTypewriter from './components/VueTypewriter.vue';
+
 
 export default {
   components:{
-    MarkdownTypewriter
+    MarkdownTypewriter,VueTypewriter
     },
   data() {
+       // 随机生产uuid
+   const uuid=() =>{
+    let s = [];
+    let hexDigits = "0123456789abcdef";
+    for (let i = 0; i < 36; i++) {
+        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+    }
+    s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+    s[8] = s[13] = s[18] = s[23] = "-";
+    let uuid = s.join("");
+    return uuid;
+}
     return {
+      formatText:'',
       sendMessage: "",
       ws: null,
       botobj: {
@@ -225,12 +249,10 @@ export default {
       typewriterOptions: {
         delay: 28,
       },
-      codeBlockId: 0,
       md: new MarkdownIt({
         html: true,
         highlight: (str, lang) => {
-          const currentId = `code-block-${this.codeBlockId}`;
-          this.codeBlockId++;
+          const currentId = `code-block-${uuid()}`;
           if (lang && Prism.languages[lang]) {
             try {
               return (
@@ -251,9 +273,9 @@ export default {
             lang +
             '"><code>' +
             str.replace(/[&<>]/g, (m) => ({
-              '&': '&;',
-              '<': '<;',
-              '>': '>;',
+              '&': '&',
+              '<': '<',
+              '>': '>',
             })[m]) +
             '</code></pre>'
           );
@@ -402,6 +424,7 @@ export default {
         // }, 50);
 
         // this.handleMessageOutputEnd()
+        //  this.formatText=this.md.render(this.inputText)
       }
       if (jsonobj) {
         this.inputText += jsonobj.choices[0].delta.content
@@ -608,6 +631,14 @@ export default {
         formatMarked(content){ // msg表示要过滤的数据，a表示传入的参数
         this.scrollToBottom();
         return marked(content)
+    },
+    //    formatMd(){
+    //   return this.md.render(this.inputText)
+    // }
+  },
+  computed:{
+    formatMd(){
+   return marked(this.inputText)
     }
   },
   created() {

@@ -13,9 +13,9 @@ module.exports = {
           }
     },
     configureWebpack: {
-        resolve: {
-            extensions: ['.js', '.vue', '.json']
-        }
+      resolve: {
+        extensions: ['.js', '.vue', '.json']
+    }
     },
     lintOnSave: false
 };
