@@ -358,7 +358,7 @@ export default {
         type: "bot",
         time: "",
       });
-      newWebSocket.sendMsg(this.sendMessage);
+      newWebSocket.sendMsg(this.sendMessage+' '+'使用markdown格式回答');
       this.sendMessage = "";
       this.scrollToBottom();
     },
