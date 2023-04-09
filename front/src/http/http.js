@@ -120,11 +120,11 @@ service.interceptors.response.use((response) => {
         if (isShowToast) {
             let message=''
             switch (errorCode) {
-                case '1004':
+                case '401':
                     Cookies.remove('token')
                     removeAll()
                     message = "token校验失败"
-                    router.push('/login')
+                    router.push({path:'/login',query:{type:'login'}})
                     break
                 case '1002':
                     message = "用户名或密码错误"

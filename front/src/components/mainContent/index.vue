@@ -16,6 +16,6 @@ export default {
 </script>
 <style lang="less">
 .k-owao1y{
-    padding: 10px;
+    padding: 20px;
 }
 </style>

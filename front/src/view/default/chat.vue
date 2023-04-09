@@ -518,7 +518,6 @@ export default {
         console.log("正在向上滚动");
         this.scrollFlag = false;
       } else {
-        console.log("正在向下滚动");
         this.scrollFlag = true;
       }
     },
@@ -539,7 +538,7 @@ export default {
     // 编辑历史聊天记录
     editHistoryItem(item) {
        this.$set(item,'isedit',true)
-       this.$refs.historychatinput.focus()
+
     },
     // 保存历史聊天记录
     saveHistoryItem(item) {
@@ -622,13 +621,13 @@ export default {
         this.allMessageData.unshift({
         id: -1,
         time: null,
-        messageData: this.messageData,
+        messageData: [{time:'',content:'',type:'me'}],
       });
       }else{
         this.allMessageData.push({
         id: -1,
         time: null,
-        messageData: this.messageData,
+        messageData: [{time:'',content:'',type:'me'}],
       });
       }
     },
@@ -670,6 +669,9 @@ export default {
     this.$refs.messageBox.removeEventListener("scroll", () => {
       this.scrolling();
     });
+    if(this.intervalInstance){
+      clearInterval(this.intervalInstance)
+    }
   },
 
 };
