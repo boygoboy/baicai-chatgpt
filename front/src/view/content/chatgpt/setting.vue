@@ -13,20 +13,24 @@
           <div class="chat-setting">
             <el-descriptions class="margin-top" :column="3">
                 <el-descriptions-item label="聊天渠道"
-                >官方</el-descriptions-item
+                >{{chatsettingForm.channel}}</el-descriptions-item
               >
-               <el-descriptions-item label="请求接口"> </el-descriptions-item>
+               <el-descriptions-item label="请求接口">{{chatsettingForm.url}} </el-descriptions-item>
               <el-descriptions-item label="请求密钥"
-                >sk-fkjsdfnasdfdfsdafsdankfds</el-descriptions-item
+                >{{chatsettingForm.key[0]}}</el-descriptions-item
               >
               <el-descriptions-item label="聊天模型"
-                >text-davinci-003</el-descriptions-item
+                >{{chatsettingForm.model}}</el-descriptions-item
               >
                <el-descriptions-item label="上下文对话"
-                >开启</el-descriptions-item
+                >{{chatsettingForm.enablecontext?'开启':'关闭'}}</el-descriptions-item
               >
               <el-descriptions-item label="代理地址"
-                >socks</el-descriptions-item
+                >
+                <span v-if="chatsettingForm.proxytype">
+                  {{chatsettingForm.proxytype}}://{{chatsettingForm.proxyurl}}
+                </span>
+                </el-descriptions-item
               >
             </el-descriptions>
             
@@ -122,8 +126,15 @@
   <el-form-item label="上下文对话：" prop="enablecontext" v-if="chatsettingForm.channel=='官方'">
     <el-switch v-model="chatsettingForm.enablecontext"></el-switch>
   </el-form-item>
+    <el-form-item label="代理类型：" prop="proxytype" v-if="chatsettingForm.channel=='官方'">
+    <el-select v-model="chatsettingForm.proxytype" placeholder="请选择类型" :clearable="true" style="width:100%;">
+      <el-option label="socks5" value="socks5"></el-option>
+      <el-option label="http" value="https"></el-option>
+      <el-option label="https" value="https"></el-option>
+    </el-select>
+  </el-form-item>
     <el-form-item label="代理地址：" prop="pxoxyurl" v-if="chatsettingForm.channel=='官方'">
-    <el-input v-model="chatsettingForm.pxoxyurl" placeholder="请输入ip:端口号:用户名:密码格式" style="width:100%;"></el-input>
+    <el-input v-model="chatsettingForm.proxyurl" placeholder="请输入ip:端口号:用户名:密码格式" style="width:100%;"></el-input>
   </el-form-item>
 </el-form>
       <span slot="footer" class="dialog-footer">
@@ -298,7 +309,8 @@ export default {
             key:[],
             model:'',
             enablecontext:false,
-            pxoxyurl:''
+            proxytype:'',
+            proxyurl:''
         },
         rules:{
 
@@ -351,14 +363,56 @@ handleClose(){
   this.dialogVisible=false
 },
 submitChatSetting(){
-
+   const data={
+    channel:this.chatsettingForm.channel,
+    url:this.chatsettingForm.url,
+    key:this.chatsettingForm.key,
+    model:this.chatsettingForm.model,
+    enablecontext:this.chatsettingForm.enablecontext,
+    proxytype:this.chatsettingForm.proxytype,
+    proxyurl:this.chatsettingForm.proxyurl
+  }
+  this.$http.putChatParam(data).then(res=>{
+    if(res.errorCode=='0000'){
+      this.$message({
+        message: '保存成功',
+        type: 'success'
+      });
+      this.getChatParam()
+       this.dialogVisible=false
+    }else{
+      this.$message.error(res.message);
+    }
+  })
 },
 enableSetting(){
 this.enableEdit=true
 },
 saveSetting(){
-  this.enableEdit=false
+
+this.enableEdit=false
+},
+// 获取聊天配置参数
+getChatParam(){
+  this.$http.getChatParam().then(res=>{
+    if(res.errorCode=='0000'){
+      let {channel,url,key,model,enablecontext,proxytype,proxyurl}=res.data
+      console.log(res)
+       this.chatsettingForm={
+            channel,
+            url,
+            key,
+            model,
+            enablecontext,
+            proxytype,
+            proxyurl
+        }
+    }
+  })
 }
+    },
+    created(){
+      this.getChatParam()
     }
 }
 </script>
