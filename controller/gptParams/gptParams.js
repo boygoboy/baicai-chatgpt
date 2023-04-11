@@ -1,6 +1,7 @@
 const Counter = require('../../db/models/counterSchema')
 const chatparam = require('../../db/models/chatParmSchema')
 const modelparam = require('../../db/models/modelParmSchema')
+const modeldata=require('./data/model.js')
 
 const getChatParam = async (req, res) => {
     let {
@@ -168,13 +169,100 @@ const putChatParam = async (req, res) => {
 }
 
 const getModelParam = async (req, res) => {
+    let {
+        userId
+    } = req.user.userList
+    try {
+        const result = await modelparam.find({
+            userId
+        }).exec()
+        if (result.length==0) {
+            //这一步运行一次就可以注释掉，自增需要有个初始值
+            const countresult = await Counter.findOne({
+                id: "modelparamId"
+            })
+            if (!countresult) {
+                await Counter.create({
+                    "id": "modelparamId",
+                    "sequence_value": 0
+                })
+            }
 
+
+            modeldata.forEach(async (item)=> {
+            //处理自增chatparamId
+            const count = await Counter.findOneAndUpdate({
+                id: 'modelparamId'
+            }, {
+                $inc: {
+                    sequence_value: 1
+                }
+            }, {
+                new: true
+            })
+
+                item.userId=userId
+                item.modelparamId=count.sequence_value
+            })
+            await modelparam.insertMany(modeldata)
+            let resultData=modelparam.find({userId}).exec()
+
+            if (resultData.length==0) {
+                return res.json({
+                    errorCode: '2002',
+                    message: '获取聊天配置参数失败!',
+                    data: null
+                })
+            } else {
+                return res.json({
+                    errorCode: '0000',
+                    message: '获取聊天配置参数成功!',
+                    data: resultData
+                })
+            }
+        } else {
+            return res.json({
+                errorCode: '0000',
+                message: '获取模型配置参数成功!',
+                data: result
+            })
+        }
+    } catch (error) {
+        res.json({
+            errorCode: '500',
+            message: '服务器错误!',
+            data: error
+        })
+        throw error
+    }
 
 }
 
 const putModelParam = async (req, res) => {
-
-
+    let {
+        userId
+    } = req.user.userList
+     let modeldata=req.body
+     try{
+      
+            await Promise.all(
+                modeldata.map( item=> {
+                modelparam.updateOne({modelparamId:item.modelparamId},{value:item.value}).exec()
+        })
+        )
+        return res.json({
+            errorCode: '0000',
+            message: '更新模型配置成功!',
+            data: null
+        })
+     }catch(error){
+        res.json({
+            errorCode: '500',
+            message: '服务器错误!',
+            data: error
+        })
+        throw error
+     }
 }
 
 module.exports = {

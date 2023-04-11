@@ -23,7 +23,21 @@ const putChatParam = (data) => {
         data
     })
 }
-
+// 获取模型配置参数
+const getModelParam = () => {
+    return $http({
+        url:'/api/gptparam/modelparam',
+        method:'get'
+    })
+}
+// 更新模型配置参数
+const putModelParam = (data) => {
+    return $http({
+        url:'/api/gptparam/modelparam',
+        method:'put',
+        data
+    })
+}
 export default{
-    getChatGptMessage,getChatParam,putChatParam
+    getChatGptMessage,getChatParam,putChatParam,getModelParam,putModelParam
 }
