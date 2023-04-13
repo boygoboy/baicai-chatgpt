@@ -17,7 +17,7 @@ module.exports = (ws, req, next) => {
   jwt.verify(token, secret, async (err, data) => {
     //检测 token 是否正确
     if (err) {
-      return ws.send('token 校验失败!')
+      return ws.send('token校验失败!')
     }
     //保存用户的信息
     req.user = data; // req.session  req.body

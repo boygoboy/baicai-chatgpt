@@ -29,7 +29,6 @@ const checkWsTokenMiddleware=require('../../middlewares/checkWsTokenMiddleware')
 router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', function (msg) {
     if(msg=="heartbeat"){
-      ws.send("heartbeatSuccess!")
       return
     }
     getStreamGptMessage({temperature:0.6,maxtokens:4000,message:msg},(message)=>{

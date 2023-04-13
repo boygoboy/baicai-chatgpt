@@ -115,6 +115,7 @@
     :speed="30"
     :full-erase="true"
     :interval="300"
+    :isOver="isOver"
     :words="[formatMd]" v-if="typeEnable&&index == messageData.length - 1">
 </vue-typewriter>
                     <!-- <span class="easy-typed-cursor">|</span> -->
@@ -182,7 +183,6 @@
 <script>
 // import WebSocket from '@/utils/class/ws';
 import { newWebSocket } from "@/utils/websocket.js";
-import { isJSON } from "@/utils/common.js";
 import Cookie from "js-cookie";
 import EasyTyper from "easy-typer-js";
 // 将markdown转换成html
@@ -286,6 +286,7 @@ export default {
           );
         },
       }),
+      isOver:false
     };
   },
   methods: {
@@ -363,7 +364,7 @@ export default {
         type: "bot",
         time: "",
       });
-      newWebSocket.sendMsg(this.sendMessage+' '+'使用markdown格式回答');
+      newWebSocket.sendMsg(this.sendMessage);
       this.sendMessage = "";
       this.scrollToBottom();
     },
@@ -382,7 +383,8 @@ export default {
 
     // 处理ws收到的消息
     handleWSMessage(data) {
-      if (data == "token 校验失败!") {
+      console.log(data)
+      if (data == "token校验失败!"||data=='缺少token!') {
         this.notifyInstance = this.$notify({
           title: "警告",
           message: "您还未登录，登录后可聊天！",
@@ -391,12 +393,7 @@ export default {
           customClass: "notiyfy",
         });
       }
-      let jsonobj = null;
-      if (isJSON(data)) {
-        jsonobj = JSON.parse(data);
-      }
-      console.log(data);
-      if (isJSON(data) && jsonobj.choices[0] && jsonobj.choices[0].delta.role) {
+      if (data=='[START]') {
         // 开始打字
         this.$set(
           this.messageData[this.messageData.length - 1],
@@ -410,18 +407,16 @@ export default {
           }
         }, 800);
 
-        // 处理开始打字流程
-        let tempIntervalInstance= setInterval(()=>{
-           if(this.inputText){
-          this.typeEnable=true
-          clearInterval(tempIntervalInstance)
-          }
-        },200) 
+        // // 处理开始打字流程
+        // let tempIntervalInstance= setInterval(()=>{
+        //    if(this.inputText){
+        //   this.typeEnable=true
+        //   clearInterval(tempIntervalInstance)
+        //   }
+        // },200) 
       }
       if (
-        isJSON(data) &&
-        jsonobj.choices[0] &&
-        jsonobj.choices[0].finish_reason == "stop"
+       data=='[DONE]'
       ) {
         // this.inputText = marked(this.inputText);
         // setTimeout(() => {
@@ -430,11 +425,20 @@ export default {
 
         // this.handleMessageOutputEnd()
         //  this.formatText=this.md.render(this.inputText)
+        console.log(this.inputText);
+        this.isOver=true
+                // 处理开始打字流程
+        let tempIntervalInstance= setInterval(()=>{
+           if(this.inputText){
+          this.typeEnable=true
+          clearInterval(tempIntervalInstance)
+          }
+        },200) 
+        return
       }
-      if (jsonobj) {
-        this.inputText += jsonobj.choices[0].delta.content
-          ? jsonobj.choices[0].delta.content
-          : "";
+      if (data!='[START]'&&data!='[DONE]') {
+        let newdata=data.replace(/\\n/g,'\r\n')
+        this.inputText += newdata
       }
     },
 
@@ -448,11 +452,12 @@ export default {
     // 添加消息数据
     async addMessageData() {
       let botItem = {
-        // content: marked(this.inputText),
-        content: this.md.render(this.inputText),
+        content: marked(this.inputText),
+        // content: this.md.render(this.inputText),
         type: "bot",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
+      console.log(this.md.render(this.inputText))
       this.messageData.splice(this.messageData.length - 1, 1, botItem);
       this.inputText = "";
       this.botobj.output = "";

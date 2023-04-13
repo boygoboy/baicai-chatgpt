@@ -24,13 +24,13 @@ const { HttpsProxyAgent } = httpsProxyAgent
     let {temperature,maxtokens,message}=options
             let config={
                 method: "POST",
-                // baseURL: "https://api.openai.com/v1/chat/completions",
-                baseURL:"http://89.58.36.180:4500/proxy/v1/chat/completions",
-                //  proxy:{
-                //    protocol:"http",
-                //    host: "111.67.197.117",
-                //    port: "7090",
-                //  },
+                baseURL: "https://api.openai.com/v1/chat/completions",
+                // baseURL:"https://chatgptproxy.baicai.blog/v1/chat/completions",
+                 proxy:{
+                   protocol:"http",
+                   host: "111.67.197.117",
+                   port: "7090",
+                 },
                 headers:{
                     "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`,
                     "Content-Type": "application/json",
@@ -42,7 +42,7 @@ const { HttpsProxyAgent } = httpsProxyAgent
                     //  "Access-Control-Allow-Headers": "Content-Type"
                 },
                 // httpAgent : proxyAgent,
-                // httpsAgent: proxyAgent,
+                httpsAgent: proxyAgent,
                 data:{
                     "model": "gpt-3.5-turbo",
                     "max_tokens": maxtokens?(maxtokens>=4000?4000:maxtokens):4000,
@@ -52,8 +52,13 @@ const { HttpsProxyAgent } = httpsProxyAgent
                 },
                 responseType: "stream"
             }
+            let isstart=true
             axios(config).then(res=>{
                res.data.on('data',(chunck)=>{
+                if(isstart){
+                    handleMessage('[START]')
+                    isstart=false
+                }
                 const lines = chunck.toString().split('\n').filter(line => line.trim() !== '');
                 for (const line of lines) {
                     const message = line.replace(/^data: /, '');
@@ -62,8 +67,12 @@ const { HttpsProxyAgent } = httpsProxyAgent
                         return; // Stream finished
                     }
                     try {
-                            console.log(`Receive stream message: ${message}`)
-                            handleMessage(message)
+                            // console.log(`Receive stream message: ${message}`)
+                            const regex1 = /"content":"(.*?)"/;
+                            const match1 = message.match(regex1);
+                            if (match1) {
+                                handleMessage(match1[1]);
+                                }
                     } catch(error) {
                         console.error('Could not JSON parse stream message', message, error);
                     }
