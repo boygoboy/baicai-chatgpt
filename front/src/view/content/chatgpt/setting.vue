@@ -280,7 +280,6 @@ getChatParam(){
   this.$http.getChatParam().then(res=>{
     if(res.errorCode=='0000'){
       let {channel,url,key,model,enablecontext,proxytype,proxyurl}=res.data
-      console.log(res)
        this.chatsettingView={
             channel,
             url,

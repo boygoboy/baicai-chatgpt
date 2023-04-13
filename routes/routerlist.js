@@ -86,6 +86,17 @@ const allRouterObj=[
         routerUrl:'/api/auth/emailcode',
         menuUrl:'/',
         permit:null
+    },
+    // chatgpt管理---参数配置模块
+    {
+      routerUrl:'/api/gptparam/chatparam',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
+    {
+        routerUrl:'/api/gptparam/modelparam',
+        menuUrl:'/chatgpt/setting',
+        permit:null
     }
 ]
 

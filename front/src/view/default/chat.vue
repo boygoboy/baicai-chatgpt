@@ -101,24 +101,6 @@
                       v-html="formatMd"
                       v-if="inputText && index == messageData.length - 1"
                     ></div>
-<!-- <vue-typed-js :strings="[formatMarked(inputText)]"  :typeSpeed="30" v-highlight
-:contentType="'html'" :loop="false" @onComplete="handleMessageOutputEnd" v-if="typeEnable&&index == messageData.length - 1">
-<div class="typing"  v-highlight></div>
-</vue-typed-js> -->
-
- <!-- <markdown-typewriter :content="inputText" :options="typewriterOptions" 
- v-if="typeEnable&&index == messageData.length - 1"
- @onComplete="handleMessageOutputEnd"
- ></markdown-typewriter> -->
- <!-- <vue-typewriter
-  @onComplete="handleMessageOutputEnd"
-    :speed="30"
-    :full-erase="true"
-    :interval="300"
-    :isOver="isOver"
-    :words="[formatMd]" v-if="typeEnable&&index == messageData.length - 1">
-</vue-typewriter> -->
-                    <!-- <span class="easy-typed-cursor">|</span> -->
                     <div v-else v-highlight v-html="item.content"></div>
                   </div>
                   <div style="position: absolute; left: -40px; top: -15px">
@@ -286,7 +268,6 @@ export default {
           );
         },
       }),
-      isOver:false
     };
   },
   methods: {
@@ -418,28 +399,16 @@ export default {
       if (
        data=='[DONE]'
       ) {
-        // this.inputText = marked(this.inputText);
-        // setTimeout(() => {
-        //   this.initTyped(this.inputText, this.handleMessageOutputEnd);
-        // }, 50);
-
-        // this.handleMessageOutputEnd()
-        //  this.formatText=this.md.render(this.inputText)
-        console.log(this.inputText);
-        this.isOver=true
-        //         // 处理开始打字流程
-        // let tempIntervalInstance= setInterval(()=>{
-        //    if(this.inputText){
-        //   this.typeEnable=true
-        //   clearInterval(tempIntervalInstance)
-        //   }
-        // },200) 
-        this.handleMessageOutputEnd()
+        setTimeout(()=>{
+           this.handleMessageOutputEnd()
+        },300)
         return
       }
       if (data!='[START]'&&data!='[DONE]') {
+        setTimeout(() => {
         let newdata=data.replace(/\\n/g,'\r\n')
         this.inputText += newdata
+        }, 50)
       }
     },
 
@@ -458,7 +427,6 @@ export default {
         type: "bot",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
-      console.log(this.md.render(this.inputText))
       this.messageData.splice(this.messageData.length - 1, 1, botItem);
       this.inputText = "";
       this.botobj.output = "";
@@ -572,7 +540,6 @@ export default {
         chats: "++id, &time, messageData",
       });
       this.allMessageData = await this.chatdb.chats.toArray();
-      console.log(this.allMessageData);
     },
     // 添加聊天记录到indexdb数据库
     async addChatIndexDb() {
@@ -610,7 +577,6 @@ export default {
           messageData: this.messageData,
         });
       } else {
-        console.log("没有找到该聊天记录");
       }
     },
     // 新建聊天
@@ -637,22 +603,11 @@ export default {
       });
       }
     },
-    // 格式化markdown
-        formatMarked(content){ // msg表示要过滤的数据，a表示传入的参数
-        this.scrollToBottom();
-        return marked(content)
-    },
-    //    formatMd(){
-    //   return this.md.render(this.inputText)
-    // }
   },
   computed:{
            formatMd(){
       return this.md.render(this.inputText)
     },
-  //   formatMd(){
-  //  return marked(this.inputText)
-  //   }
   },
   created() {
     this.initIndexDb();

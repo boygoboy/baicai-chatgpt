@@ -1,7 +1,8 @@
 const axios = require('axios')
 const http = require('http');
 const {SocksProxyAgent} = require('socks-proxy-agent');
-const httpsProxyAgent = require('https-proxy-agent')
+const httpsProxyAgent = require('https-proxy-agent');
+const { match } = require('assert');
 const { HttpsProxyAgent } = httpsProxyAgent
 
 
@@ -64,14 +65,13 @@ const { HttpsProxyAgent } = httpsProxyAgent
                     const message = line.replace(/^data: /, '');
                     if (message === '[DONE]') {
                         handleMessage(message)
-                        return; // Stream finished
+                        return; 
                     }
                     try {
-                            // console.log(`Receive stream message: ${message}`)
-                            const regex1 = /"content":"(.*?)"/;
+                            const regex1 = /"content":"(.*?)"}/;
                             const match1 = message.match(regex1);
                             if (match1) {
-                                handleMessage(match1[1]);
+                                handleMessage(match1[1].replace(/\\"/g,'"'));
                                 }
                     } catch(error) {
                         console.error('Could not JSON parse stream message', message, error);
@@ -80,6 +80,7 @@ const { HttpsProxyAgent } = httpsProxyAgent
                })
             }).catch(err=>{
                 console.log(err)
+                handleMessage('[ERROR]')
                throw err
             })
     }
