@@ -96,11 +96,11 @@
                 </div>
                 <div style="position: relative">
                   <div class="from-bot">
-                    <!-- <div
+                    <div
                       v-highlight
-                      v-html="botobj.output"
+                      v-html="formatMd"
                       v-if="inputText && index == messageData.length - 1"
-                    ></div> -->
+                    ></div>
 <!-- <vue-typed-js :strings="[formatMarked(inputText)]"  :typeSpeed="30" v-highlight
 :contentType="'html'" :loop="false" @onComplete="handleMessageOutputEnd" v-if="typeEnable&&index == messageData.length - 1">
 <div class="typing"  v-highlight></div>
@@ -110,14 +110,14 @@
  v-if="typeEnable&&index == messageData.length - 1"
  @onComplete="handleMessageOutputEnd"
  ></markdown-typewriter> -->
- <vue-typewriter
+ <!-- <vue-typewriter
   @onComplete="handleMessageOutputEnd"
     :speed="30"
     :full-erase="true"
     :interval="300"
     :isOver="isOver"
     :words="[formatMd]" v-if="typeEnable&&index == messageData.length - 1">
-</vue-typewriter>
+</vue-typewriter> -->
                     <!-- <span class="easy-typed-cursor">|</span> -->
                     <div v-else v-highlight v-html="item.content"></div>
                   </div>
@@ -407,13 +407,13 @@ export default {
           }
         }, 800);
 
-        // // 处理开始打字流程
-        // let tempIntervalInstance= setInterval(()=>{
-        //    if(this.inputText){
-        //   this.typeEnable=true
-        //   clearInterval(tempIntervalInstance)
-        //   }
-        // },200) 
+        // 处理开始打字流程
+        let tempIntervalInstance= setInterval(()=>{
+           if(this.inputText){
+          this.typeEnable=true
+          clearInterval(tempIntervalInstance)
+          }
+        },200) 
       }
       if (
        data=='[DONE]'
@@ -427,13 +427,14 @@ export default {
         //  this.formatText=this.md.render(this.inputText)
         console.log(this.inputText);
         this.isOver=true
-                // 处理开始打字流程
-        let tempIntervalInstance= setInterval(()=>{
-           if(this.inputText){
-          this.typeEnable=true
-          clearInterval(tempIntervalInstance)
-          }
-        },200) 
+        //         // 处理开始打字流程
+        // let tempIntervalInstance= setInterval(()=>{
+        //    if(this.inputText){
+        //   this.typeEnable=true
+        //   clearInterval(tempIntervalInstance)
+        //   }
+        // },200) 
+        this.handleMessageOutputEnd()
         return
       }
       if (data!='[START]'&&data!='[DONE]') {
@@ -452,8 +453,8 @@ export default {
     // 添加消息数据
     async addMessageData() {
       let botItem = {
-        content: marked(this.inputText),
-        // content: this.md.render(this.inputText),
+        // content: marked(this.inputText),
+        content: this.md.render(this.inputText),
         type: "bot",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
@@ -646,9 +647,12 @@ export default {
     // }
   },
   computed:{
-    formatMd(){
-   return marked(this.inputText)
-    }
+           formatMd(){
+      return this.md.render(this.inputText)
+    },
+  //   formatMd(){
+  //  return marked(this.inputText)
+  //   }
   },
   created() {
     this.initIndexDb();
