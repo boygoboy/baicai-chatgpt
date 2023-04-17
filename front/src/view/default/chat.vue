@@ -583,6 +583,7 @@ export default {
         });
       } else {
       }
+         this.initIndexDb();
     },
     // 新建聊天
     createChat() {
