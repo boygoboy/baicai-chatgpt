@@ -27,15 +27,18 @@ const checkWsTokenMiddleware=require('../../middlewares/checkWsTokenMiddleware')
  * ws.on方法用于监听事件（如监听message事件，或监听close事件）
  * */
 router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
-  ws.on('message', function (msg) {
-    if(msg=="heartbeat"){
+  ws.on('message', function (data) {
+    if(data=="heartbeat"){
       return
     }
-    getStreamGptMessage({temperature:0.6,maxtokens:3000,message:msg},(message)=>{
+      data=JSON.parse(data)
+     const msg=data.message
+     const chatParams=data.chatParams
+    getStreamGptMessage({...chatParams,message:msg},(message)=>{
       ws.send(message)
     })
     aWss.clients.forEach((client)=> {
-      client.send(msg);
+      client.send(data);
   });
   })
 

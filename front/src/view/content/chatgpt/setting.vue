@@ -89,7 +89,7 @@
       :before-close="handleClose"
     >
      
-<el-form :model="chatsettingForm" :rules="rules" ref="ruleForm" label-width="130px" class="demo-ruleForm">
+<el-form :model="chatsettingForm" :rules="rules" ref="chatsettingForm" label-width="130px" class="demo-ruleForm">
   <el-form-item label="聊天渠道：" prop="channel">
     <el-select v-model="chatsettingForm.channel" placeholder="请选择聊天渠道" style="width:100%;">
       <el-option label="官方" value="官方"></el-option>
@@ -129,7 +129,7 @@
     <el-form-item label="代理类型：" prop="proxytype" v-if="chatsettingForm.channel=='官方'">
     <el-select v-model="chatsettingForm.proxytype" placeholder="请选择类型" :clearable="true" style="width:100%;" @change="changProxyType">
       <el-option label="socks5" value="socks5"></el-option>
-      <el-option label="http" value="https"></el-option>
+      <el-option label="http" value="http"></el-option>
       <el-option label="https" value="https"></el-option>
     </el-select>
   </el-form-item>
@@ -234,6 +234,8 @@ handleClose(){
   this.dialogVisible=false
 },
 submitChatSetting(){
+  this.$refs.chatsettingForm.validate(valid=>{
+    if(valid){
    const data={
     channel:this.chatsettingForm.channel,
     url:this.chatsettingForm.url,
@@ -253,6 +255,8 @@ submitChatSetting(){
        this.dialogVisible=false
     }else{
       this.$message.error(res.message);
+    }
+  })
     }
   })
 },

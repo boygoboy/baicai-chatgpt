@@ -2,57 +2,63 @@ const axios = require('axios')
 const http = require('http');
 const {SocksProxyAgent} = require('socks-proxy-agent');
 const httpsProxyAgent = require('https-proxy-agent');
-const { match } = require('assert');
 const { HttpsProxyAgent } = httpsProxyAgent
-
-
-// const proxyAgent = new SocksProxyAgent({
-//     hostname: 'geo.iproyal.com',
-//     port: '42324',
-//     username: 'baicai',
-//     password: 'baicai666_country-us',
-//     protocol: 'socks5',
-//   });
-  const proxyAgent = new HttpsProxyAgent({
-    hostname: 'geo.iproyal.com',
-    port: '12321',
-    username: 'baicai',
-    password:'baicai666_country-us'
-  })
 
     //   获取聊天消息
     function getStreamGptMessage(options ,handleMessage) {
-    let {temperature,maxtokens,message}=options
-        message=JSON.parse(message)
+        let proxyAgent=null
+    let {url,key,model,proxytype,proxyurl,modelParams,message}=options
+    const proxyData=proxyurl.split(":")
+    if(proxytype=="socks5"&&proxyData.length>=2){
+     proxyAgent = new SocksProxyAgent({
+    hostname: proxyData[0],
+    port: proxyData[1],
+    username: proxyData[2]?proxyData[2]:"",
+    password: proxyData[3]?proxyData[3]:"",
+    protocol: 'socks5',
+  });
+    }
+    if((proxytype=="http"||proxytype=="https")&&proxyData.length>=2){
+         proxyAgent = new HttpsProxyAgent({
+            hostname: proxyData[0],
+            port:  proxyData[1],
+            username: proxyData[2]?proxyData[2]:"",
+            password: proxyData[3]?proxyData[3]:"",
+          })
+    }
+         let gptParams={}
+         modelParams.forEach(item=>{
+                gptParams[item.parameter]=item.value
+         })
+         gptParams.stream=gptParams.stream==1?true:false
             let config={
                 method: "POST",
-                baseURL: "https://api.openai.com/v1/chat/completions",
-                // baseURL:"https://chatgptproxy.baicai.blog/v1/chat/completions",
-                 proxy:{
-                   protocol:"http",
-                   host: "111.67.197.117",
-                   port: "7090",
-                 },
+                baseURL: url||"https://api.openai.com/v1/chat/completions",
+                // baseURL:"http://154.23.248.79:81/v1/chat/completions",
+                //  proxy:{
+                //    protocol:"http",
+                //    host: "111.67.197.117",
+                //    port: "7090",
+                //  },
                 headers:{
-                    "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`,
+                    "Authorization":`Bearer ${key[0]||process.env.OPENAI_API_KEY}`,
                     "Content-Type": "application/json",
                      "Accept": "text/event-stream",
-                    //  "Transfer-Encoding": "chunked",
                      "Cache-Control": "no-cache",
                      "Connection": "keep-alive",
-                    // "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                    //  "Access-Control-Allow-Headers": "Content-Type"
                 },
-                // httpAgent : proxyAgent,
-                httpsAgent: proxyAgent,
                 data:{
-                    "model": "gpt-3.5-turbo",
-                    "max_tokens": maxtokens?(maxtokens>=4000?4000:maxtokens):3000,
-                    "temperature": temperature || 0.9,
+                    "model": model||"gpt-3.5-turbo",
                     "messages": message,
-                     "stream":true
+                    ...gptParams
                 },
                 responseType: "stream"
+            }
+            if(proxytype=="socks5"||proxytype=="https"){
+                 config.httpsAgent=proxyAgent
+            }
+            if(proxytype=="http"){
+                config.httpAgent=proxyAgent
             }
             let isstart=true
             axios(config).then(res=>{
@@ -73,6 +79,9 @@ const { HttpsProxyAgent } = httpsProxyAgent
                             const match1 = message.match(regex1);
                             if (match1) {
                                 handleMessage(match1[1].replace(/\\"/g,'"'));
+                                if(gptParams.stream==false){
+                                    handleMessage('[DONE]')
+                                }
                                 }
                     } catch(error) {
                         console.error('Could not JSON parse stream message', message, error);

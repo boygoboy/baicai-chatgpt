@@ -18,28 +18,83 @@
             >
           </div>
           <div class="history-chatbox">
-            <div @mouseover="showActionBtn(item)" @mouseleave="hideActionBtn(item)"
+            <div
+              @mouseover="showActionBtn(item)"
+              @mouseleave="hideActionBtn(item)"
               v-for="item in allMessageData"
               :key="item.id"
               class="item"
               @click="selectHistoryItem(item)"
-              :class="historyItem?item.id == historyItem.id ? 'selct-class' : '':''"
+              :class="
+                historyItem
+                  ? item.id == historyItem.id
+                    ? 'selct-class'
+                    : ''
+                  : ''
+              "
             >
               <span class="fa fa-commenting-o"></span>
-              <el-input ref="historychatinput" class="historychat-input" v-model="item.messageData[0].content" v-if="item.isedit" @blur="saveHistoryItem(item)"></el-input>
-              <span v-else>{{item.messageData[0]?item.messageData[0].content:''}}</span>
+              <el-input
+                ref="historychatinput"
+                class="historychat-input"
+                v-model="item.messageData[0].content"
+                v-if="item.isedit"
+                @blur="saveHistoryItem(item)"
+              ></el-input>
+              <span v-else>{{
+                item.messageData[0] ? item.messageData[0].content : ""
+              }}</span>
               <div class="action-btn">
-                <span :class="historyItem?(item.id == historyItem.id ) ? 'el-icon-edit' : '':item.hover?'el-icon-edit':''" @click="editHistoryItem(item)"></span>
-              <el-popconfirm cancel-button-type="primary" popper-class="chat-popconfirm" title="确认要删除这条消息聊天吗？" @confirm="deleteHistoryItem(item)">
-              <span slot="reference" :class="historyItem?(item.id == historyItem.id )? 'el-icon-delete' : '':item.hover?'el-icon-delete':''" style="margin-left:5px;"></span>
-              </el-popconfirm>
+                <span
+                  :class="
+                    historyItem
+                      ? item.id == historyItem.id
+                        ? 'el-icon-edit'
+                        : ''
+                      : item.hover
+                      ? 'el-icon-edit'
+                      : ''
+                  "
+                  @click="editHistoryItem(item)"
+                ></span>
+                <el-popconfirm
+                  cancel-button-type="primary"
+                  popper-class="chat-popconfirm"
+                  title="确认要删除这条消息聊天吗？"
+                  @confirm="deleteHistoryItem(item)"
+                >
+                  <span
+                    slot="reference"
+                    :class="
+                      historyItem
+                        ? item.id == historyItem.id
+                          ? 'el-icon-delete'
+                          : ''
+                        : item.hover
+                        ? 'el-icon-delete'
+                        : ''
+                    "
+                    style="margin-left: 5px"
+                  ></span>
+                </el-popconfirm>
               </div>
             </div>
           </div>
           <div class="clear-all" v-if="allMessageData.length">
-             <el-popconfirm cancel-button-type="primary" popper-class="chat-popconfirm" title="确认要删除所有消息聊天吗？" @confirm="deleteAllHistoryItem">
-             <span slot="reference"> <span class="el-icon-delete" style="margin-right:5px;color:#ffffff;"></span><span style="color:#ffffff;">清除所有聊天</span></span>
-              </el-popconfirm>
+            <el-popconfirm
+              cancel-button-type="primary"
+              popper-class="chat-popconfirm"
+              title="确认要删除所有消息聊天吗？"
+              @confirm="deleteAllHistoryItem"
+            >
+              <span slot="reference">
+                <span
+                  class="el-icon-delete"
+                  style="margin-right: 5px; color: #ffffff"
+                ></span
+                ><span style="color: #ffffff">清除所有聊天</span></span
+              >
+            </el-popconfirm>
           </div>
           <div class="system-box">
             <div class="user-info">
@@ -79,11 +134,15 @@
           </div>
         </div>
       </div>
-      <div class="center-box" :style="{width:isStrech?'85%':'70%'}">
+      <div class="center-box" :style="{ width: isStrech ? '85%' : '70%' }">
         <div class="card">
-               <div class="strech-box" @click="switchStretch" style="cursor:pointer;">
-          <span class="el-icon-d-arrow-left" v-if="isStrech"></span>
-        </div>
+          <div
+            class="strech-box"
+            @click="switchStretch"
+            style="cursor: pointer"
+          >
+            <span class="el-icon-d-arrow-left" v-if="isStrech"></span>
+          </div>
           <div class="message-box" ref="messageBox">
             <div
               v-for="(item, index) in messageData"
@@ -96,12 +155,12 @@
                 </div>
                 <div style="position: relative">
                   <div class="from-bot">
-                        <div 
+                    <div
                       v-highlight
                       v-html="formatMd"
                       v-if="inputText && index == messageData.length - 1"
                     ></div>
-                   <div v-else v-highlight v-html="item.content"></div>
+                    <div v-else v-highlight v-html="item.content"></div>
                   </div>
                   <div style="position: absolute; left: -40px; top: -15px">
                     <el-avatar
@@ -151,13 +210,21 @@
           </div>
         </div>
       </div>
-      <transition enter-active-class="animate__fadeInRight" leave-active-class="animate__fadeOutRight">
-      <div style="cursor:pointer;" class="right-box" :style="{width:isStrech?'0px':'15%'}" v-show="!isStrech">
-        <div class="strech-box" @click="switchStretch">
-          <span class="el-icon-d-arrow-right" v-if="!isStrech"></span>
+      <transition
+        enter-active-class="animate__fadeInRight"
+        leave-active-class="animate__fadeOutRight"
+      >
+        <div
+          style="cursor: pointer"
+          class="right-box"
+          :style="{ width: isStrech ? '0px' : '15%' }"
+          v-show="!isStrech"
+        >
+          <div class="strech-box" @click="switchStretch">
+            <span class="el-icon-d-arrow-right" v-if="!isStrech"></span>
+          </div>
+          <div class="card"></div>
         </div>
-        <div class="card"></div>
-      </div>
       </transition>
     </div>
   </div>
@@ -173,35 +240,35 @@ import { marked } from "marked";
 // import "highlight.js/styles/github-dark.css";
 import moment from "moment";
 import Dexie from "dexie";
-import MarkdownIt from 'markdown-it';
+import MarkdownIt from "markdown-it";
 // import Prism from 'prismjs';
-import Prism from '@/utils/prism.js';
-import 'prismjs/themes/prism-tomorrow.css';
-import MarkdownTypewriter from './components/MarkdownTypewriter.vue';
-import ClipboardJS from 'clipboard';
-import VueTypewriter from './components/VueTypewriter.vue';
-
+import Prism from "@/utils/prism.js";
+import "prismjs/themes/prism-tomorrow.css";
+import MarkdownTypewriter from "./components/MarkdownTypewriter.vue";
+import ClipboardJS from "clipboard";
+import VueTypewriter from "./components/VueTypewriter.vue";
 
 export default {
-  components:{
-    MarkdownTypewriter,VueTypewriter
-    },
+  components: {
+    MarkdownTypewriter,
+    VueTypewriter,
+  },
   data() {
-       // 随机生产uuid
-   const uuid=() =>{
-    let s = [];
-    let hexDigits = "0123456789abcdef";
-    for (let i = 0; i < 36; i++) {
+    // 随机生产uuid
+    const uuid = () => {
+      let s = [];
+      let hexDigits = "0123456789abcdef";
+      for (let i = 0; i < 36; i++) {
         s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-    }
-    s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
-    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
-    s[8] = s[13] = s[18] = s[23] = "-";
-    let uuid = s.join("");
-    return uuid;
-}
+      }
+      s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+      s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+      s[8] = s[13] = s[18] = s[23] = "-";
+      let uuid = s.join("");
+      return uuid;
+    };
     return {
-      formatText:'',
+      formatText: "",
       sendMessage: "",
       ws: null,
       botobj: {
@@ -227,8 +294,8 @@ export default {
       historyItem: null,
       allMessageData: [],
       chatdb: null,
-      isStrech:false,
-      typeEnable:false,
+      isStrech: false,
+      typeEnable: false,
       typewriterOptions: {
         delay: 28,
       },
@@ -239,49 +306,59 @@ export default {
           if (lang && Prism.languages[lang]) {
             try {
               return (
-                  '<pre class="code-container" style="position:relative;background:#181616;">'+
+                '<pre class="code-container" style="position:relative;background:#181616;">' +
                 '<pre style="background:#100f0f;" class="language-' +
                 lang +
-                '" id="'+currentId+'"><code>' +
+                '" id="' +
+                currentId +
+                '"><code>' +
                 Prism.highlight(str, Prism.languages[lang], lang) +
-                '</code></pre>' +
-                '<button style="position:absolute;top:0;right:0;" class="copy-button" data-clipboard-target="#'+
-                currentId+
-                '"><i class="fa fa-copy"></i> Copy</button>'+'</pre>'
+                "</code></pre>" +
+                '<button style="position:absolute;top:0;right:0;" class="copy-button" data-clipboard-target="#' +
+                currentId +
+                '"><i class="fa fa-copy"></i> Copy</button>' +
+                "</pre>"
               );
             } catch (e) {}
           }
           return (
-             '<pre class="code-container" style="position:relative;background:#181616;">'+
+            '<pre class="code-container" style="position:relative;background:#181616;">' +
             '<pre style="background:#100f0f;" class="language-' +
             lang +
-            '" id="'+currentId+'"><code>' +
-            str.replace(/[&<>]/g, (m) => ({
-              '&': '&amp;',
-              '<': '&lt;',
-              '>': '&gt;',
-            })[m]) +
-            '</code></pre>'+
-                           '<button style="position:absolute;top:0;right:0;" class="copy-button" data-clipboard-target="#'+
-                currentId+
-                '"><i class="fa fa-copy"></i> Copy</button>'+'</pre>'
+            '" id="' +
+            currentId +
+            '"><code>' +
+            str.replace(
+              /[&<>]/g,
+              (m) =>
+                ({
+                  "&": "&amp;",
+                  "<": "&lt;",
+                  ">": "&gt;",
+                }[m])
+            ) +
+            "</code></pre>" +
+            '<button style="position:absolute;top:0;right:0;" class="copy-button" data-clipboard-target="#' +
+            currentId +
+            '"><i class="fa fa-copy"></i> Copy</button>' +
+            "</pre>"
           );
         },
       }),
-      userChatParams:{},  //用户聊天参数
+      userChatParams: {}, //用户聊天参数
     };
   },
   methods: {
     // 复制粘贴功能
-         initClipboard() {
-      new ClipboardJS('.copy-button');
+    initClipboard() {
+      new ClipboardJS(".copy-button");
     },
-    openRegister(){
-      this.$router.push({path:'/login',query:{type:'register'}})
+    openRegister() {
+      this.$router.push({ path: "/login", query: { type: "register" } });
     },
     // 切换伸缩
-    switchStretch(){
-      this.isStrech = !this.isStrech
+    switchStretch() {
+      this.isStrech = !this.isStrech;
     },
     // 退出登录
     logout() {
@@ -289,7 +366,7 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
-        customClass: 'logout-confirm'
+        customClass: "logout-confirm",
       }).then(() => {
         Cookie.remove("token");
         sessionStorage.clear();
@@ -307,20 +384,19 @@ export default {
     // 去后台管理
     goBack() {
       this.$router.push({ path: "/" });
-      setTimeout(()=>{location.reload();},200) 
     },
     // 处理登录
     handleLogin() {
-      this.$router.push({ path: "/login" ,query:{type:'login'}});
+      this.$router.push({ path: "/login", query: { type: "login" } });
     },
     sendMsg() {
-      if(!this.sendMessage){
-          this.$message.warning({
-          message:'请输入聊天消息！',
-          type:'warning',
-          customClass:'message-warning'
-        })
-        return
+      if (!this.sendMessage) {
+        this.$message.warning({
+          message: "请输入聊天消息！",
+          type: "warning",
+          customClass: "message-warning",
+        });
+        return;
       }
       if (this.notifyInstance) {
         this.notifyInstance.close();
@@ -348,10 +424,33 @@ export default {
         type: "bot",
         time: "",
       });
-      console.log(this.handleChatMessageContent())
-      newWebSocket.sendMsg(JSON.stringify(this.handleChatMessageContent()));
+       const data={
+        message:this.handleChatMessageContent(),
+        chatParams: this.handleChatParams()
+       }
+      newWebSocket.sendMsg(JSON.stringify(data));
       this.sendMessage = "";
       this.scrollToBottom();
+    },
+    // 过滤聊天参数
+    handleChatParams(){
+      let {url,key,model,enablecontext,proxytype,proxyurl}=this.userChatParams.chatParam
+      const params={
+        url,
+        key,
+        model,
+        enablecontext,
+        proxytype,
+        proxyurl,
+        modelParams:[]
+      }
+      this.userChatParams.modelParam.forEach(item=>{
+        params.modelParams.push({
+          parameter:item.parameter,
+          value:item.value
+        })
+      })
+     return params
     },
     //  处理http收到的消息
     handleHttpMessage() {
@@ -368,8 +467,8 @@ export default {
 
     // 处理ws收到的消息
     handleWSMessage(data) {
-      console.log(data)
-      if (data == "token校验失败!"||data=='缺少token!') {
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
         this.notifyInstance = this.$notify({
           title: "警告",
           message: "您还未登录，登录后可聊天！",
@@ -378,7 +477,7 @@ export default {
           customClass: "notiyfy",
         });
       }
-      if (data=='[START]') {
+      if (data == "[START]") {
         // 开始打字
         this.$set(
           this.messageData[this.messageData.length - 1],
@@ -393,34 +492,32 @@ export default {
         }, 800);
 
         // 处理开始打字流程
-        let tempIntervalInstance= setInterval(()=>{
-           if(this.inputText){
-          this.typeEnable=true
-          clearInterval(tempIntervalInstance)
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
           }
-        },200) 
+        }, 200);
       }
-      if (
-       data=='[DONE]'
-      ) {
-        setTimeout(()=>{
-           this.handleMessageOutputEnd()
-        },300)
-        return
-      }
-      if (data!='[START]'&&data!='[DONE]') {
+      if (data == "[DONE]") {
         setTimeout(() => {
-        let newdata=data.replace(/\\n/g,'\r\n')
-        this.inputText += newdata
-        }, 50)
+          this.handleMessageOutputEnd();
+        }, 300);
+        return;
+      }
+      if (data != "[START]" && data != "[DONE]") {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText += newdata;
+        }, 50);
       }
     },
 
     // 处理打字机输出结束
     handleMessageOutputEnd() {
       console.log("输出结束");
-      this.typeEnable=false
-      this.initClipboard()
+      this.typeEnable = false;
+      this.initClipboard();
       this.addMessageData();
     },
     // 添加消息数据
@@ -504,39 +601,38 @@ export default {
     selectHistoryItem(item) {
       this.historyItem = item;
       this.messageData = item.messageData;
-      this.initClipboard()
+      this.initClipboard();
     },
     // 鼠标移入历史聊天记录
     showActionBtn(item) {
-      this.$set(item,'hover',true)
+      this.$set(item, "hover", true);
     },
     // 鼠标移出历史聊天记录
     hideActionBtn(item) {
-      this.$set(item,'hover',false)
+      this.$set(item, "hover", false);
     },
     // 编辑历史聊天记录
     editHistoryItem(item) {
-       this.$set(item,'isedit',true)
-
+      this.$set(item, "isedit", true);
     },
     // 保存历史聊天记录
     saveHistoryItem(item) {
-      this.$set(item,'isedit',false)
-      this.updateHistoryChatIndexDb(item)
+      this.$set(item, "isedit", false);
+      this.updateHistoryChatIndexDb(item);
     },
     // 删除历史聊天记录
-    deleteHistoryItem(item){
-        this.deleteOneChatIndexDb(item.id)
-       let index= this.allMessageData.findIndex(obj=>obj.id==item.id)
-       this.allMessageData.splice(index,1)
-       this.messageData=[]
-       this.historyItem=null
+    deleteHistoryItem(item) {
+      this.deleteOneChatIndexDb(item.id);
+      let index = this.allMessageData.findIndex((obj) => obj.id == item.id);
+      this.allMessageData.splice(index, 1);
+      this.messageData = [];
+      this.historyItem = null;
     },
-    deleteAllHistoryItem(){
-      this.deleteAllChatIndexDb()
-       this.messageData=[]
-       this.historyItem=null
-       this.allMessageData=[]
+    deleteAllHistoryItem() {
+      this.deleteAllChatIndexDb();
+      this.messageData = [];
+      this.historyItem = null;
+      this.allMessageData = [];
     },
     // 初始化indexdb数据库
     async initIndexDb() {
@@ -561,8 +657,8 @@ export default {
     async deleteAllChatIndexDb() {
       this.chatdb.chats.clear();
     },
-        // 更新历史聊天记录到indexdb数据库
-    async updateHistoryChatIndexDb(item){
+    // 更新历史聊天记录到indexdb数据库
+    async updateHistoryChatIndexDb(item) {
       this.chatdb.chats.put({
         id: item.id,
         time: item.time,
@@ -583,101 +679,105 @@ export default {
         });
       } else {
       }
-         this.initIndexDb();
+      this.initIndexDb();
     },
     // 新建聊天
     createChat() {
       this.messageData = [];
       this.sendMessage = "";
-      this.historyItem={
-        id:-1
-      }
-      if(this.allMessageData.length){
-        if(this.allMessageData[0].id==-1){
-          return
+      this.historyItem = {
+        id: -1,
+      };
+      if (this.allMessageData.length) {
+        if (this.allMessageData[0].id == -1) {
+          return;
         }
         this.allMessageData.unshift({
-        id: -1,
-        time: null,
-        messageData: [{time:'',content:'',type:'me'}],
-      });
-      }else{
+          id: -1,
+          time: null,
+          messageData: [{ time: "", content: "", type: "me" }],
+        });
+      } else {
         this.allMessageData.push({
-        id: -1,
-        time: null,
-        messageData: [{time:'',content:'',type:'me'}],
-      });
+          id: -1,
+          time: null,
+          messageData: [{ time: "", content: "", type: "me" }],
+        });
       }
     },
     // 获取用户聊天参数
-    getUserChatParam(){ 
-         this.$http.getUserChatParam().then(res=>{
-            if(res.errorCode=='0000'){
-              this.userChatParams=res.data
-            }
-         })
+    getUserChatParam() {
+      this.$http.getUserChatParam().then((res) => {
+        if (res.errorCode == "0000") {
+          this.userChatParams = res.data;
+        }
+      });
     },
     //处理发送的聊天消息
-    handleChatMessageContent(){
-      const enablecontext=this.userChatParams.chatParam.enablecontext
-       const historyMessageData=this.messageData.slice(-8)
-       const message=[]
-       if(enablecontext){
-        historyMessageData.forEach((item,index)=>{
-          if(index==historyMessageData.length-1){
-            return
+    handleChatMessageContent() {
+      const enablecontext = this.userChatParams.chatParam.enablecontext;
+      const historyMessageData = this.messageData.slice(-8);
+      const message = [];
+      if (enablecontext) {
+        historyMessageData.forEach((item, index) => {
+          if (index == historyMessageData.length - 1) {
+            return;
           }
-          if(item.type=='me'){
-            message.push({"role": "user", "content": item.originalContent})
-          }else{
-            message.push({"role": "assistant", "content": item.originalContent})
+          if (item.type == "me") {
+            message.push({ role: "user", content: item.originalContent });
+          } else {
+            message.push({ role: "assistant", content: item.originalContent });
           }
-        })
-       }else{
-         message.push({"role": "user", "content": this.sendMessage})
-       }
-        message.unshift({"role": "system", "content": "You are a helpful assistant."})
-        message.forEach(item=>{
-            item.content=item.content.replace(/[\r]/g, "")
-        })
-        return message
-    }
+        });
+      } else {
+        message.push({ role: "user", content: this.sendMessage });
+      }
+      message.unshift({
+        role: "system",
+        content: "You are a helpful assistant.",
+      });
+      message.forEach((item) => {
+        item.content = item.content.replace(/[\r]/g, "");
+      });
+      return message;
+    },
   },
-  computed:{
-           formatMd(){
-      return this.md.render(this.inputText)
+  computed: {
+    formatMd() {
+      return this.md.render(this.inputText);
     },
   },
   created() {
     this.initIndexDb();
-    this.getUserChatParam()
+    if (Cookie.get("token")) {
+      this.getUserChatParam();
+    }
   },
   mounted() {
-    if(!this.token){
-              this.notifyInstance = this.$notify({
-          title: "警告",
-          message: "您还未登录，登录后可聊天！",
-          type: "warning",
-          duration: 10000,
-          customClass: "notiyfy",
-        });
+    if (!this.token) {
+      this.notifyInstance = this.$notify({
+        title: "警告",
+        message: "您还未登录，登录后可聊天！",
+        type: "warning",
+        duration: 10000,
+        customClass: "notiyfy",
+      });
     }
-    Cookie.get("token")&&this.translateWs();
+    Cookie.get("token") && this.translateWs();
     this.handleMessagebooxScroll();
-    Prism.highlightAll()
+    Prism.highlightAll();
   },
   beforeDestroy() {
-    if(newWebSocket.websocket){
-    newWebSocket.close();
+    if (newWebSocket.websocket) {
+      newWebSocket.close();
     }
     this.$refs.messageBox.removeEventListener("scroll", () => {
       this.scrolling();
     });
-    if(this.intervalInstance){
-      clearInterval(this.intervalInstance)
+    if (this.intervalInstance) {
+      clearInterval(this.intervalInstance);
     }
   },
-
 };
 </script>
 
@@ -722,7 +822,7 @@ export default {
           height: calc(100vh - 300px);
           overflow-y: scroll;
           padding-top: 60px;
-          .item {     
+          .item {
             height: 40px;
             line-height: 40px;
             margin-top: 5px;
@@ -740,27 +840,27 @@ export default {
               margin-right: 10px;
             }
             span:nth-child(2) {
-                 width: 65%;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
+              width: 65%;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
-            .historychat-input{
-               /deep/ .el-input__inner{
+            .historychat-input {
+              /deep/ .el-input__inner {
                 height: 25px !important;
                 line-height: 25px !important;
                 border: none;
-               }
+              }
             }
-            .action-btn{
+            .action-btn {
               display: flex;
               align-items: center;
               padding-left: 5px;
             }
           }
         }
-        .clear-all{
+        .clear-all {
           height: 40px;
           line-height: 40px;
           display: flex;
@@ -809,19 +909,19 @@ export default {
         position: relative;
         background: #170a35 !important;
         padding-top: 10px;
-              .strech-box{
-        position: absolute;
-        top:40px;
-        right: -5px;
-        width: 35px;
-        height: 30px;
-        line-height: 30px;
-        text-align: center;
-        background: #2a1651;
-        color: #ffffff;
-        border-top-left-radius: 15px;
-        border-bottom-left-radius: 15px;
-      }
+        .strech-box {
+          position: absolute;
+          top: 40px;
+          right: -5px;
+          width: 35px;
+          height: 30px;
+          line-height: 30px;
+          text-align: center;
+          background: #2a1651;
+          color: #ffffff;
+          border-top-left-radius: 15px;
+          border-bottom-left-radius: 15px;
+        }
         .message-box {
           height: calc(100vh - 140px);
           overflow-y: scroll;
@@ -892,9 +992,9 @@ export default {
       height: 100%;
       background: #170a35;
       position: relative;
-      .strech-box{
+      .strech-box {
         position: absolute;
-        top:40px;
+        top: 40px;
         left: -35px;
         width: 35px;
         height: 30px;
@@ -1015,8 +1115,6 @@ export default {
 .selct-class {
   background: #39226a;
 }
-
-
 </style>
 <style>
 .notiyfy {
@@ -1031,42 +1129,45 @@ export default {
   color: #fff;
 }
 .chat-popconfirm {
-background: #6d3cd9 !important;
-color: #ffffff !important;
-border: none !important;
-}
-.chat-popconfirm .el-popconfirm .el-popconfirm__action{
-  text-align: center !important;
-  padding-top: 8px;
-}
-.chat-popconfirm .el-popconfirm .el-popconfirm__action .el-button:nth-child(1){
-  color: #ffffff !important;
-  border: none !important;
-  background: #524cf7 !important;
-}
-.chat-popconfirm .el-popconfirm .el-popconfirm__action .el-button:nth-child(2){
-  color: #ffffff !important;
-  background: #524cf7 !important;
-  border: none;
-}
-.logout-confirm{
   background: #6d3cd9 !important;
   color: #ffffff !important;
   border: none !important;
 }
-.logout-confirm .el-message-box__header .el-message-box__title{
+.chat-popconfirm .el-popconfirm .el-popconfirm__action {
+  text-align: center !important;
+  padding-top: 8px;
+}
+.chat-popconfirm .el-popconfirm .el-popconfirm__action .el-button:nth-child(1) {
+  color: #ffffff !important;
+  border: none !important;
+  background: #524cf7 !important;
+}
+.chat-popconfirm .el-popconfirm .el-popconfirm__action .el-button:nth-child(2) {
+  color: #ffffff !important;
+  background: #524cf7 !important;
+  border: none;
+}
+.logout-confirm {
+  background: #6d3cd9 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+.logout-confirm .el-message-box__header .el-message-box__title {
   color: #ffffff !important;
 }
-.logout-confirm .el-message-box__header .el-message-box__headerbtn .el-message-box__close{
+.logout-confirm
+  .el-message-box__header
+  .el-message-box__headerbtn
+  .el-message-box__close {
   color: #ffffff !important;
 }
-.logout-confirm .el-message-box__content{
+.logout-confirm .el-message-box__content {
   color: #ffffff !important;
 }
-.logout-confirm .el-message-box__btns{
+.logout-confirm .el-message-box__btns {
   text-align: center !important;
 }
-.logout-confirm .el-message-box__btns .el-button{
+.logout-confirm .el-message-box__btns .el-button {
   color: #ffffff !important;
   background: #524cf7 !important;
   border: none;
@@ -1076,7 +1177,7 @@ border: none !important;
   color: #fff;
   border: none;
 }
-.message-warning .el-message__content{
+.message-warning .el-message__content {
   color: #fff;
 }
 
