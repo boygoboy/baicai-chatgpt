@@ -31,7 +31,7 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
     if(msg=="heartbeat"){
       return
     }
-    getStreamGptMessage({temperature:0.6,maxtokens:4000,message:msg},(message)=>{
+    getStreamGptMessage({temperature:0.6,maxtokens:3000,message:msg},(message)=>{
       ws.send(message)
     })
     aWss.clients.forEach((client)=> {

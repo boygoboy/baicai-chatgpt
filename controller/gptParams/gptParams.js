@@ -265,9 +265,48 @@ const putModelParam = async (req, res) => {
      }
 }
 
+// 获取用户聊天配置
+const getUserChatParam=async(req,res)=>{
+    try{
+        let {
+            userId
+        } = req.user.userList
+        let chatParamResult=await chatparam.findOne({userId}) 
+        if(chatParamResult){
+          let {model}=chatParamResult
+          let modelParamResult=await modelparam.find({userId,model})
+          if(modelParamResult){
+            let data={
+                chatParam:chatParamResult,
+                modelParam:modelParamResult
+            }
+            return res.json({
+                errorCode: '0000',
+                message: '获取用户聊天配置成功!',
+                data: data
+            })
+          }
+        }else{
+            return res.json({
+                errorCode: '2002',
+                message: '获取用户聊天配置失败!',
+                data: null
+            })
+        }
+    }catch(error){
+        res.json({
+            errorCode: '500',
+            message: '服务器错误!',
+            data: error
+        })
+        throw error
+    }
+}
+
 module.exports = {
     getChatParam,
     putChatParam,
     getModelParam,
-    putModelParam
+    putModelParam,
+    getUserChatParam
 }

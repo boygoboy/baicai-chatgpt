@@ -38,6 +38,14 @@ const putModelParam = (data) => {
         data
     })
 }
+
+// 获取用户聊天配置
+const getUserChatParam = () => {
+    return $http({
+        url:'/api/gptparam/userchatparam',
+        method:'get'
+    })
+}
 export default{
-    getChatGptMessage,getChatParam,putChatParam,getModelParam,putModelParam
+    getChatGptMessage,getChatParam,putChatParam,getModelParam,putModelParam,getUserChatParam
 }

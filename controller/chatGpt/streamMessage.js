@@ -23,6 +23,7 @@ const { HttpsProxyAgent } = httpsProxyAgent
     //   获取聊天消息
     function getStreamGptMessage(options ,handleMessage) {
     let {temperature,maxtokens,message}=options
+        message=JSON.parse(message)
             let config={
                 method: "POST",
                 baseURL: "https://api.openai.com/v1/chat/completions",
@@ -46,9 +47,9 @@ const { HttpsProxyAgent } = httpsProxyAgent
                 httpsAgent: proxyAgent,
                 data:{
                     "model": "gpt-3.5-turbo",
-                    "max_tokens": maxtokens?(maxtokens>=4000?4000:maxtokens):4000,
+                    "max_tokens": maxtokens?(maxtokens>=4000?4000:maxtokens):3000,
                     "temperature": temperature || 0.9,
-                    "messages": [{role: "user", content: message}],
+                    "messages": message,
                      "stream":true
                 },
                 responseType: "stream"

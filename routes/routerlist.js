@@ -97,6 +97,11 @@ const allRouterObj=[
         routerUrl:'/api/gptparam/modelparam',
         menuUrl:'/chatgpt/setting',
         permit:null
+    },
+    {
+        routerUrl:'/api/gptparam/userchatparam',
+        menuUrl:'/chatgpt/setting',
+        permit:null
     }
 ]
 

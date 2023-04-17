@@ -96,12 +96,12 @@
                 </div>
                 <div style="position: relative">
                   <div class="from-bot">
-                    <div
+                        <div 
                       v-highlight
                       v-html="formatMd"
                       v-if="inputText && index == messageData.length - 1"
                     ></div>
-                    <div v-else v-highlight v-html="item.content"></div>
+                   <div v-else v-highlight v-html="item.content"></div>
                   </div>
                   <div style="position: absolute; left: -40px; top: -15px">
                     <el-avatar
@@ -268,6 +268,7 @@ export default {
           );
         },
       }),
+      userChatParams:{},  //用户聊天参数
     };
   },
   methods: {
@@ -336,16 +337,19 @@ export default {
       }
       this.loading = true;
       let meItem = {
+        originalContent: this.sendMessage,
         content: this.sendMessage,
         type: "me",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
       this.messageData.push(meItem, {
+        originalContent: "正在思考中，请耐心等待...",
         content: "正在思考中，请耐心等待...",
         type: "bot",
         time: "",
       });
-      newWebSocket.sendMsg(this.sendMessage);
+      console.log(this.handleChatMessageContent())
+      newWebSocket.sendMsg(JSON.stringify(this.handleChatMessageContent()));
       this.sendMessage = "";
       this.scrollToBottom();
     },
@@ -423,6 +427,7 @@ export default {
     async addMessageData() {
       let botItem = {
         // content: marked(this.inputText),
+        originalContent: this.inputText,
         content: this.md.render(this.inputText),
         type: "bot",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
@@ -603,6 +608,39 @@ export default {
       });
       }
     },
+    // 获取用户聊天参数
+    getUserChatParam(){ 
+         this.$http.getUserChatParam().then(res=>{
+            if(res.errorCode=='0000'){
+              this.userChatParams=res.data
+            }
+         })
+    },
+    //处理发送的聊天消息
+    handleChatMessageContent(){
+      const enablecontext=this.userChatParams.chatParam.enablecontext
+       const historyMessageData=this.messageData.slice(-8)
+       const message=[]
+       if(enablecontext){
+        historyMessageData.forEach((item,index)=>{
+          if(index==historyMessageData.length-1){
+            return
+          }
+          if(item.type=='me'){
+            message.push({"role": "user", "content": item.originalContent})
+          }else{
+            message.push({"role": "assistant", "content": item.originalContent})
+          }
+        })
+       }else{
+         message.push({"role": "user", "content": this.sendMessage})
+       }
+        message.unshift({"role": "system", "content": "You are a helpful assistant."})
+        message.forEach(item=>{
+            item.content=item.content.replace(/[\r]/g, "")
+        })
+        return message
+    }
   },
   computed:{
            formatMd(){
@@ -611,6 +649,7 @@ export default {
   },
   created() {
     this.initIndexDb();
+    this.getUserChatParam()
   },
   mounted() {
     if(!this.token){
@@ -975,7 +1014,6 @@ export default {
 .selct-class {
   background: #39226a;
 }
-
 
 
 </style>
