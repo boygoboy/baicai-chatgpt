@@ -6,18 +6,6 @@ var aWss = wss.getWss('/api/ws/chatgpt/send');
 const {getStreamGptMessage}=require('../../controller/chatGpt/streamMessage')
 const checkWsTokenMiddleware=require('../../middlewares/checkWsTokenMiddleware')
 
-
-
-// demo
-// router.get('/demo', (req, res) => {
-//   let apiRes = {
-//     code: 0,
-//     msg: "成功",
-//     data: '请求通过'
-//   }
-//   res.send(apiRes)
-// })
-
 /**
  * route.ws('/url',(ws, req)=>{  })
  * 建立WebSocket服务，并指定对应接口url，及相应回调
