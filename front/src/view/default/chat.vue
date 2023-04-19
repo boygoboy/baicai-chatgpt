@@ -939,17 +939,17 @@ export default {
               }
               .from-bot {
                 max-width: 60%;
-                background: #a865e5;
+                background: #401d85;
                 display: inline-block;
                 padding: 20px 25px;
                 border-radius: 10px;
                 font-size: 13px;
                 line-height: 23px;
-                color: floralwhite;
+                color: #c7baba;
               }
             }
             .from-me-box {
-              color: whitesmoke;
+              color: #c7baba;
               font-weight: 500;
               .date-avator {
                 display: flex;
@@ -972,7 +972,7 @@ export default {
                 line-height: 23px;
                 margin-bottom: 20px;
                 font-weight: 500;
-                color: white;
+                color: #c7baba;
               }
             }
           }
