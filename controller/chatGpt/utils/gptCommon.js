@@ -1,0 +1,120 @@
+const axios = require('axios');
+const { v4: uuidv4 } = require('uuid');
+    const computedMoney=async (apikey,lastday)=>{
+        const subscription_url = "https://api.openai.com/v1/dashboard/billing/subscription";
+        const headers = {
+            "Authorization": `Bearer ${apikey}`,
+            "Content-Type": "application/json"
+        };
+        let resultdata={
+            total:null,
+            total_usage:null,
+            remain_money:null,
+            history_usage:[]
+        }
+      let subscription_response=await  axios.get(subscription_url, { headers: headers })
+      console.log('subscription_response',subscription_response)
+                if (subscription_response.status === 200) {
+                    const data = subscription_response.data;
+                    const total = data.hard_limit_usd;
+        
+                    const startDate = new Date(Date.now() - 99 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    const endDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    const billing_url = `https://api.openai.com/v1/dashboard/billing/usage?start_date=${startDate}&end_date=${endDate}`;
+        
+                let billing_response =await axios.get(billing_url, { headers: headers })
+                         console.log('billing_response',billing_response)
+                            if (billing_response.status === 200) {
+                                const data = billing_response.data;
+                                const total_usage = data.total_usage / 100;
+                                const daily_costs = data.daily_costs;
+                                const days = Math.min(lastday, daily_costs.length);
+                                let recent = `##### 最近${days}天使用情况\n`;
+        
+                                for (let i = 0; i < days; i++) {
+                                    const cur = daily_costs[daily_costs.length - i - 1];
+                                    const date = new Date(cur.timestamp * 1000).toISOString().split('T')[0];
+                                    const line_items = cur.line_items;
+                                    let cost = 0;
+                                    for (const item of line_items) {
+                                        cost += item.cost;
+                                    }
+                                    recent += `\t${date}\t${cost / 100}\n`;
+                                    resultdata.history_usage.push({
+                                        date,
+                                        cost:cost/100
+                                    })
+                                }
+        
+                                const result = `#### 总额:\t${total.toFixed(4)}\n` +
+                                    `#### 已用:\t${total_usage.toFixed(4)}\n` +
+                                    `#### 剩余:\t${(total - total_usage).toFixed(4)}\n\n${recent}`;
+                                console.log(result);
+                                resultdata.total=total.toFixed(4)
+                                resultdata.total_usage=total_usage.toFixed(4)
+                                resultdata.remain_money=(total - total_usage).toFixed(4)
+                                return resultdata
+                            } else {
+                                console.log(billing_response.statusText);
+                                return false
+                            }
+
+                } else {
+                    return false
+                }
+
+
+    }
+
+    // 非官方聊天接口测活
+    const unfficalChatApiLive=async(accesstoken)=>{
+        let  conversationId
+        let  parentMessageId
+        let  messageId 
+        let  action = 'next'
+        let  prompt="hello"
+          
+          conversationId=conversationId?conversationId:null
+          parentMessageId=parentMessageId?parentMessageId:uuidv4()
+            messageId=messageId?messageId:uuidv4()
+          let config = {
+            method: "POST",
+            baseURL: `${process.env.UNOFFICAL_OPEN_AI_BASE_URL}/backend-api/conversation`,
+            headers: {
+                accept: 'text/event-stream',
+                'x-openai-assistant-app-id': '',
+                authorization: `Bearer ${accesstoken}`,
+                'content-type': 'application/json',
+                referer: 'https://chat.openai.com/chat',
+                library: 'chatgpt-plugin'
+            },
+            referrer: 'https://chat.openai.com/chat',
+            data: {
+                action,
+                messages: [
+                  {
+                    id: messageId,
+                    role: 'user',
+                    content: {
+                      content_type: 'text',
+                      parts: [prompt]
+                    }
+                  }
+                ],
+                model: 'text-davinci-002-render-sha',
+                parent_message_id: parentMessageId,
+                conversation_id: conversationId?conversationId:null,
+              },
+            responseType: "stream"
+        }
+        let response = await axios(config)
+        if(response.status==200){
+            return true
+        }else{
+            false
+        }
+    }
+
+    module.exports={
+        computedMoney,unfficalChatApiLive
+    }

@@ -4,6 +4,10 @@ const { SocksProxyAgent } = require('socks-proxy-agent');
 const httpsProxyAgent = require('https-proxy-agent');
 const { HttpsProxyAgent } = httpsProxyAgent
 const { handlePrompt } = require('../../utils/chatgptTool')
+const { v4: uuidv4 } = require('uuid');
+const {createParser} = require('eventsource-parser');
+
+
 
 //   获取聊天消息
 function getStreamGptMessage(options, handleMessage) {
@@ -132,7 +136,116 @@ function getStreamGptMessage(options, handleMessage) {
     })
 }
 
+  function unOfficalChat(options,params,handleMessage){
+    let isstart=true
+    let contextObj={
+        parentMessageId:null,
+        conversationId:null
+    }
+    let {url,key,model}=params
+    let conversationResponse=null
+    const onMessage=(data) =>{
+        if (data === '[DONE]') {
+           handleMessage('[DONE]'+JSON.stringify(contextObj))
+        }
+        try {
+          const _checkJson = JSON.parse(data)
+        } catch (error) {
+          console.log('warning: parse error.')
+          return
+        }
+        try {
+          const convoResponseEvent = JSON.parse(data)
+          conversationResponse = convoResponseEvent
+          if (convoResponseEvent.conversation_id) {
+            contextObj.conversationId = convoResponseEvent.conversation_id
+          }
+
+          if (convoResponseEvent.message.id) {
+           contextObj.parentMessageId = convoResponseEvent.message.id
+          }
+
+          const partialResponse =
+              convoResponseEvent.message.content.parts[0]
+          if (partialResponse) {
+            response = partialResponse
+            handleMessage(response)
+          }
+        } catch (err) {
+          console.warn('fetchSSE onMessage unexpected error', err)
+        }
+      }
+
+
+    let {
+        conversationId,
+        parentMessageId,
+        messageId ,
+        action = 'next',
+        prompt="hello"
+      } = options
+      conversationId=conversationId?conversationId:null
+      parentMessageId=parentMessageId?parentMessageId:uuidv4()
+        messageId=messageId?messageId:uuidv4()
+        action=action?action:'next'
+        prompt=prompt?prompt:'hello'
+      let config = {
+        method: "POST",
+        baseURL: url|| "http://154.23.248.79:3020/backend-api/conversation",
+        headers: {
+            accept: 'text/event-stream',
+            'x-openai-assistant-app-id': '',
+            authorization: `Bearer ${key||process.env.OPENAI_ACCESS_TOKEN}`,
+            'content-type': 'application/json',
+            referer: 'https://chat.openai.com/chat',
+            library: 'chatgpt-plugin'
+        },
+        referrer: 'https://chat.openai.com/chat',
+        data: {
+            action,
+            messages: [
+              {
+                id: messageId,
+                role: 'user',
+                content: {
+                  content_type: 'text',
+                  parts: [prompt]
+                }
+              }
+            ],
+            model: (key||process.env.ENABLE_GPT4) ? 'gpt-4' : 'text-davinci-002-render-sha',
+            parent_message_id: parentMessageId,
+            conversation_id: conversationId?conversationId:null,
+          },
+        responseType: "stream"
+    }
+
+
+    const parser = createParser((event) => {
+        if (event.type === 'event') {
+          onMessage(event.data)
+        }
+      })
+
+      axios(config).then(res=>{
+        res.data.on('data', (chunck) => {
+            if(isstart){
+                handleMessage('[START]')
+                isstart=false
+            }
+            let str = chunck.toString()
+            parser.feed(str)
+        })
+
+      }).catch(error=>{
+        console.log(error)
+        throw error
+      })
+
+}
+
+
 
 module.exports = {
-    getStreamGptMessage
+    getStreamGptMessage,unOfficalChat
 }

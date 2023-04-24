@@ -102,6 +102,17 @@ const allRouterObj=[
         routerUrl:'/api/gptparam/userchatparam',
         menuUrl:'/chatgpt/setting',
         permit:null
+    },
+    // chatgpt管理---账号管理模块
+    {
+        routerUrl:'/api/gptaccount/accountlist',
+        menuUrl:'/chatgpt/account',
+        permit:null
+    },
+    {
+        routerUrl:'/api/gptaccount/apikey',
+        menuUrl:'/chatgpt/account',
+        permit:null
     }
 ]
 

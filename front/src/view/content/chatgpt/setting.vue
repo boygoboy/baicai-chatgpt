@@ -16,8 +16,9 @@
                 >{{chatsettingView.channel}}</el-descriptions-item
               >
                <el-descriptions-item label="请求接口">{{chatsettingView.url}} </el-descriptions-item>
-              <el-descriptions-item label="请求密钥"
-                >{{chatsettingView.key[0]}}</el-descriptions-item
+              <el-descriptions-item label="请求密钥" content-class-name="key-content" >
+              {{chatsettingView.key[0]}}
+               </el-descriptions-item
               >
               <el-descriptions-item label="聊天模型"
                 >{{chatsettingView.model}}</el-descriptions-item
@@ -91,16 +92,25 @@
      
 <el-form :model="chatsettingForm" :rules="rules" ref="chatsettingForm" label-width="130px" class="demo-ruleForm">
   <el-form-item label="聊天渠道：" prop="channel">
-    <el-select v-model="chatsettingForm.channel" placeholder="请选择聊天渠道" style="width:100%;">
+    <el-select v-model="chatsettingForm.channel" placeholder="请选择聊天渠道" 
+    style="width:100%;" @change="changeChannel">
       <el-option label="官方" value="官方"></el-option>
       <el-option label="非官方" value="非官方"></el-option>
     </el-select>
   </el-form-item>
-      <el-form-item label="聊天模型：" prop="model" v-if="chatsettingForm.channel=='官方'">
-    <el-select v-model="chatsettingForm.model" placeholder="请选择聊天模型" :clearable="true" style="width:100%;" @change="changeModel">
+      <el-form-item label="聊天模型：" prop="model">
+    <el-select v-model="chatsettingForm.model" placeholder="请选择聊天模型"
+     :clearable="true" style="width:100%;" 
+     @change="changeModel" v-if="chatsettingForm.channel=='官方'">
       <el-option label="gpt-3.5-turbo" value="gpt-3.5-turbo"></el-option>
       <el-option label="gpt-3.5-turbo-0301" value="gpt-3.5-turbo-0301"></el-option>
       <el-option label="text-davinci-003" value="text-davinci-003"></el-option>
+    </el-select>
+        <el-select v-model="chatsettingForm.model" placeholder="请选择聊天模型"
+         :clearable="true" style="width:100%;" 
+          @change="changeModel" v-else>
+      <el-option label="text-davinci-002-render-sha" value="text-davinci-002-render-sha"></el-option>
+      <el-option label="gpt-4" value="gpt-4"></el-option>
     </el-select>
   </el-form-item>
     <el-form-item label="请求接口：" prop="url">
@@ -108,7 +118,10 @@
   </el-form-item>
     <el-form-item label="请求密钥：" prop="key">
     <el-select style="width:100%;"
+     popper-class="popper-class" 
+     :popper-append-to-body="false"
     v-model="chatsettingForm.key"
+    :multiple-limit="1"
     multiple
     filterable
     allow-create
@@ -120,6 +133,15 @@
       :key="item.value"
       :label="item.value"
       :value="item.value">
+        <el-tooltip
+          placement="top"
+          :disabled="item.value.length<17"
+        >
+            <div slot="content">
+                <span>{{item.value}}</span>
+            </div>
+            <div class="iclass-text-ellipsis">{{ item.value }}</div>
+        </el-tooltip>
     </el-option>
   </el-select>
   </el-form-item>
@@ -182,6 +204,12 @@ export default {
       };
     },
     methods:{
+      // 改变聊天渠道
+      changeChannel(){
+        this.chatsettingForm.model=''
+        this.chatsettingForm.url=''
+        this.chatsettingForm.key=[]
+      },
       //合并单元格 
 objectSpanMethod({ row, column, rowIndex, columnIndex }) {
 
@@ -374,5 +402,21 @@ changeModel(value){
 /deep/ .el-dialog__footer {
   text-align: center;
 }
+.el-select ::v-deep .popper-class {
+  width: 300px;
+}
+.iclass-text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/deep/ .el-select__tags{
+  overflow: hidden;
+}
+/deep/ .key-content{
+              width:70%;
+              text-overflow:ellipsis;
+              white-space:nowrap;
+              overflow:hidden;
+}
 </style>
-

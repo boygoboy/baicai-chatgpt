@@ -3,7 +3,7 @@ const expressWs = require('express-ws') // 引入 WebSocket 包
 const router = express.Router() // 实例化路由对象
 let wss = expressWs(router)//为当前路由添加.ws方法
 var aWss = wss.getWss('/api/ws/chatgpt/send');
-const {getStreamGptMessage}=require('../../controller/chatGpt/streamMessage')
+const {getStreamGptMessage,unOfficalChat}=require('../../controller/chatGpt/streamMessage')
 const checkWsTokenMiddleware=require('../../middlewares/checkWsTokenMiddleware')
 
 /**
@@ -23,6 +23,32 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
      const msg=data.message
      const chatParams=data.chatParams
     getStreamGptMessage({...chatParams,message:msg},(message)=>{
+      ws.send(message)
+    })
+
+    aWss.clients.forEach((client)=> {
+      client.send(data);
+  });
+  })
+
+
+
+  ws.on('close', function (e) {
+    console.log('连接关闭')
+  })
+})
+
+
+
+router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
+  ws.on('message', function (data) {
+    if(data=="heartbeat"){
+      return
+    }
+    console.log(data)
+      let reqData=JSON.parse(data)
+      let {options,params}=reqData
+    unOfficalChat(options,params,(message)=>{
       ws.send(message)
     })
     aWss.clients.forEach((client)=> {

@@ -247,6 +247,10 @@ import "prismjs/themes/prism-tomorrow.css";
 import MarkdownTypewriter from "./components/MarkdownTypewriter.vue";
 import ClipboardJS from "clipboard";
 import VueTypewriter from "./components/VueTypewriter.vue";
+import tm from 'markdown-it-texmath';
+import 'markdown-it-texmath/css/texmath.css'; // 引入样式表
+import 'katex/dist/katex.min.css';
+
 
 export default {
   components: {
@@ -346,6 +350,13 @@ export default {
         },
       }),
       userChatParams: {}, //用户聊天参数
+        chatObj:{
+            prompt:'',
+            conversationId:null,
+            messageId:null,
+            action:null,
+            parentMessageId:null
+       }
     };
   },
   methods: {
@@ -411,6 +422,14 @@ export default {
         });
         return;
       }
+      if(this.userChatParams.chatParam.channel=='非官方'){
+        if(this.messageData.length){
+          const index=this.messageData.length-1
+          this.chatObj.conversationId=this.messageData[index].chatObj.conversationId?this.messageData[index].chatObj.conversationId:null
+          this.chatObj.action=this.messageData[index].chatObj.action?this.messageData[index].chatObj.action:null
+          this.chatObj.parentMessageId=this.messageData[index].chatObj.parentMessageId?this.messageData[index].chatObj.parentMessageId:null
+        }
+      }
       this.loading = true;
       let meItem = {
         originalContent: this.sendMessage,
@@ -424,11 +443,26 @@ export default {
         type: "bot",
         time: "",
       });
+      if(this.userChatParams.chatParam.channel=='非官方'){
+        this.chatObj.prompt=this.sendMessage
+
+        const data={
+          options:this.chatObj,
+          params:{
+            url:this.userChatParams.chatParam.url,
+            key:this.userChatParams.chatParam.key[0],
+            model:this.userChatParams.chatParam.model,
+          }
+        }
+        newWebSocket.sendMsg(JSON.stringify(data));
+      }
+      if(this.userChatParams.chatParam.channel=='官方'){
        const data={
         message:this.handleChatMessageContent(),
         chatParams: this.handleChatParams()
        }
       newWebSocket.sendMsg(JSON.stringify(data));
+      }
       this.sendMessage = "";
       this.scrollToBottom();
     },
@@ -465,6 +499,56 @@ export default {
         });
     },
 
+      // 处理非官方聊天接收到的消息
+    handleUnofficalWSMessage(data){
+        console.log(data)
+        if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+            if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        let resultParms=data.replace("[DONE]","")
+        this.chatObj=JSON.parse(resultParms)
+        return;
+      }
+      if (data != "[START]" && !data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText = newdata;
+        }, 50);
+      }
+    },
     // 处理ws收到的消息
     handleWSMessage(data) {
       console.log(data);
@@ -524,6 +608,7 @@ export default {
     async addMessageData() {
       let botItem = {
         // content: marked(this.inputText),
+        chatObj:JSON.parse(JSON.stringify(this.chatObj)),
         originalContent: this.inputText,
         content: this.md.render(this.inputText),
         type: "bot",
@@ -548,7 +633,26 @@ export default {
       }
     },
     translateWs() {
-      newWebSocket.init({
+            console.log(this.userChatParams)
+      if(this.userChatParams.chatParam.channel=='非官方'){
+
+             newWebSocket.init({
+        url: `${
+          process.env.VUE_APP_WS_API
+        }/api/ws/chatgpt/unofficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
+        onopen: (msg, data) => {
+          console.log(msg, data);
+        },
+        onmessage: (data) => {
+          this.handleUnofficalWSMessage(data);
+        },
+        onclose: (data) => {
+          console.log(data);
+        },
+      });
+      }
+      if(this.userChatParams.chatParam.channel=='官方'){
+              newWebSocket.init({
         url: `${
           process.env.VUE_APP_WS_API
         }/api/ws/chatgpt/send?token=${Cookie.get("token")}`, // 自己的ws 地址
@@ -562,6 +666,7 @@ export default {
           console.log(data);
         },
       });
+      }
     },
 
     initTyped(input, fn, hooks) {
@@ -707,11 +812,16 @@ export default {
     },
     // 获取用户聊天参数
     getUserChatParam() {
+      return new Promise((resolve,reject)=>{
       this.$http.getUserChatParam().then((res) => {
         if (res.errorCode == "0000") {
           this.userChatParams = res.data;
+          resolve('ok')
         }
-      });
+      }).catch(error=>{
+        reject(error)
+      })
+      })
     },
     //处理发送的聊天消息
     handleChatMessageContent() {
@@ -749,9 +859,6 @@ export default {
   },
   created() {
     this.initIndexDb();
-    if (Cookie.get("token")) {
-      this.getUserChatParam();
-    }
   },
   mounted() {
     if (!this.token) {
@@ -763,9 +870,17 @@ export default {
         customClass: "notiyfy",
       });
     }
-    Cookie.get("token") && this.translateWs();
+        if (Cookie.get("token")) {
+      this.getUserChatParam().then(res=>{
+        if(res=='ok'){
+            Cookie.get("token") && this.translateWs();
+        }
+      });
+    }
     this.handleMessagebooxScroll();
     Prism.highlightAll();
+    // 使用插件
+    this.md.use(tm, { engine: 'katex', delimiters: 'dollars' });
   },
   beforeDestroy() {
     if (newWebSocket.websocket) {
@@ -946,6 +1061,7 @@ export default {
                 font-size: 13px;
                 line-height: 23px;
                 color: #c7baba;
+                overflow-x: scroll;
               }
             }
             .from-me-box {
@@ -1200,5 +1316,23 @@ export default {
 
 .copy-button:hover {
   background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* 定义滚动条的样式 */
+::-webkit-scrollbar {
+  width: 0px;  /* 设置滚动条的宽度 */
+  height: 0px; /* 设置滚动条的高度 */
+}
+
+/* 定义滚动条滑块的样式 */
+::-webkit-scrollbar-thumb {
+  background-color: #8055df; /* 设置滑块的颜色 */
+  border-radius: 4px; /* 设置滑块的圆角 */
+}
+
+/* 定义滚动条轨道的样式 */
+::-webkit-scrollbar-track {
+  background-color: #8055df; /* 设置轨道的颜色 */
+  border-radius: 4px; /* 设置轨道的圆角 */
 }
 </style>

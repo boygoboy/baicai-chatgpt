@@ -4,14 +4,15 @@
   <div slot="header">
    <el-form :inline="true" :model="searchForm" class="inline-form">
      <el-form-item label="类型：">
-     <el-select v-model="searchForm.type" placeholder="请选择账号类型" clearable>
+     <el-select v-model="searchForm.accounttype" placeholder="请选择账号类型" clearable>
       <el-option label="免费账号" value="免费账号"></el-option>
       <el-option label="chatgpt-plus" value="chatgpt-plus"></el-option>
       <el-option label="升级账号" value="升级账号"></el-option>
+      <el-option label="bing账号" value="bing账号"></el-option>
      </el-select>
   </el-form-item>
-  <el-form-item label="名称：">
-    <el-input v-model="searchForm.accountname" placeholder="请输入chatgpt账号"></el-input>
+  <el-form-item label="邮箱：">
+    <el-input v-model="searchForm.accountemail" placeholder="请输入账号邮箱"></el-input>
   </el-form-item>
     <el-form-item label="accesstoken：">
     <el-input v-model="searchForm.accesstoken" placeholder="请输入accesstoken"></el-input>
@@ -20,20 +21,12 @@
     <el-input v-model="searchForm.apikey" placeholder="请输入api密钥"></el-input>
   </el-form-item>
     <el-form-item label="账号状态：">
-        <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+        <el-select v-model="searchForm.accountstatus" placeholder="请选择状态" clearable>
+          <el-option label="启用" value="启用"></el-option>
       <el-option label="禁用" value="禁用"></el-option>
-      <el-option label="启用" value="启用"></el-option>
-      <el-option label="失效" value="失效"></el-option>
       <el-option label="警告" value="警告"></el-option>
+      <el-option label="失效" value="失效"></el-option>
      </el-select>
-  </el-form-item>
-      <el-form-item label="到期时间：">
-       <el-date-picker clearable
-      v-model="searchForm.endtime"
-      type="date"
-      format="yyyy-MM-dd"
-      placeholder="选择日期">
-    </el-date-picker>
   </el-form-item>
   <el-form-item>
     <el-button type="primary" @click="search">查询</el-button>
@@ -57,8 +50,8 @@
       min-width="20">
     </el-table-column>
     <el-table-column
-      prop="accountname"
-      label="名称"
+      prop="accountemail"
+      label="邮箱"
       min-width="20">
     </el-table-column>
     <el-table-column
@@ -83,7 +76,7 @@
      min-width="20">
     </el-table-column>
      <el-table-column
-      prop="sharecount"
+      prop="sharestatus"
       label="共享状态"
      min-width="20">
     </el-table-column>
@@ -102,11 +95,10 @@
       label="消费"
       min-width="20">
     </el-table-column>
-     <el-table-column
-      prop="endtime"
-      label="到期时间"
-      min-width="20">
-    </el-table-column>
+      <el-table-column
+      prop="balance"
+      label="余额"
+      min-width="20"></el-table-column>
      <el-table-column
       label="操作"
       width="180">
@@ -137,18 +129,22 @@
     <el-option label="免费账号" value="免费账号"></el-option>
      <el-option label="升级账号" value="升级账号"></el-option>
       <el-option label="plus账号" value="plus账号"></el-option>
+       <el-option label="bing账号" value="bing账号"></el-option>
    </el-select>
   </el-form-item>
-    <el-form-item label="账号名称：" prop="accountname">
-    <el-input v-model="accountForm.accountname" placeholder="请输入账号名称"></el-input>
+    <el-form-item label="账号邮箱：" prop="accountemail">
+    <el-input v-model="accountForm.accountemail" placeholder="请输入账号邮箱"></el-input>
   </el-form-item>
-    <el-form-item label="账号密码：" prop="accountpassword">
+    <el-form-item label="账号密码：" >
     <el-input v-model="accountForm.accountpassword" placeholder="请输入账号密码"></el-input>
   </el-form-item>
-     <el-form-item label="accesstoken：" prop="accesstoken">
+  <el-form-item label="账号session">
+ <el-input v-model="accountForm.accountsession"  placeholder="请输入账号session"></el-input>
+  </el-form-item>
+     <el-form-item label="accesstoken：">
     <el-input v-model="accountForm.accesstoken" type="textarea" placeholder="请输入accesstoken"></el-input>
   </el-form-item>
-    <el-form-item label="api密钥：" prop="apikey">
+    <el-form-item label="api密钥：">
     <el-input v-model="accountForm.apikey"  placeholder="请输入账号密钥"></el-input>
   </el-form-item>
     <el-form-item label="共享人数：" prop="sharecount">
@@ -169,13 +165,6 @@
     </el-option>
   </el-select>
   </el-form-item>
-    <el-form-item label="到期时间：" prop="endtime">
-    <el-date-picker clearable
-    v-model="accountForm.endtime"
-    type="date"
-    placeholder="选择日期"
-    style="width:100%;"></el-date-picker>
-    </el-form-item>
 </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleClose">取 消</el-button>
@@ -205,27 +194,15 @@ export default {
               accounttype:[
                 { required: true, message: '请选择账号类型', trigger: 'change' }
               ],
-              accountname:[
-                { required: true, message: '请输入账号名称', trigger: 'blur' }
-              ],
-              accountpassword:[
-                { required: true, message: '请输入账号密码', trigger: 'blur' }
-              ],
-              accesstoken:[
-                { required: true, message: '请输入accesstoken', trigger: 'blur' }
-              ],
-              apikey:[
-                { required: true, message: '请输入账号密钥', trigger: 'blur' }
+              accountemail:[
+                { required: true, message: '请输入账号邮箱', trigger: 'blur' }
               ],
               sharecount:[
                 { required: true, message: '请输入共享人数', trigger: 'blur' }
               ],
               shareroles:[
                 { required: true, message: '请选择共享者角色', trigger: 'change' }
-              ],
-              endtime:[
-                { required: true, message: '请选择到期时间', trigger: 'change' }
-              ],
+              ]
              },
           };
          },
@@ -245,9 +222,13 @@ export default {
            this.$refs.accountForm.resetFields()
            },
            submitAccountResource(){
+            if(!this.accountForm.accesstoken&&!this.accountForm.apikey){
+                this.$message.warning('accesstoken和apikey至少填写一个!')
+                return
+            }
               this.$refs.accountForm.validate(valid=>{
                 if(valid){
-
+                 
                 }
               })
            },
