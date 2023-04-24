@@ -111,6 +111,9 @@
           @change="changeModel" v-else>
       <el-option label="text-davinci-002-render-sha" value="text-davinci-002-render-sha"></el-option>
       <el-option label="gpt-4" value="gpt-4"></el-option>
+        <el-option label="gpt-3.5-turbo" value="gpt-3.5-turbo"></el-option>
+      <el-option label="gpt-3.5-turbo-0301" value="gpt-3.5-turbo-0301"></el-option>
+      <el-option label="text-davinci-003" value="text-davinci-003"></el-option>
     </el-select>
   </el-form-item>
     <el-form-item label="请求接口：" prop="url">
@@ -349,10 +352,10 @@ changeModel(value){
     this.chatsettingForm.url=''
   }
   if(value=='gpt-3.5-turbo'||value=='gpt-3.5-turbo-0301'){
-    this.chatsettingForm.url='https://api.openai.com/v1/chat/completions'
+    // this.chatsettingForm.url='https://api.openai.com/v1/chat/completions'
   }
   if(value=='text-davinci-003'){
-    this.chatsettingForm.url='https://api.openai.com/v1/completions'
+    // this.chatsettingForm.url='https://api.openai.com/v1/completions'
   }
 }
     },

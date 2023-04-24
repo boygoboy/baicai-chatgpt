@@ -213,7 +213,8 @@ function getStreamGptMessage(options, handleMessage) {
                 }
               }
             ],
-            model: (key||process.env.ENABLE_GPT4) ? 'gpt-4' : 'text-davinci-002-render-sha',
+            // model: (key||process.env.ENABLE_GPT4) ? 'gpt-4' : 'text-davinci-002-render-sha',
+            model: model,
             parent_message_id: parentMessageId,
             conversation_id: conversationId?conversationId:null,
           },
