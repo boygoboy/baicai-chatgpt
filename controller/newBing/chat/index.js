@@ -3,6 +3,7 @@ const bingUnOfficalChat=async (bingoptions,handleMessage)=>{
 
 let { url, key,  proxytype, proxyurl,  message,conversationSignature, conversationId,
     clientId,invocationId,jailbreakConversationId,parentMessageId} = bingoptions
+    console.log(jailbreakConversationId,parentMessageId)
     const options = {
         // Necessary for some people in different countries, e.g. China (https://cn.bing.com)
         host: url|| 'https://www.bing.com',
@@ -24,9 +25,9 @@ let { url, key,  proxytype, proxyurl,  message,conversationSignature, conversati
     let chatoptions={
         // (Optional) Set a conversation style for this message (default: 'balanced')
         // toneStyle: 'balanced', // or creative, precise, fast
-        jailbreakConversationId: true,
-        jailbreakConversationId: jailbreakConversationId?jailbreakConversationId:null,
-        parentMessageId: parentMessageId?parentMessageId:null,
+        // jailbreakConversationId: true,
+        // jailbreakConversationId: jailbreakConversationId?jailbreakConversationId:null,
+        // parentMessageId: parentMessageId?parentMessageId:null,
         onProgress: (token) => {
             if(isStart){
                 handleMessage('[START]')
@@ -37,10 +38,12 @@ let { url, key,  proxytype, proxyurl,  message,conversationSignature, conversati
         },
     }
     if(!jailbreakConversationId){
-        delete chatoptions.jailbreakConversationId
+        chatoptions.jailbreakConversationId=true
+    }else{
+        chatoptions.jailbreakConversationId=jailbreakConversationId
     }
-    if(!parentMessageId){
-        delete chatoptions.parentMessageId
+    if(parentMessageId){
+        chatoptions.parentMessageId=parentMessageId
     }
     // if(!conversationSignature){
     //     delete chatoptions.conversationSignature

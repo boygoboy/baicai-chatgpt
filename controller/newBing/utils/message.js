@@ -74,7 +74,7 @@ module.exports= class BingAIClient {
                 // Workaround for request being blocked due to geolocation
                 'x-forwarded-for': '1.1.1.1',
             },
-            baseURL:`${this.options.host}/turing/conversation/create`
+            baseURL:`${this.options.host}/turing/conversation/create`,
         };
         if (this.options.proxy) {
          const proxyData= this.options.proxy.split(":")
@@ -107,6 +107,7 @@ module.exports= class BingAIClient {
         }
         // const response = await fetch(, fetchOptions);
            const response = await axios(fetchOptions)
+           console.log(response)
         const { status, headers } = response;
         if (status === 200 && +headers.get('content-length') < 5) {
             throw new Error('/turing/conversation/create: Your IP is blocked by BingAI.');
@@ -205,7 +206,6 @@ module.exports= class BingAIClient {
             parentMessageId = jailbreakConversationId === true ? crypto.randomUUID() : null,
             abortController = new AbortController(),
         } = opts;
-
         if (typeof onProgress !== 'function') {
             onProgress = () => { };
         }
@@ -553,7 +553,7 @@ module.exports= class BingAIClient {
             response: reply.text,
             details: reply,
         };
-
+        console.log('jailbreakConversationId',jailbreakConversationId)
         if (jailbreakConversationId) {
             returnData.jailbreakConversationId = jailbreakConversationId;
             returnData.parentMessageId = replyMessage.parentMessageId;

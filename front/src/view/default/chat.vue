@@ -468,7 +468,7 @@ export default {
           // this.bingChatObj.clientId=this.messageData[index].bingChatObj.clientId?this.messageData[index].bingChatObj.clientId:null
           // this.bingChatObj.invocationId=this.messageData[index].bingChatObj.invocationId?this.messageData[index].bingChatObj.invocationId:null
          this.bingChatObj.jailbreakConversationId=this.messageData[index].bingChatObj.jailbreakConversationId?this.messageData[index].bingChatObj.jailbreakConversationId:null
-          this.bingChatObj.parentMessageId=this.messageData[index].bingChatObj.parentMessageId?this.messageData[index].bingChatObj.parentMessageId:null
+          this.bingChatObj.parentMessageId=this.messageData[index].bingChatObj.messageId?this.messageData[index].bingChatObj.messageId:null
       }
         }
           newWebSocket.sendMsg(JSON.stringify(this.bingChatObj));
