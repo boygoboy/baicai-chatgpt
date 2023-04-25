@@ -356,6 +356,19 @@ export default {
             messageId:null,
             action:null,
             parentMessageId:null
+       },
+       bingChatObj:{
+        url: null,
+        key: null,
+        proxytype: null,
+        proxyurl: null,
+        message: null,
+        jailbreakConversationId:null,
+        parentMessageId:null
+        //  conversationSignature:null,
+        //  conversationId:null,
+        //  clientId:null,
+        //  invocationId:null
        }
     };
   },
@@ -422,13 +435,43 @@ export default {
         });
         return;
       }
-      if(this.userChatParams.chatParam.channel=='非官方'){
+      if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model!='newbing'){
         if(this.messageData.length){
           const index=this.messageData.length-1
-          this.chatObj.conversationId=this.messageData[index].chatObj.conversationId?this.messageData[index].chatObj.conversationId:null
+          if(this.messageData[index].chatObj){
+         this.chatObj.conversationId=this.messageData[index].chatObj.conversationId?this.messageData[index].chatObj.conversationId:null
           this.chatObj.action=this.messageData[index].chatObj.action?this.messageData[index].chatObj.action:null
           this.chatObj.parentMessageId=this.messageData[index].chatObj.parentMessageId?this.messageData[index].chatObj.parentMessageId:null
+          }
         }
+      }
+      if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model=='newbing'){
+        this.bingChatObj={
+        url: this.userChatParams.chatParam.url,
+        key: this.userChatParams.chatParam.key[0],
+        proxytype: this.userChatParams.chatParam.proxytype,
+        proxyurl: this.userChatParams.chatParam.proxyurl,
+        message: this.sendMessage,
+        jailbreakConversationId:null,
+        parentMessageId:null
+        //  conversationSignature:null,
+        //  conversationId:null,
+        //  clientId:null,
+        //  invocationId:null
+       }
+             if(this.messageData.length){
+              console.log(this.messageData)
+          const index=this.messageData.length-1
+          if(this.messageData[index].bingChatObj){
+          // this.bingChatObj.conversationSignature=this.messageData[index].bingChatObj.conversationSignature?this.messageData[index].bingChatObj.conversationSignature:null
+          // this.bingChatObj.conversationId=this.messageData[index].bingChatObj.conversationId?this.messageData[index].bingChatObj.conversationId:null
+          // this.bingChatObj.clientId=this.messageData[index].bingChatObj.clientId?this.messageData[index].bingChatObj.clientId:null
+          // this.bingChatObj.invocationId=this.messageData[index].bingChatObj.invocationId?this.messageData[index].bingChatObj.invocationId:null
+         this.bingChatObj.jailbreakConversationId=this.messageData[index].bingChatObj.jailbreakConversationId?this.messageData[index].bingChatObj.jailbreakConversationId:null
+          this.bingChatObj.parentMessageId=this.messageData[index].bingChatObj.parentMessageId?this.messageData[index].bingChatObj.parentMessageId:null
+      }
+        }
+          newWebSocket.sendMsg(JSON.stringify(this.bingChatObj));
       }
       this.loading = true;
       let meItem = {
@@ -443,7 +486,7 @@ export default {
         type: "bot",
         time: "",
       });
-      if(this.userChatParams.chatParam.channel=='非官方'){
+      if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model!='newbing'){
         this.chatObj.prompt=this.sendMessage
 
         const data={
@@ -549,6 +592,59 @@ export default {
         }, 50);
       }
     },
+    // 处理newbing非官方聊天
+          // 处理bing非官方聊天接收到的消息
+    handleBingUnofficalWSMessage(data){
+        console.log(data)
+        if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+            if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        let resultParms=data.replace("[DONE]","")
+        this.bingChatObj=JSON.parse(resultParms)
+
+        return;
+      }
+      if (data != "[START]" && !data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText+= newdata;
+          console.log(this.inputText)
+        }, 50);
+      }
+    },
     // 处理ws收到的消息
     handleWSMessage(data) {
       console.log(data);
@@ -608,6 +704,7 @@ export default {
     async addMessageData() {
       let botItem = {
         // content: marked(this.inputText),
+        bingChatObj:JSON.parse(JSON.stringify(this.bingChatObj)),
         chatObj:JSON.parse(JSON.stringify(this.chatObj)),
         originalContent: this.inputText,
         content: this.md.render(this.inputText),
@@ -634,6 +731,23 @@ export default {
     },
     translateWs() {
             console.log(this.userChatParams)
+      if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model=='newbing'){
+           newWebSocket.init({
+        url: `${
+          process.env.VUE_APP_WS_API
+        }/api/ws/chatgpt/bingUnOfficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
+        onopen: (msg, data) => {
+          console.log(msg, data);
+        },
+        onmessage: (data) => {
+          this.handleBingUnofficalWSMessage(data);
+        },
+        onclose: (data) => {
+          console.log(data);
+        },
+      });
+        return
+      }
       if(this.userChatParams.chatParam.channel=='非官方'){
 
              newWebSocket.init({

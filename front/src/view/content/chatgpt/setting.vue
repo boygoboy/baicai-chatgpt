@@ -109,8 +109,9 @@
         <el-select v-model="chatsettingForm.model" placeholder="请选择聊天模型"
          :clearable="true" style="width:100%;" 
           @change="changeModel" v-else>
-      <el-option label="text-davinci-002-render-sha" value="text-davinci-002-render-sha"></el-option>
       <el-option label="gpt-4" value="gpt-4"></el-option>
+      <el-option label="newbing" value="newbing"></el-option>
+      <el-option label="text-davinci-002-render-sha" value="text-davinci-002-render-sha"></el-option>
         <el-option label="gpt-3.5-turbo" value="gpt-3.5-turbo"></el-option>
       <el-option label="gpt-3.5-turbo-0301" value="gpt-3.5-turbo-0301"></el-option>
       <el-option label="text-davinci-003" value="text-davinci-003"></el-option>
@@ -151,14 +152,14 @@
   <el-form-item label="上下文对话：" prop="enablecontext" v-if="chatsettingForm.channel=='官方'">
     <el-switch v-model="chatsettingForm.enablecontext"></el-switch>
   </el-form-item>
-    <el-form-item label="代理类型：" prop="proxytype" v-if="chatsettingForm.channel=='官方'">
+    <el-form-item label="代理类型：" prop="proxytype" v-if="chatsettingForm.channel=='官方'||chatsettingForm.model=='newbing'">
     <el-select v-model="chatsettingForm.proxytype" placeholder="请选择类型" :clearable="true" style="width:100%;" @change="changProxyType">
       <el-option label="socks5" value="socks5"></el-option>
       <el-option label="http" value="http"></el-option>
       <el-option label="https" value="https"></el-option>
     </el-select>
   </el-form-item>
-    <el-form-item label="代理地址：" prop="pxoxyurl" v-if="chatsettingForm.channel=='官方'">
+    <el-form-item label="代理地址：" prop="pxoxyurl" v-if="chatsettingForm.channel=='官方'||chatsettingForm.model=='newbing'">
     <el-input v-model="chatsettingForm.proxyurl" placeholder="请输入ip:端口号:用户名:密码格式" style="width:100%;" :disabled="!chatsettingForm.proxytype"></el-input>
   </el-form-item>
 </el-form>

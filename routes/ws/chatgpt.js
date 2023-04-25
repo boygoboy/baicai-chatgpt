@@ -5,6 +5,7 @@ let wss = expressWs(router)//为当前路由添加.ws方法
 var aWss = wss.getWss('/api/ws/chatgpt/send');
 const {getStreamGptMessage,unOfficalChat}=require('../../controller/chatGpt/streamMessage')
 const checkWsTokenMiddleware=require('../../middlewares/checkWsTokenMiddleware')
+const {bingUnOfficalChat}=require('../../controller/newBing/chat/index')
 
 /**
  * route.ws('/url',(ws, req)=>{  })
@@ -54,6 +55,25 @@ router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
     aWss.clients.forEach((client)=> {
       client.send(data);
   });
+  })
+
+
+
+  ws.on('close', function (e) {
+    console.log('连接关闭')
+  })
+})
+
+// new bing非官方聊天
+router.ws('/bingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
+  ws.on('message', function (data) {
+    if(data=="heartbeat"){
+      return
+    }
+      let options=JSON.parse(data)
+      bingUnOfficalChat(options,(message)=>{
+      ws.send(message)
+    })
   })
 
 
