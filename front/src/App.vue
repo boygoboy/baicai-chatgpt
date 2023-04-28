@@ -13,3 +13,8 @@ export default {
 </script>
 
 <style src='@/style/global.less' lang='less'></style>
+<style scoped>
+#app{
+  overflow: hidden;
+}
+</style>

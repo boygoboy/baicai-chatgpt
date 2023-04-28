@@ -463,10 +463,10 @@ export default {
               console.log(this.messageData)
           const index=this.messageData.length-1
           if(this.messageData[index].bingChatObj){
-          // this.bingChatObj.conversationSignature=this.messageData[index].bingChatObj.conversationSignature?this.messageData[index].bingChatObj.conversationSignature:null
-          // this.bingChatObj.conversationId=this.messageData[index].bingChatObj.conversationId?this.messageData[index].bingChatObj.conversationId:null
-          // this.bingChatObj.clientId=this.messageData[index].bingChatObj.clientId?this.messageData[index].bingChatObj.clientId:null
-          // this.bingChatObj.invocationId=this.messageData[index].bingChatObj.invocationId?this.messageData[index].bingChatObj.invocationId:null
+          this.bingChatObj.conversationSignature=this.messageData[index].bingChatObj.conversationSignature?this.messageData[index].bingChatObj.conversationSignature:null
+          this.bingChatObj.conversationId=this.messageData[index].bingChatObj.conversationId?this.messageData[index].bingChatObj.conversationId:null
+          this.bingChatObj.clientId=this.messageData[index].bingChatObj.clientId?this.messageData[index].bingChatObj.clientId:null
+          this.bingChatObj.invocationId=this.messageData[index].bingChatObj.invocationId?this.messageData[index].bingChatObj.invocationId:null
          this.bingChatObj.jailbreakConversationId=this.messageData[index].bingChatObj.jailbreakConversationId?this.messageData[index].bingChatObj.jailbreakConversationId:null
           this.bingChatObj.parentMessageId=this.messageData[index].bingChatObj.messageId?this.messageData[index].bingChatObj.messageId:null
       }

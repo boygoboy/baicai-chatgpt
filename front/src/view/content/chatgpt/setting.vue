@@ -2,7 +2,10 @@
   <div class="app">
     <div class="main-box">
       <el-tabs type="border-card" class="tab-box">
-        <el-tab-pane label="聊天参数" class="chat-model">
+            <el-tab-pane label="聊天配置" class="chat-setting">
+         <chat-setting></chat-setting>
+        </el-tab-pane>
+        <el-tab-pane label="模型配置" class="chat-model">
           <div class="title" style="margin-bottom: 20px">
             <span class="fa fa-comment-o"></span>
             <span>聊天配置</span>
@@ -173,7 +176,11 @@
 </template>
 
 <script>
+import chatSetting from './components/chatSetting.vue'
 export default {
+  components:{
+       chatSetting
+  },
     data() {
       return {
         tableData: [],
@@ -204,7 +211,8 @@ export default {
            enablecontext:[{required:true,message:'请选择是否开启上下文对话',trigger:'change'}],
         },
         keyOptions:[],
-        enableEdit:false
+        enableEdit:false,
+        chatSettingTableData:[],
       };
     },
     methods:{
@@ -397,6 +405,16 @@ changeModel(value){
         .model-table {
           margin-top: 20px;
         }
+      }
+
+      .chat-setting{
+         .action-btn{
+           margin-bottom: 20px;
+         }
+
+         .table-box{
+
+         }
       }
     }
   }

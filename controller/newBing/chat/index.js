@@ -1,4 +1,5 @@
 const BingAIClient =require('../utils/message.js')
+const {KeyvFile} = require('keyv-file');
 const bingUnOfficalChat=async (bingoptions,handleMessage)=>{
 
 let { url, key,  proxytype, proxyurl,  message,conversationSignature, conversationId,
@@ -10,7 +11,8 @@ let { url, key,  proxytype, proxyurl,  message,conversationSignature, conversati
         // "_U" cookie from bing.com
         userToken: key||process.env.BING_USER_TOKEN,
         // If the above doesn't work, provide all your cookies as a string instead
-        cookies: '',
+        // cookies: process.env.BING_AI_SESSION,
+        cookies: process.env.BING_AI_COOKIE,
         // A proxy string like "http://<ip>:<port>"
         proxy: `${proxytype}:${proxyurl}`,
         // (Optional) Set to true to enable `console.debug()` logging
@@ -19,22 +21,29 @@ let { url, key,  proxytype, proxyurl,  message,conversationSignature, conversati
     if(!proxytype){
         delete options.proxy
     }
-    
-    let bingAIClient = new BingAIClient(options);
+    const cacheOptions = {
+        namespace: process.env.TONE_STYLE||'balanced',
+        store: new KeyvFile({ filename: 'cache.json' })
+      }
+    let bingAIClient = new BingAIClient({...options,cache:cacheOptions});
     let isStart=true
     let chatoptions={
         // (Optional) Set a conversation style for this message (default: 'balanced')
-        // toneStyle: 'balanced', // or creative, precise, fast
+        toneStyle: process.env.TONE_STYLE||'balanced', // or creative, precise, fast
         // jailbreakConversationId: true,
         // jailbreakConversationId: jailbreakConversationId?jailbreakConversationId:null,
         // parentMessageId: parentMessageId?parentMessageId:null,
+        // conversationSignature: conversationSignature,
+        // conversationId: conversationId,
+        // clientId: clientId,
+        // invocationId:invocationId, 
         onProgress: (token) => {
             if(isStart){
                 handleMessage('[START]')
                 isStart=false
             }
             handleMessage(token)
-            // process.stdout.write(token);
+            process.stdout.write(token);
         },
     }
     if(!jailbreakConversationId){

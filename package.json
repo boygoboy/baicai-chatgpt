@@ -26,6 +26,7 @@
     "https-proxy-agent": "^5.0.1",
     "jsonwebtoken": "^9.0.0",
     "keyv": "^4.5.2",
+    "keyv-file": "^0.2.0",
     "lowdb": "^1.0.0",
     "md5": "^2.3.0",
     "moment": "^2.29.4",

@@ -107,7 +107,6 @@ module.exports= class BingAIClient {
         }
         // const response = await fetch(, fetchOptions);
            const response = await axios(fetchOptions)
-           console.log(response)
         const { status, headers } = response;
         if (status === 200 && +headers.get('content-length') < 5) {
             throw new Error('/turing/conversation/create: Your IP is blocked by BingAI.');
@@ -553,7 +552,6 @@ module.exports= class BingAIClient {
             response: reply.text,
             details: reply,
         };
-        console.log('jailbreakConversationId',jailbreakConversationId)
         if (jailbreakConversationId) {
             returnData.jailbreakConversationId = jailbreakConversationId;
             returnData.parentMessageId = replyMessage.parentMessageId;
