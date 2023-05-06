@@ -102,10 +102,10 @@ service.interceptors.response.use((response) => {
         // 处理http错误，抛到业务代码
         message = showStatus(status)
         if (isShowToast) {
-            Message({
-                message: message,
-                type: 'warning'
-            })
+            // Message({
+            //     message: message,
+            //     type: 'warning'
+            // })
         }
 
         if (typeof response.data === 'string') {
@@ -133,10 +133,10 @@ service.interceptors.response.use((response) => {
                     message = response.data.message
             }
             if(errorCode!='2003'){
-                Message({
-                    message: message,
-                    type: 'warning'
-                })
+                // Message({
+                //     message: message,
+                //     type: 'warning'
+                // })
             }
         }
 
@@ -149,10 +149,10 @@ service.interceptors.response.use((response) => {
     errorMsg.errorCode = -1
     errorMsg.data = null
     errorMsg.message = error
-    Message({
-        message: '服务器异常，请联系管理员！',
-        type: 'warning'
-    })
+    // Message({
+    //     message: '服务器异常，请联系管理员！',
+    //     type: 'warning'
+    // })
     //关闭弹窗
     if (loading) loadingInstance.close()
     return Promise.resolve(errorMsg)

@@ -1,26 +1,40 @@
 const mongoose = require('mongoose');
-const chatparam = require('../db/models/chatParmSchema')
-const gptAccount = require('../db/models/gptAccountSchema')
-const {computedMoney,unfficalChatApiLive} =require('../controller/chatGpt/utils/gptCommon')
+const keylist = require('../db/models/chatgpt/keyListSchema')
+const tokenlist=require('../db/models/chatgpt/tokenListSchema')
+const keyoffical=require('../db/models/chatgpt/keyOfficalSchema')
+const keyunoffical=require('../db/models/chatgpt/keyUnOfficalSchema')
+const {computedMoney,unfficalChatApiLive,sessionIsLive} =require('../controller/chatGpt/utils/gptCommon');
 let intervalInstance = null;
 let updateGptAccountInstance = null;
-const intervalTime = 1000 * 60 * 3; // 1 minutes
+let updateTokenInstance = null;
+let updateTokenAndSessionInstance=null;
+const intervalTime = 1000 * 60 * 3; // 3 minutes
 async function updateApikeyCount() {
  const apikeyUsedInfo = {};
+ const apikey4UsedInfo = {};
   try {
     // 检查集合是否存在
     const collections = await mongoose.connection.db.listCollections().toArray();
-    const collectionExists = collections.some((collection) => collection.name === 'chatparam');
+    const collectionExists = collections.some((collection) => collection.name === 'keyOfficalSchema');
 
     if (!collectionExists) {
-      console.log('chatparam collection does not exist. Skipping count update.');
+      console.log('keyOfficalSchema collection does not exist. Skipping count update.');
+      return;
+    }
+   
+    const collectionExists1 = collections.some((collection) => collection.name === 'keyListSchema');
+
+    if (!collectionExists1) {
+      console.log('keyListSchema collection does not exist. Skipping update.');
       return;
     }
 
-    const aggregation = await chatparam.aggregate([
-      { $unwind: '$key' },
-      { $match: { key: { $exists: true } } },
-      { $group: { _id: '$key', count: { $sum: 1 } } },
+
+    await keylist.updateMany({}, { $set: { usedcount: 0 } });
+
+    const aggregation = await keyoffical.aggregate([
+      { $match: { chatgpt3Key: { $exists: true ,$ne: ''} } },
+      { $group: { _id: '$chatgpt3Key', count: { $sum: 1 } } },
     ]);
 
     aggregation.forEach(({ _id, count }) => {
@@ -28,9 +42,24 @@ async function updateApikeyCount() {
     });
 
 
-    // 将统计的apikey被使用数量更新到gptaccount表中
-    for (const [apikey, usedCount] of Object.entries(apikeyUsedInfo)) {
-        await updateUsedCount(apikey, usedCount);
+    // 将统计的apikey被使用数量更新到keyList表中
+    for (const [api3key, usedCount] of Object.entries(apikeyUsedInfo)) {
+        await updateUsedCount(api3key, usedCount);
+    }
+
+
+    // 更新api4key的被使用数量
+    const aggregation4 = await keyoffical.aggregate([
+        { $match: { chatgpt4Key: { $exists: true ,$ne: ''} } },
+        { $group: { _id: '$chatgpt4Key', count: { $sum: 1 } } },
+    ])
+
+    aggregation4.forEach(({ _id, count }) => {
+      apikey4UsedInfo[_id] = count;
+    })
+    // 将统计的api4key被使用数量更新到keyList表中
+    for (const [api4key, usedCount] of Object.entries(apikey4UsedInfo)) {
+      await updateUsedCount(api4key, usedCount);
     }
 
     console.log('Updated API key count:', JSON.stringify(apikeyUsedInfo));
@@ -39,20 +68,47 @@ async function updateApikeyCount() {
   }
 }
 
-// 将被使用的apikey的数量更新到gptaccount表中
+// 将被使用的apikey的数量更新到keylist表中
 async function updateUsedCount(apikey, usedCount) {
   try {
     // 检查集合是否存在
     const collections = await mongoose.connection.db.listCollections().toArray();
-    const collectionExists = collections.some((collection) => collection.name === 'gptaccount');
+    const collectionExists = collections.some((collection) => collection.name === 'keyListSchema');
 
     if (!collectionExists) {
-      console.log('GptAccount collection does not exist. Skipping update.');
+      console.log('keyListSchema collection does not exist. Skipping update.');
       return;
     }
 
-    const result = await gptAccount.findOneAndUpdate(
-      { $or: [{ accesstoken: apikey }, { apikey: apikey }] },
+    const result = await keylist.findOneAndUpdate(
+      { key: apikey},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+// 将token数量更新到tokenlist表中
+async function updateTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'tokenListSchema');
+
+    if (!collectionExists) {
+      console.log('tokenListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await tokenlist.findOneAndUpdate(
+      { token: token},
       { usedcount: usedCount },
       { new: true }
     );
@@ -73,24 +129,23 @@ const updateGptAccountStatus =async ()=>{
     try {
         // 检查集合是否存在
         const collections = await mongoose.connection.db.listCollections().toArray();
-        const collectionExists = collections.some((collection) => collection.name === 'gptaccount');
+        const collectionExists = collections.some((collection) => collection.name === 'keyListSchema');
     
         if (!collectionExists) {
-          console.log('GptAccount collection does not exist. Skipping update.');
+          console.log('keyListSchema collection does not exist. Skipping update.');
           return;
         }
     
-        const records = await gptAccount.find({});
+        const records = await keylist.find({});
     
         const updatedRecords = records.map(async(record) => {
             // 此处需要掉用查询apikey费用查询接口，获取apikey的总额度，已使用额度，剩余额度的情况
           // 根据需要修改字段
-          let apikeystatus=true
-          let accesstokenstatus=true
-          if(record.apikey){
-           let usageresult= await computedMoney()
+          let keystatus=true
+          if(record.key){
+           let usageresult= await computedMoney(record.key,7)
            if(usageresult==false){
-            apikeystatus=false
+            keystatus=false
            }else{
             let {total,total_usage,remain_money,history_usage}=usageresult
             record.quota = total
@@ -98,46 +153,134 @@ const updateGptAccountStatus =async ()=>{
             record.balance = remain_money
             record.history_usage = history_usage
             if(remain_money<0.5){
-                apikeystatus=false
+                keystatus=false
             }
            }
-          }else{
-            record.quota = 0
-            record.consumption = 0
-            record.balance = 0
-            record.history_usage = []
           }
-          if(record.accesstoken){
-            let accesstokenresult= await unfficalChatApiLive(record.accesstoken)
-            if(accesstokenresult==false){
-              accesstokenstatus=false
+          if(!keystatus){
+            record.keystatus = '失效'
+          }else{
+            if(record.isenable){
+                record.keystatus = '启用'
+            }else{
+                record.keystatus = '禁用'
             }
           }
         //   根据上面计算结果，判断账号的状态
-           if(apikeystatus==false&&accesstokenstatus==false){
-            record.accountstatus = '失效'
-           }
-           if(apikeystatus==true&&accesstokenstatus==true){
-            record.accountstatus = '启用'
-           }
-           if(apikeystatus==false&&accesstokenstatus==true){
-            record.accountstatus = '警告（apikey失效）'
-           }
-           if(apikeystatus==true&&accesstokenstatus==false){
-            record.accountstatus = '警告（accesstoken失效）'
-           }
-      
           return record.save();
         });
     
         await Promise.all(updatedRecords);
-    
-        console.log('Updated all records in the GptAccounts collection.');
+        console.log('Updated all records in the keyList collection.');
       } catch (error) {
         console.error('Error updating records:', error);
       }
 }
 
+// 更新token账号的状态
+const updateTokenAndSessionStatus =async ()=>{
+  try {
+      // 检查集合是否存在
+      const collections = await mongoose.connection.db.listCollections().toArray();
+      const collectionExists = collections.some((collection) => collection.name === 'tokenListSchema');
+  
+      if (!collectionExists) {
+        console.log('tokenListSchema collection does not exist. Skipping update.');
+        return;
+      }
+  
+      const records = await tokenlist.find({});
+  
+      const updatedRecords = records.map(async(record) => {
+        // 根据需要修改字段
+        if(record.token){
+         let tokenstatus= await unfficalChatApiLive(record.token)
+         if(tokenstatus){
+          record.tokenstatus = '在线'
+         }else{
+          record.tokenstatus='离线'
+         }
+        }
+
+        if(record.session){
+          let sessionstatus= await sessionIsLive(record.session)
+          if(sessionstatus){
+           record.sessionstatus = '在线'
+          }else{
+           record.sessionstatus='离线'
+          }
+        }
+
+      //   根据上面计算结果，判断账号的状态
+        return record.save();
+      });
+  
+      await Promise.all(updatedRecords);
+      console.log('Updated all records in the tokenList collection.');
+    } catch (error) {
+      console.error('Error updating records:', error);
+    }
+}
+
+// 定时更新token的使用情况
+const updateTokenStatus =async ()=>{
+  const token3UsedInfo = {};
+  const token4UsedInfo = {};
+   try {
+     // 检查集合是否存在
+     const collections = await mongoose.connection.db.listCollections().toArray();
+     const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+ 
+     if (!collectionExists) {
+       console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+       return;
+     }
+    
+     const collectionExists1 = collections.some((collection) => collection.name === 'tokenListSchema');
+ 
+     if (!collectionExists1) {
+       console.log('tokenListSchema collection does not exist. Skipping update.');
+       return;
+     }
+ 
+ 
+     await tokenlist.updateMany({}, { $set: { usedcount: 0 } });
+ 
+     const aggregation = await keyunoffical.aggregate([
+       { $match: { accesstoken3: { $exists: true ,$ne: ''} } },
+       { $group: { _id: '$accesstoken3', count: { $sum: 1 } } },
+     ]);
+ 
+     aggregation.forEach(({ _id, count }) => {
+      token3UsedInfo[_id] = count;
+     });
+ 
+ 
+     // 将统计的token3被使用数量更新到keyList表中
+     for (const [accesstoken3, usedCount] of Object.entries(token3UsedInfo)) {
+         await updateTokenUsedCount(accesstoken3, usedCount);
+     }
+ 
+ 
+     // 更新token4的被使用数量
+     const aggregation4 = await keyunoffical.aggregate([
+         { $match: { accesstoken4: { $exists: true ,$ne: ''} } },
+         { $group: { _id: '$accesstoken4', count: { $sum: 1 } } },
+     ])
+ 
+     aggregation4.forEach(({ _id, count }) => {
+      token4UsedInfo[_id] = count;
+     })
+     // 将统计的api4key被使用数量更新到keyList表中
+     for (const [accesstoken4, usedCount] of Object.entries(token4UsedInfo)) {
+       await updateTokenUsedCount(accesstoken4, usedCount);
+     }
+ 
+     console.log('Updated token count:', JSON.stringify(token3UsedInfo));
+   } catch (error) {
+     console.error('Error fetching API key count:', error);
+   }
+}
 
 // 定时更新apikey被使用情况
 const  updateAccountStatus= async ()=>{
@@ -153,12 +296,12 @@ const updateAccountStatusOnce= async ()=>{
     updateApikeyCount();
 }
 
-// 更新gptaccount账号表中的信息
+// 更新keylist表中的信息
 const updateGptAccountStatusOnce= async ()=>{
     updateGptAccountStatus()
 }
 
-// 定时更新gptaccount账号表中的信息
+// 定时更新keylist表中的信息
 const loopupdateGptAccountStatus= async ()=>{
     if(updateGptAccountInstance){
         clearInterval(updateGptAccountInstance);
@@ -168,10 +311,29 @@ const loopupdateGptAccountStatus= async ()=>{
     }, intervalTime);
 }
 
+// 定时更新token的使用情况
+const loopUpdateTokenStatus=async ()=>{
+    if(updateTokenInstance){
+        clearInterval(updateTokenInstance);
+    }
+    updateTokenInstance= setInterval(()=>{
+      updateTokenStatus()
+    }, intervalTime);
+}
+// 定时更新token和session的状态
+const loopUpdateTokenAndSessionStatus=async ()=>{
+    if(updateTokenAndSessionInstance){
+        clearInterval(updateTokenAndSessionInstance);
+    }
+    updateTokenAndSessionInstance= setInterval(()=>{
+      updateTokenAndSessionStatus()
+    }, intervalTime);
+}
 
 
 module.exports={
-    updateAccountStatus,updateAccountStatusOnce,updateGptAccountStatusOnce,loopupdateGptAccountStatus
+    updateAccountStatus,updateAccountStatusOnce,updateGptAccountStatusOnce,loopupdateGptAccountStatus,
+    loopUpdateTokenStatus,updateTokenStatus,updateTokenAndSessionStatus,loopUpdateTokenAndSessionStatus
 }
 
 

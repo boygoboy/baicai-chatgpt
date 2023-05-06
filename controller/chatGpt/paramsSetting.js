@@ -1,6 +1,5 @@
 const Counter = require('../../db/models/counterSchema')
 const chatparam = require('../../db/models/chatgpt/chatParamsSchema')
-const { computedMoney } = require('./utils/gptCommon')
 
 const getChatParams = async (req, res) => {
     let {
@@ -46,6 +45,15 @@ const putChatParams = async (req, res) => {
         return res.json({
             errorCode:'2002',
             message:'该配置不存在!',
+            data:null
+        })
+     }
+
+     const chatparamResult=await chatparam.findOne({chatchannel,model})
+     if(chatparamResult&&chatparamResult._id!=_id){
+        return res.json({
+            errorCode:'2002',
+            message:'不可修改此配置的聊天模型!',
             data:null
         })
      }

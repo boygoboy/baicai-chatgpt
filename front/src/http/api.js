@@ -4,11 +4,13 @@ import userList from './modules/user'
 import role from './modules/role'
 import chatgpt from './modules/chatgpt'
 import chatparams from './modules/chatgpt/chatParams'
+import keylist from './modules/chatgpt/resourceManage'
 export default{
     ...login,
     ...menu,
     ...userList,
     ...role,
     ...chatgpt,
-    ...chatparams
+    ...chatparams,
+    ...keylist
 }

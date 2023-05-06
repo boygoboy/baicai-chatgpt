@@ -28,7 +28,7 @@ const chatParamsSchema =mongoose.Schema({
        ip:String,
        port:Number,
        username:String,
-       password:String
+       password:String,
     }, //代理地址
 })
 const chatparam = mongoose.model('chatparams',chatParamsSchema,'chatparams')

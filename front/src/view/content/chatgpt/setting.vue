@@ -1,47 +1,16 @@
 <template>
   <div class="app">
     <div class="main-box">
-      <el-tabs type="border-card" class="tab-box">
-            <el-tab-pane label="聊天配置" class="chat-setting">
+      <el-tabs  class="tab-box" @tab-click="changeTab">
+            <el-tab-pane  class="chat-setting">
+            <span slot="label"><i class="fa fa-comments" style="margin-right:5px;"></i>聊天配置</span>
          <chat-setting></chat-setting>
         </el-tab-pane>
-        <el-tab-pane label="模型配置" class="chat-model">
-          <div class="title" style="margin-bottom: 20px">
-            <span class="fa fa-comment-o"></span>
-            <span>聊天配置</span>
-            <el-button type="text" style="float: right" @click="openDialog"
-              >配置</el-button
-            >
-          </div>
-          <div class="chat-setting">
-            <el-descriptions class="margin-top" :column="3">
-                <el-descriptions-item label="聊天渠道"
-                >{{chatsettingView.channel}}</el-descriptions-item
-              >
-               <el-descriptions-item label="请求接口">{{chatsettingView.url}} </el-descriptions-item>
-              <el-descriptions-item label="请求密钥" content-class-name="key-content" >
-              {{chatsettingView.key[0]}}
-               </el-descriptions-item
-              >
-              <el-descriptions-item label="聊天模型"
-                >{{chatsettingView.model}}</el-descriptions-item
-              >
-               <el-descriptions-item label="上下文对话"
-                >{{chatsettingView.enablecontext?'开启':'关闭'}}</el-descriptions-item
-              >
-              <el-descriptions-item label="代理地址"
-                >
-                <span v-if="chatsettingView.proxytype">
-                  {{chatsettingView.proxytype}}://{{chatsettingView.proxyurl}}
-                </span>
-                </el-descriptions-item
-              >
-            </el-descriptions>
-            
-          </div>
-          <div class="title" style="margin-top: 20px">
+        <el-tab-pane  class="chat-model">
+          <span slot="label"><i class="fa fa-cogs" style="margin-right:5px;"></i>模型配置</span>
+          <div class="title">
             <span class="fa fa-wrench"></span>
-            <span>模型参数</span>
+            <span>chatgpt模型</span>
               <el-button type="text" style="float: right" @click="enableSetting" v-if="!enableEdit"
               >配置</el-button
             >
@@ -49,11 +18,12 @@
               >保存</el-button
             >
           </div>
-          <el-table height="calc(100vh - 400px)"
+          <el-table height="calc(100vh - 260px)"
             class="model-table"
             :span-method="objectSpanMethod"
             :data="tableData"
             border
+            ref="modelTable"
             style="width: 100%"
           >
             <el-table-column prop="model" label="模型名称" min-width="10">
@@ -81,105 +51,22 @@
             </el-table-column>
           </el-table>
         </el-tab-pane>
+        <el-tab-pane  class="key-setting">
+        <span slot="label"><i class="fa fa-key" style="margin-right:5px;"></i>密钥配置</span>
+        <key-setting></key-setting>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
-    <!---------------------------------------配置聊天参数弹窗开始---------------------------------->
-
-    <el-dialog
-      title="聊天配置"
-      :visible.sync="dialogVisible"
-      width="35%"
-      :before-close="handleClose"
-    >
-     
-<el-form :model="chatsettingForm" :rules="rules" ref="chatsettingForm" label-width="130px" class="demo-ruleForm">
-  <el-form-item label="聊天渠道：" prop="channel">
-    <el-select v-model="chatsettingForm.channel" placeholder="请选择聊天渠道" 
-    style="width:100%;" @change="changeChannel">
-      <el-option label="官方" value="官方"></el-option>
-      <el-option label="非官方" value="非官方"></el-option>
-    </el-select>
-  </el-form-item>
-      <el-form-item label="聊天模型：" prop="model">
-    <el-select v-model="chatsettingForm.model" placeholder="请选择聊天模型"
-     :clearable="true" style="width:100%;" 
-     @change="changeModel" v-if="chatsettingForm.channel=='官方'">
-      <el-option label="gpt-3.5-turbo" value="gpt-3.5-turbo"></el-option>
-      <el-option label="gpt-3.5-turbo-0301" value="gpt-3.5-turbo-0301"></el-option>
-      <el-option label="text-davinci-003" value="text-davinci-003"></el-option>
-    </el-select>
-        <el-select v-model="chatsettingForm.model" placeholder="请选择聊天模型"
-         :clearable="true" style="width:100%;" 
-          @change="changeModel" v-else>
-      <el-option label="gpt-4" value="gpt-4"></el-option>
-      <el-option label="newbing" value="newbing"></el-option>
-      <el-option label="text-davinci-002-render-sha" value="text-davinci-002-render-sha"></el-option>
-        <el-option label="gpt-3.5-turbo" value="gpt-3.5-turbo"></el-option>
-      <el-option label="gpt-3.5-turbo-0301" value="gpt-3.5-turbo-0301"></el-option>
-      <el-option label="text-davinci-003" value="text-davinci-003"></el-option>
-    </el-select>
-  </el-form-item>
-    <el-form-item label="请求接口：" prop="url">
-    <el-input v-model="chatsettingForm.url" placeholder="请输入对应模型请求接口" style="width:100%;"></el-input>
-  </el-form-item>
-    <el-form-item label="请求密钥：" prop="key">
-    <el-select style="width:100%;"
-     popper-class="popper-class" 
-     :popper-append-to-body="false"
-    v-model="chatsettingForm.key"
-    :multiple-limit="1"
-    multiple
-    filterable
-    allow-create
-    clearable
-    default-first-option
-    placeholder="请选择或者创建密钥">
-    <el-option
-      v-for="item in keyOptions"
-      :key="item.value"
-      :label="item.value"
-      :value="item.value">
-        <el-tooltip
-          placement="top"
-          :disabled="item.value.length<17"
-        >
-            <div slot="content">
-                <span>{{item.value}}</span>
-            </div>
-            <div class="iclass-text-ellipsis">{{ item.value }}</div>
-        </el-tooltip>
-    </el-option>
-  </el-select>
-  </el-form-item>
-  <el-form-item label="上下文对话：" prop="enablecontext" v-if="chatsettingForm.channel=='官方'">
-    <el-switch v-model="chatsettingForm.enablecontext"></el-switch>
-  </el-form-item>
-    <el-form-item label="代理类型：" prop="proxytype" v-if="chatsettingForm.channel=='官方'||chatsettingForm.model=='newbing'">
-    <el-select v-model="chatsettingForm.proxytype" placeholder="请选择类型" :clearable="true" style="width:100%;" @change="changProxyType">
-      <el-option label="socks5" value="socks5"></el-option>
-      <el-option label="http" value="http"></el-option>
-      <el-option label="https" value="https"></el-option>
-    </el-select>
-  </el-form-item>
-    <el-form-item label="代理地址：" prop="pxoxyurl" v-if="chatsettingForm.channel=='官方'||chatsettingForm.model=='newbing'">
-    <el-input v-model="chatsettingForm.proxyurl" placeholder="请输入ip:端口号:用户名:密码格式" style="width:100%;" :disabled="!chatsettingForm.proxytype"></el-input>
-  </el-form-item>
-</el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="handleClose">取 消</el-button>
-        <el-button type="primary" @click="submitChatSetting">确 定</el-button>
-      </span>
-    </el-dialog>
-    <!---------------------------------------配置聊天参数弹窗结束---------------------------------->
   </div>
 </template>
 
 <script>
 import chatSetting from './components/chatSetting.vue'
+import keySetting from './components/keySetting.vue'
 export default {
   components:{
-       chatSetting
+       chatSetting,keySetting
   },
     data() {
       return {
@@ -366,12 +253,25 @@ changeModel(value){
   if(value=='text-davinci-003'){
     // this.chatsettingForm.url='https://api.openai.com/v1/completions'
   }
+},
+changeTab(){
+         this.$nextTick(() => {
+        this.$refs.modelTable.doLayout()
+    })
 }
     },
     created(){
       this.getChatParam()
       this.getModelParam()
-    }
+    },
+    mounted(){
+       this.$nextTick(() => {
+        this.$refs.modelTable.doLayout()
+    })
+    },
+activated() {
+    this.$refs.modelTable.doLayout()
+}
 }
 </script>
 
@@ -381,7 +281,14 @@ changeModel(value){
     height: calc(100vh - 135px);
     .tab-box {
       height: 100%;
-
+    padding: 20px;
+    padding-top: 0px;
+    border: 1px solid #EBEEF5;
+    background-color: #FFF;
+    color: #303133;
+    border-radius: 5px;
+    transition: .3s;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
       .chat-model {
         .chat-setting {
           margin-top: 20px;
@@ -440,5 +347,8 @@ changeModel(value){
               text-overflow:ellipsis;
               white-space:nowrap;
               overflow:hidden;
+}
+.tab-box /deep/ .el-tabs__nav-wrap{
+  margin: 5px 0px;
 }
 </style>
