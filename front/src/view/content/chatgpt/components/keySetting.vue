@@ -33,8 +33,8 @@
                         placeholder="请选择或创建key"
                         style="width: 100%"
                       >
-                      <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`" :value="item.key" v-for="(item,index) in key3Options" :key="index">
-
+                      <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.key" :disabled="item.disabled" v-for="(item,index) in key3Options" :key="index">
                        </el-option>
                       </el-select>
                     </div>
@@ -63,7 +63,11 @@
                         v-model="officalkeyForm.chatgpt4Key"
                         placeholder="请选择或创建key"
                         style="width: 100%"
-                      ></el-select>
+                      >
+                        <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`" 
+                        :value="item.key" :disabled="item.disabled" v-for="(item,index) in key4Options" :key="index">
+                       </el-option>
+                      </el-select>
                     </div>
                   </div>
                 </el-form-item>
@@ -210,6 +214,7 @@ export default {
       isEditOffical:false,
       isEditUnOffical:false,
       key3Options:[],
+      key4Options:[],
     };
   },
   methods:{
@@ -266,6 +271,7 @@ export default {
         chatgpt3Key: [],
         chatgpt4Key: [],
       }
+      this.getOfficalKeys()
     },
     cancelUnOfficalEdit(){
         this.isEditUnOffical=false
@@ -287,6 +293,17 @@ export default {
           if(res.data._id){
             this.officalkeyForm._id=res.data._id
           }
+          this.key3Options.forEach(item=>{
+            if(item.key==this.officalkeyForm.chatgpt3Key[0]){
+              item.disabled=false
+            }
+          })
+          console.log(this.key4Options)
+          this.key4Options.forEach(item=>{
+            if(item.key==this.officalkeyForm.chatgpt4Key[0]){
+              item.disabled=false
+            }
+          })
         }else{
           this.$message.warning(res.message)
         }
@@ -311,31 +328,37 @@ export default {
       })
     },
     // 获取key下拉列表
-    getOfficalKeyList(type){
+  async getOfficalKeyList(type){
       const query={
         type
       }
-      this.$http.getOfficalKeyList(query).then(res=>{
-        if(res.errorCode=='0000'){
-          this.key3Options=res.data
+     let res=await this.$http.getOfficalKeyList(query)
+             if(res.errorCode=='0000'){
           if(type=='key3.0'){
-            this.$http.getOfficalKeyList({type:'免费key'}).then(res=>{
-              if(res.errorCode=='0000'){
-                this.key3Options=this.key3Options.concat(res.data)
+             this.key3Options=res.data
+           let res1=await this.$http.getOfficalKeyList({type:'免费key'})
+            if(res1.errorCode=='0000'){
+                this.key3Options=this.key3Options.concat(res1.data)
+                console.log('111',this.key3Options)
               }
-            })
+          }
+          if(type=='key4.0'){
+            this.key4Options=JSON.parse(JSON.stringify(res.data)) 
           }
         }else{
           this.$message.warning(res.message)
         }
-      })
+    },
+    // 初始化key下拉列表
+  async initofficalkeylist(){
+         await this.getOfficalKeyList('key3.0')
+         await this.getOfficalKeyList('key4.0')
+         this.getOfficalKeys()
+         this.getUnOfficalKeys()  
     }
   },
   created(){
-    this.getOfficalKeys()
-    this.getUnOfficalKeys()
-    this.getOfficalKeyList('key3.0')
-    
+    this.initofficalkeylist()
   }
 };
 </script>

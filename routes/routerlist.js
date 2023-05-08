@@ -119,7 +119,68 @@ const allRouterObj=[
         routerUrl:'/api/chatgpt/chatparams',
         menuUrl:'/chatgpt/setting',
         permit:null
-    }
+    },
+    {
+        routerUrl:'/api/chatgpt/officalkeylist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/officalkeysetting',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/unofficalkeysetting',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
+    // chatgpt管理---资源管理模块
+    {
+        routerUrl:'/api/chatgpt/keylist',
+        menuUrl:'/chatgpt/resource/chatgpt',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/onekey',
+        menuUrl:'/chatgpt/resource/chatgpt',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/keylist/keystatus',
+        menuUrl:'/chatgpt/resource/chatgpt',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/tokenlist',
+        menuUrl:'/chatgpt/resource/chatgpt',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/onetoken',
+        menuUrl:'/chatgpt/resource/chatgpt',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/tokenlist/enablestatus',
+        menuUrl:'/chatgpt/resource/chatgpt',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/binglist',
+        menuUrl:' /chatgpt/resource/newbing',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/onebing',
+        menuUrl:' /chatgpt/resource/newbing',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/binglist/bingstatus',
+        menuUrl:' /chatgpt/resource/newbing',
+        permit:null
+    },
 ]
 
 module.exports=allRouterObj

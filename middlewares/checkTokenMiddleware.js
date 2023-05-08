@@ -4,7 +4,9 @@ const { ConnectionStates } = require('mongoose');
 //读取配置项
 const {secret} = require('../config/config');
 const excludeRoutes = ['/api/user/login','/api/chatgpt/ask',
-'/api/auth/emailcode','/api/user/register','/api/auth/hasuser'];
+'/api/auth/emailcode','/api/user/register','/api/auth/hasuser',
+'/api/chatgpt/login/token','/api/chatgpt/login/session'
+];
 const {checkWhiteListRouter}=require('../utils/checkWhiteListRouter')
 //声明中间件
 module.exports = (req, res, next) => {
