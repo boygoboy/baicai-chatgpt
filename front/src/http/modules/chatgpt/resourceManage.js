@@ -113,8 +113,59 @@ const loginSession= (data) => {
     })
 }
 
+
+
+// 提交bing信息
+const postBingList = (data) => {
+    return $http({
+        url:'/api/chatgpt/binglist',
+        method:'post',
+        data
+    })
+}
+// 获取Bing信息
+const getBingList = (query) => {
+    console.log(query)
+    return $http({
+        url:'/api/chatgpt/binglist',
+        method:'get',
+        data:query
+    })
+}
+// 删除Bing信息
+const deleteBingList = (ids) => {
+    return $http({
+        url:`/api/chatgpt/binglist/${ids}`,
+        method:'delete',
+    })
+}
+// 修改Bing信息
+const putBingList= (data) => {
+    return $http({
+        url:`/api/chatgpt/binglist`,
+        method:'put',
+        data
+    })
+}
+// 获取单个Bing信息
+const getBingDetail= (id) => {
+    return $http({
+        url:`/api/chatgpt/onebing/${id}`,
+        method:'get',
+    })
+}
+// 修改Bing状态
+const changeBingStatus= (data) => {
+    return $http({
+        url:`/api/chatgpt/binglist/bingstatus`,
+        method:'put',
+        data
+    })
+}
+
 export default{
     postKeyList,getKeyList,deleteKeyList,putKeyList,getKeyDetail,changeKeyStatus,
     postTokenList,getTokenList,deleteTokenList,putTokenList,getTokenDetail,changeTokenStatus,
-    loginToken,loginSession
+    loginToken,loginSession,
+    postBingList,getBingList,deleteBingList,putBingList,getBingDetail,changeBingStatus
 }

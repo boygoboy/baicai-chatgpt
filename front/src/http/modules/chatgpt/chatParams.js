@@ -1,3 +1,4 @@
+
 import $http from '../../http'
 
 // 提交聊天配置参数
@@ -47,6 +48,15 @@ const postOfficalKeys = (data) => {
     })
 }
 
+// 获取官方密钥下拉列表
+const getOfficalKeyList = (query) => {
+    return $http({
+        url:'/api/chatgpt/officalkeylist',
+        method:'get',
+        data:query
+    })
+}
+
 // 获取非官方密钥配置
 const getUnofficalKeys = () => {
     return $http({
@@ -65,5 +75,6 @@ const postUnofficalKeys = (data) => {
 
 export default{
     postChatParams,getChatParams,deleteChatParams,putChatParams
-    ,getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys
+    ,getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,
+    getOfficalKeyList
 }

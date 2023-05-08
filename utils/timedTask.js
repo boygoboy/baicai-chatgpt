@@ -1,14 +1,17 @@
 const mongoose = require('mongoose');
 const keylist = require('../db/models/chatgpt/keyListSchema')
 const tokenlist=require('../db/models/chatgpt/tokenListSchema')
+const binglist=require('../db/models/chatgpt/bingListSchema')
 const keyoffical=require('../db/models/chatgpt/keyOfficalSchema')
 const keyunoffical=require('../db/models/chatgpt/keyUnOfficalSchema')
-const {computedMoney,unfficalChatApiLive,sessionIsLive} =require('../controller/chatGpt/utils/gptCommon');
+const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive} =require('../controller/chatGpt/utils/gptCommon');
 let intervalInstance = null;
 let updateGptAccountInstance = null;
 let updateTokenInstance = null;
 let updateTokenAndSessionInstance=null;
-const intervalTime = 1000 * 60 * 3; // 3 minutes
+let updateBingUsedCountInstance=null;
+let updateBingStatusInstance=null;
+const intervalTime = 1000 * 60 * 60; // 3 minutes
 async function updateApikeyCount() {
  const apikeyUsedInfo = {};
  const apikey4UsedInfo = {};
@@ -108,6 +111,34 @@ async function updateTokenUsedCount(token, usedCount) {
     }
 
     const result = await tokenlist.findOneAndUpdate(
+      { token: token},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+
+// 将bing token数量更新到binglist表中
+async function updateBingTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'bingListSchema');
+
+    if (!collectionExists) {
+      console.log('bingListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await binglist.findOneAndUpdate(
       { token: token},
       { usedcount: usedCount },
       { new: true }
@@ -282,6 +313,87 @@ const updateTokenStatus =async ()=>{
    }
 }
 
+// 更新bing的使用情况
+const updateBingUsedCount =async ()=>{
+  const bingUsedInfo = {};
+   try {
+     // 检查集合是否存在
+     const collections = await mongoose.connection.db.listCollections().toArray();
+     const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+ 
+     if (!collectionExists) {
+       console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+       return;
+     }
+    
+     const collectionExists1 = collections.some((collection) => collection.name === 'bingListSchema');
+ 
+     if (!collectionExists1) {
+       console.log('bingListSchema collection does not exist. Skipping update.');
+       return;
+     }
+ 
+ 
+     await binglist.updateMany({}, { $set: { usedcount: 0 } });
+ 
+     const aggregation = await keyunoffical.aggregate([
+      { $match: { "newbingKey.newbingtoken": { $exists: true, $ne: "" } } },
+      { $group: { _id: "$newbingKey.newbingtoken", count: { $sum: 1 } } },
+  ]);
+  
+     aggregation.forEach(({ _id, count }) => {
+      bingUsedInfo[_id] = count;
+     });
+ 
+ 
+     // 将统计的token被使用数量更新到bingList表中
+     for (const [bingtoken, usedCount] of Object.entries(bingUsedInfo)) {
+         await updateBingTokenUsedCount(bingtoken, usedCount);
+     }
+ 
+     console.log('Updated token count:', JSON.stringify(bingUsedInfo));
+   } catch (error) {
+     console.error('Error fetching API key count:', error);
+   }
+}
+
+// 更新bing的状态
+const updateBingStatus =async ()=>{
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'bingListSchema');
+
+    if (!collectionExists) {
+      console.log('bingListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const records = await binglist.find({});
+
+    const updatedRecords = records.map(async(record) => {
+      // 根据需要修改字段
+      if(record.token&&record.cookie){
+       let tokenstatus= await newBingIsLive(record.token,record.cookie)
+       if(tokenstatus){
+        record.tokenstatus = '在线'
+       }else{
+        record.tokenstatus='离线'
+       }
+      }
+    //   根据上面计算结果，判断账号的状态
+      return record.save();
+    });
+
+    await Promise.all(updatedRecords);
+    console.log('Updated all records in the bingList collection.');
+  } catch (error) {
+    console.error('Error updating records:', error);
+  }
+}
+
+
+
 // 定时更新apikey被使用情况
 const  updateAccountStatus= async ()=>{
     if(intervalInstance){
@@ -330,10 +442,30 @@ const loopUpdateTokenAndSessionStatus=async ()=>{
     }, intervalTime);
 }
 
+// 定时更新bing的使用情况
+const loopUpdateBingUsedCount=async ()=>{
+  if(updateBingUsedCountInstance){
+      clearInterval(updateBingUsedCountInstance);
+  }
+  updateBingUsedCountInstance= setInterval(()=>{
+    updateBingUsedCount()
+  }, intervalTime);
+}
+
+// 定时更新bing的状态
+const loopUpdateBingStatus=async ()=>{
+  if(updateBingStatusInstance){
+      clearInterval(updateBingStatusInstance);
+  }
+  updateBingStatusInstance= setInterval(()=>{
+    updateBingStatus()
+  }, intervalTime);
+}
 
 module.exports={
     updateAccountStatus,updateAccountStatusOnce,updateGptAccountStatusOnce,loopupdateGptAccountStatus,
-    loopUpdateTokenStatus,updateTokenStatus,updateTokenAndSessionStatus,loopUpdateTokenAndSessionStatus
+    loopUpdateTokenStatus,updateTokenStatus,updateTokenAndSessionStatus,loopUpdateTokenAndSessionStatus,
+    updateBingUsedCount,loopUpdateBingUsedCount,updateBingStatus,loopUpdateBingStatus
 }
 
 

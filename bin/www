@@ -4,7 +4,8 @@
 const dotenv = require("dotenv")
 dotenv.config()
 const db = require('../db/db');
-const {updateAccountStatus,loopupdateGptAccountStatus,loopUpdateTokenStatus,loopUpdateTokenAndSessionStatus} =require('../utils/timedTask')
+const {updateAccountStatus,loopupdateGptAccountStatus,loopUpdateTokenStatus,loopUpdateTokenAndSessionStatus,loopUpdateBingUsedCount,
+  loopUpdateBingStatus} =require('../utils/timedTask')
 //调用 db 函数
 db(() => {
   /**
@@ -28,6 +29,8 @@ db(() => {
   // 更新token使用情况
   loopUpdateTokenStatus()
   loopUpdateTokenAndSessionStatus()
+  loopUpdateBingUsedCount()
+  loopUpdateBingStatus()
   //调用系统定时任务结束
   /**
    * Create HTTP server.

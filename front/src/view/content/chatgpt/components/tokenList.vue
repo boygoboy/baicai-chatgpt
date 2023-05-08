@@ -280,7 +280,7 @@ export default {
             { required: true, message: "请输入token", trigger: "blur" },
         ],
         session:[
-            { required: true, message: "请输入token", trigger: "blur" },
+            { required: true, message: "请输入session", trigger: "blur" },
         ],
         sharecount:[
             { required: true, message: "请输入共享人数", trigger: "blur" },
@@ -428,7 +428,7 @@ export default {
       })
     },
     deleteKey(row){
-        this.$confirm('是否删除该key？', '提示', {
+        this.$confirm('是否删除该token？', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'

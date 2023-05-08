@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
+const BingAIClient =require('../../newBing/utils/message.js')
     const computedMoney=async (apikey,lastday)=>{
         const subscription_url = `${process.env.OPEN_AI_BASE_URL||'https://api.openai.com'}/v1/dashboard/billing/subscription`;
         const headers = {
@@ -143,6 +144,37 @@ const { v4: uuidv4 } = require('uuid');
         }
     }
 
+    // new bing测活
+    const newBingIsLive=async(token,cookie)=>{
+        const options = {
+            // Necessary for some people in different countries, e.g. China (https://cn.bing.com)
+            host: 'https://www.bing.com',
+            // "_U" cookie from bing.com
+            userToken: token,
+            // If the above doesn't work, provide all your cookies as a string instead
+            // cookies: process.env.BING_AI_SESSION,
+            cookies: cookie,
+            // (Optional) Set to true to enable `console.debug()` logging
+            debug: false,
+        };
+        let bingAIClient = new BingAIClient(options);
+        let chatoptions={
+            // (Optional) Set a conversation style for this message (default: 'balanced')
+            toneStyle: 'balanced', // or creative, precise, fast
+            jailbreakConversationId: true,
+            onProgress: (token) => {
+                process.stdout.write(token);
+            },
+        }
+        try{
+            let response = await bingAIClient.sendMessage('hello', chatoptions);
+            console.log(JSON.stringify(response, null, 2)); 
+            return true
+        }catch(error){
+            return false
+        }
+    }
+
     module.exports={
-        computedMoney,unfficalChatApiLive,sessionIsLive
+        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive
     }

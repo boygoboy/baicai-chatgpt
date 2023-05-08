@@ -225,7 +225,6 @@ const putTokenList=async (req,res)=>{
             shareroles,
             shareroleNames,
             endtime,
-            enablestatus:'启用',
             tokenstatus:'在线',
             sessionstatus:'在线',
         })

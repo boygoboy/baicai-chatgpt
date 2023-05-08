@@ -87,7 +87,10 @@ const postKeyList=async(req,res)=>{
             })
         }
        }
-
+       let keystatus='启用'
+       if(apiKeyInfo.remain_money<0.5){
+        keystatus='失效'
+       }
        const keyList = await new keylist({
         keyListId: count.sequence_value,
         type,
@@ -100,7 +103,7 @@ const postKeyList=async(req,res)=>{
         shareroleNames,
         endtime,
         isenable:true,
-        keystatus:'启用',
+        keystatus:keystatus,
         quota:apiKeyInfo?apiKeyInfo.total:0,
         consumption:apiKeyInfo?apiKeyInfo.total_usage:0,
         balance:apiKeyInfo?apiKeyInfo.remain_money:0,
@@ -176,10 +179,22 @@ const putKeyList=async (req,res)=>{
           }
          }
 
+         let keystatus='启用'
+         const keyresult=await keylist.findOne({_id})
+         if(keyresult){
+            if(!keyresult.isenable){
+                keystatus='禁用'
+            }
+         }
+
+         if(apiKeyInfo.remain_money<0.5){
+            keystatus='失效'
+           }
+
         const keyList = await keylist.findOneAndUpdate({ _id }, {
             type,email,password,endtime,
             key,sharecount,shareroles,shareroleNames,
-            keystatus:'启用',
+            keystatus:keystatus,
             quota:apiKeyInfo?apiKeyInfo.total:0,
             consumption:apiKeyInfo?apiKeyInfo.total_usage:0,
             balance:apiKeyInfo?apiKeyInfo.remain_money:0,

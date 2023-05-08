@@ -32,7 +32,11 @@
                         v-model="officalkeyForm.chatgpt3Key"
                         placeholder="请选择或创建key"
                         style="width: 100%"
-                      ></el-select>
+                      >
+                      <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`" :value="item.key" v-for="(item,index) in key3Options" :key="index">
+
+                       </el-option>
+                      </el-select>
                     </div>
                   </div>
                 </el-form-item>
@@ -204,7 +208,8 @@ export default {
         newbingcookie: "",
       },
       isEditOffical:false,
-      isEditUnOffical:false
+      isEditUnOffical:false,
+      key3Options:[],
     };
   },
   methods:{
@@ -304,11 +309,33 @@ export default {
           this.$message.warning(res.message)
         }
       })
+    },
+    // 获取key下拉列表
+    getOfficalKeyList(type){
+      const query={
+        type
+      }
+      this.$http.getOfficalKeyList(query).then(res=>{
+        if(res.errorCode=='0000'){
+          this.key3Options=res.data
+          if(type=='key3.0'){
+            this.$http.getOfficalKeyList({type:'免费key'}).then(res=>{
+              if(res.errorCode=='0000'){
+                this.key3Options=this.key3Options.concat(res.data)
+              }
+            })
+          }
+        }else{
+          this.$message.warning(res.message)
+        }
+      })
     }
   },
   created(){
     this.getOfficalKeys()
     this.getUnOfficalKeys()
+    this.getOfficalKeyList('key3.0')
+    
   }
 };
 </script>
