@@ -72,9 +72,25 @@ const postUnofficalKeys = (data) => {
         data
     })
 }
+// 获取chatgpt非官方token下拉列表
+const getUnofficaltokenList = (query) => {
+    return $http({
+        url:'/api/chatgpt/unofficaltokenlist',
+        method:'get',
+        data:query
+    })
+}
+// 获取bing非官方token下拉列表
+const getBingTokenList = (query) => {
+    return $http({
+        url:'/api/chatgpt/bingtokenlist',
+        method:'get',
+        data:query
+    })
+}
 
 export default{
     postChatParams,getChatParams,deleteChatParams,putChatParams
     ,getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,
-    getOfficalKeyList
+    getOfficalKeyList,getUnofficaltokenList,getBingTokenList
 }

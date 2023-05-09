@@ -426,7 +426,7 @@ module.exports= class BingAIClient {
                             return;
                         }
                         const messages = event.arguments[0].messages;
-                        if (!messages.length || messages[0].author !== 'bot') {
+                        if (!messages?.length || messages[0].author !== 'bot') {
                             return;
                         }
                         const updatedText = messages[0].text;

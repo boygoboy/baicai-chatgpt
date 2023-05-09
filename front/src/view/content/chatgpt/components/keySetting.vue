@@ -111,7 +111,11 @@
                         v-model="unofficalkeyForm.accesstoken3"
                         placeholder="请选择或创建accesstoken"
                         style="width: 100%"
-                      ></el-select>
+                      >
+                      <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in accesstoken3Options" :key="index">
+                       </el-option>
+                      </el-select>
                     </div>
                   </div>
                 </el-form-item>
@@ -124,7 +128,7 @@
               <div class="form-body">
                 <el-form-item>
                   <div class="form-item">
-                    <span slot="label">apikey</span>
+                    <span slot="label">accesstoken</span>
                     <div>
                       <el-select :disabled="!isEditUnOffical"
                         popper-class="popper-class"
@@ -138,7 +142,11 @@
                         v-model="unofficalkeyForm.accesstoken4"
                         placeholder="请选择或创建accesstoken"
                         style="width: 100%"
-                      ></el-select>
+                      >
+                      <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in accesstoken4Options" :key="index">
+                       </el-option>
+                      </el-select>
                     </div>
                   </div>
                 </el-form-item>
@@ -165,7 +173,12 @@
                         v-model="unofficalkeyForm.newbingtoken"
                         placeholder="请选择或输入token"
                         style="width: 100%"
-                      ></el-select>
+                        @change="selectBingToken"
+                      >
+                     <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in bingtokenOptions" :key="index">
+                       </el-option>
+                      </el-select>
                     </div>
                   </div>
                 </el-form-item>
@@ -175,7 +188,7 @@
                   <div class="form-item">
                     <span slot="label">cookie</span>
                     <div>
-                    <el-input :disabled="!isEditUnOffical"
+                    <el-input :disabled="!isEditUnOffical||unofficalkeyForm.newbingtoken==''"
                       type="textarea"
                       :rows="3"
                       placeholder="请输入cookie"
@@ -215,6 +228,9 @@ export default {
       isEditUnOffical:false,
       key3Options:[],
       key4Options:[],
+      accesstoken3Options:[],
+      accesstoken4Options:[],
+      bingtokenOptions:[],
     };
   },
   methods:{
@@ -244,8 +260,10 @@ export default {
           }else{
             this.$message.warning(res.message)
           }
+        }).finally(()=>{
+          this.initunofficaltokenlist()
         })
-
+       
     },
     submitOfficalForm(){
         const data={
@@ -263,6 +281,8 @@ export default {
           }else{
             this.$message.warning(res.message)
           }
+        }).finally(()=>{
+            this.initofficalkeylist()
         })
     },
     cancelOfficalEdit(){
@@ -322,6 +342,21 @@ export default {
           if(res.data._id){
             this.unofficalkeyForm._id=res.data._id
           }
+          this.accesstoken3Options.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.accesstoken3[0]){
+              item.disabled=false
+            }
+          })
+          this.accesstoken4Options.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.accesstoken4[0]){
+              item.disabled=false
+            }
+          })
+          this.bingtokenOptions.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.newbingtoken[0]){
+              item.disabled=false
+            }
+          })
        }else{
           this.$message.warning(res.message)
         }
@@ -354,11 +389,48 @@ export default {
          await this.getOfficalKeyList('key3.0')
          await this.getOfficalKeyList('key4.0')
          this.getOfficalKeys()
-         this.getUnOfficalKeys()  
+    },
+    // chatgpt非官方token下拉列表
+    async getUnofficaltokenList(type){
+      const query={
+        type
+      }
+      let res=await this.$http.getUnofficaltokenList(query)
+      if(res.errorCode=='0000'){
+        if(type=='免费账号'){
+          this.accesstoken3Options=res.data
+        }
+        if(type=='升级账号'){
+          this.accesstoken4Options=res.data
+        }
+      }
+    },
+    // 获取bing token下拉列表
+    async getBingTokenList(){
+      let res=await this.$http.getBingTokenList()
+      if(res.errorCode=='0000'){
+        this.bingtokenOptions=res.data
+      }
+    },
+    // 初始化chatgpt非官方token下拉列表
+    async initunofficaltokenlist(){
+      await this.getUnofficaltokenList('免费账号')
+      await this.getUnofficaltokenList('升级账号')
+      await this.getBingTokenList()
+      this.getUnOfficalKeys()  
+    },
+    // 选择bingtoken事件
+    selectBingToken(val){
+      this.unofficalkeyForm.newbingcookie=''
+      let result=this.bingtokenOptions.find(item=>item.token==val)
+      if(result){
+        this.unofficalkeyForm.newbingcookie=result.cookie
+      }
     }
   },
   created(){
     this.initofficalkeylist()
+    this.initunofficaltokenlist()
   }
 };
 </script>

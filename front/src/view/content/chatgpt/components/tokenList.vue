@@ -496,7 +496,7 @@ export default {
       }
      this.$http.loginSession(data).then(res=>{
          if(res.errorCode=='0000'){
-            this.tokenForm.session=res.data.session.sensitive_id
+            this.tokenForm.session=res.data.user.session.sensitive_id
             this.$message.success('获取session成功！')
          }else{
           

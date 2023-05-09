@@ -405,7 +405,7 @@ const  updateAccountStatus= async ()=>{
 }
 // 单独更新apikey被使用情况
 const updateAccountStatusOnce= async ()=>{
-    updateApikeyCount();
+   await updateApikeyCount();
 }
 
 // 更新keylist表中的信息

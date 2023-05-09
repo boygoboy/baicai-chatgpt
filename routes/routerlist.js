@@ -135,6 +135,16 @@ const allRouterObj=[
         menuUrl:'/chatgpt/setting',
         permit:null
     },
+    {
+        routerUrl:'/api/chatgpt/unofficaltokenlist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/bingtokenlist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
     // chatgpt管理---资源管理模块
     {
         routerUrl:'/api/chatgpt/keylist',
