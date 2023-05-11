@@ -6,14 +6,20 @@ const { HttpsProxyAgent } = httpsProxyAgent
 const { handlePrompt } = require('../../utils/chatgptTool')
 const { v4: uuidv4 } = require('uuid');
 const {createParser} = require('eventsource-parser');
-
+const {decrypt}=require('../../utils/encryption')
 
 
 //   获取聊天消息
 function getStreamGptMessage(options, handleMessage) {
     let proxyAgent = null
-    let { url, key, model, proxytype, proxyurl, modelParams, message } = options
-    const proxyData = proxyurl.split(":")
+    let { url, key, model,proxyObj, modelParams, message } = options
+    key=decrypt(key)
+    let proxyData = []
+    let proxytype=''
+    if(proxyObj&&proxyObj.proxytype){
+        proxytype=proxyObj.proxytype
+        proxyData=[proxyObj.ip,proxyObj.port,proxyObj.username,proxyObj.password]
+    }
     if (proxytype == "socks5" && proxyData.length >= 2) {
         proxyAgent = new SocksProxyAgent({
             hostname: proxyData[0],
@@ -46,7 +52,7 @@ function getStreamGptMessage(options, handleMessage) {
         //    port: "7090",
         //  },
         headers: {
-            "Authorization": `Bearer ${key[0] || process.env.OPENAI_API_KEY}`,
+            "Authorization": `Bearer ${key || process.env.OPENAI_API_KEY}`,
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
             "Cache-Control": "no-cache",

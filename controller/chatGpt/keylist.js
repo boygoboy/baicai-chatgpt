@@ -162,7 +162,7 @@ const putKeyList=async (req,res)=>{
          if(sharecount<filterResult.usedcount){
             return res.json({
                 errorCode: '2002',
-                message: '分享人数不能小于已经分享的人数!',
+                message: '共享人数不能小于已经分享的人数!',
                 data: null
             })
          }

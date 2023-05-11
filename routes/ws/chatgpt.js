@@ -20,6 +20,7 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
     if(data=="heartbeat"){
       return
     }
+    console.log(data)
       data=JSON.parse(data)
      const msg=data.message
      const chatParams=data.chatParams

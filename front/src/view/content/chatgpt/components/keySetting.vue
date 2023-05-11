@@ -236,9 +236,11 @@ export default {
   methods:{
     openOfficalSetting(){
         this.isEditOffical=true
+        this.initofficalkeylist()
     },
     openUnOfficalSetting(){
         this.isEditUnOffical=true
+        this.initunofficalkeylist()
     },
     submitUnofficalForm(){
        const data={

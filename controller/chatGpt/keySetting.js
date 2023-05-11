@@ -6,11 +6,27 @@ const tokenlist=require('../../db/models/chatgpt/tokenListSchema')
 const binglist=require('../../db/models/chatgpt/bingListSchema')
 const {encrypt,decrypt}=require('../../utils/encryption')
 const {updateAccountStatusOnce,updateTokenStatus,updateBingUsedCount}=require('../../utils/timedTask')
+const AsyncLock = require('async-lock');
+const lock = new AsyncLock();
+
 const getOfficalKeys=async (req,res)=>{
     let {userId}=req.user.userList
     console.log(req.user.userList)
     try{
         const result=await officalkeys.findOne({userId}).exec()
+       // 如果密钥非启用状态，不返回密钥
+        if(result&&result.chatgpt3Key){
+            const obj=await keylist.findOne({key:result.chatgpt3Key}).exec()
+            if(obj&&obj.keystatus!='启用'){
+                result.chatgpt3Key=''
+            }
+        }
+        if(result&&result.chatgpt4Key){
+            const obj=await keylist.findOne({key:result.chatgpt4Key}).exec()
+            if(obj&&obj.keystatus!='启用'){
+                result.chatgpt4Key=''
+            }
+        }
         if(result){
             result.chatgpt3Key=result.chatgpt3Key?encrypt(result.chatgpt3Key):result.chatgpt3Key
             result.chatgpt4Key=result.chatgpt4Key?encrypt(result.chatgpt4Key):result.chatgpt4Key
@@ -31,106 +47,133 @@ const getOfficalKeys=async (req,res)=>{
 }
 
 const postOfficalKeys=async (req,res)=>{
-    let {_id,chatgpt3Key,chatgpt4Key}=req.body
-    let {userId}=req.user.userList
-    try{
-      await  updateAccountStatusOnce()
-        const countResult= await Counter.findOne({id:'officalkeyId'})
-        if(!countResult){
-          await Counter.create({
-              "id":"officalkeyId",
-              "sequence_value":1
-          })
-        }
-        chatgpt3Key=chatgpt3Key?decrypt(chatgpt3Key):chatgpt3Key
-        chatgpt4Key=chatgpt4Key?decrypt(chatgpt4Key):chatgpt4Key
-     //   检查最新的资源被使用情况
-        if(chatgpt3Key){
-            let result3=await keylist.findOne({key:chatgpt3Key})
-            // 如果更新的是已经绑定的密钥则跳过校验
-            let obj=await officalkeys.findOne({userId})
-            if(!obj||obj.chatgpt3Key!=chatgpt3Key){
-                if(result3){
-                    if(result3.usedcount>=result3.sharecount){
-                        return res.json({
-                            errorCode:'2002',
-                            message:'该密钥已被使用完!',
-                            data:null
-                        })
-                    }
-                }
-            }
-        }
-        if(chatgpt4Key){
-            let result4=await keylist.findOne({key:chatgpt4Key})
-            // 如果更新的是已经绑定的密钥则跳过校验
-            let obj=await officalkeys.findOne({userId})
-            if(!obj||obj.chatgpt4Key!=chatgpt4Key){
-                if(result4){
-                    if(result4.usedcount>=result4.sharecount){
-                        return res.json({
-                            errorCode:'2002',
-                            message:'该密钥已被使用完!',
-                            data:null
-                        })
-                    }
-                }
-            }
-        }
-        const count = await Counter.findOneAndUpdate({ id: 'officalkeyId' }, { $inc: { sequence_value: 1 } }, { new: true })
-        if(!_id){
-            try{
-                const officalKeys = await new officalkeys({
-                    officalkeyId:count.sequence_value,
-                    userId,
-                    chatgpt3Key: chatgpt3Key,
-                    chatgpt4Key:chatgpt4Key
-                })
-                await officalKeys.save();
-                return res.json({
-                    errorCode:'0000',
-                    message:'保存密钥成功!',
-                    data:null
+    await lock.acquire("officalkeysetting", async (done) => {
+        let {_id,chatgpt3Key,chatgpt4Key}=req.body
+        let {userId}=req.user.userList
+        try{
+          await  updateAccountStatusOnce()
+            const countResult= await Counter.findOne({id:'officalkeyId'})
+            if(!countResult){
+              await Counter.create({
+                  "id":"officalkeyId",
+                  "sequence_value":1
               })
-            }catch(error){
-                return res.json({
-                    errorCode:'2002',
-                    message:'保存密钥失败!',
-                    data:null
-                })
             }
-        }   
-        const row=await officalkeys.findOneAndUpdate({_id},{
-                chatgpt3Key,
-                chatgpt4Key
-             })
-            if(row){
-                return res.json({
-                    errorCode:'0000',
-                    message:'修改成功!',
-                    data:null
-                })
-            }else{
-                return res.json({
-                    errorCode:'2002',
-                    message:'保存密钥失败!',
-                    data:null
-                })
+            chatgpt3Key=chatgpt3Key?decrypt(chatgpt3Key):chatgpt3Key
+            chatgpt4Key=chatgpt4Key?decrypt(chatgpt4Key):chatgpt4Key
+         //   检查最新的资源被使用情况
+            if(chatgpt3Key){
+                let result3=await keylist.findOne({key:chatgpt3Key})
+                // 如果更新的是已经绑定的密钥则跳过校验
+                let obj=await officalkeys.findOne({userId})
+                if(!obj||obj.chatgpt3Key!=chatgpt3Key){
+                    if(result3){
+                        if(result3.usedcount>=result3.sharecount){
+                            return res.json({
+                                errorCode:'2002',
+                                message:'该密钥已被使用完!',
+                                data:null
+                            })
+                        }
+                    }
+                }
             }
-    }catch(error){
-        res.json({
-            errorCode: '500',
-            message: '服务器错误!',
-            data: error
-        })
-        throw error
-    }
+            if(chatgpt4Key){
+                let result4=await keylist.findOne({key:chatgpt4Key})
+                // 如果更新的是已经绑定的密钥则跳过校验
+                let obj=await officalkeys.findOne({userId})
+                if(!obj||obj.chatgpt4Key!=chatgpt4Key){
+                    if(result4){
+                        if(result4.usedcount>=result4.sharecount){
+                            return res.json({
+                                errorCode:'2002',
+                                message:'该密钥已被使用完!',
+                                data:null
+                            })
+                        }
+                    }
+                }
+            }
+            const count = await Counter.findOneAndUpdate({ id: 'officalkeyId' }, { $inc: { sequence_value: 1 } }, { new: true })
+            if(!_id){
+                try{
+                    const officalKeys = await new officalkeys({
+                        officalkeyId:count.sequence_value,
+                        userId,
+                        chatgpt3Key: chatgpt3Key,
+                        chatgpt4Key:chatgpt4Key
+                    })
+                    await officalKeys.save();
+                    done()
+                        return res.json({
+                            errorCode:'0000',
+                            message:'保存密钥成功!',
+                            data:null
+                      })
+                }catch(error){
+                    done()
+                    return res.json({
+                        errorCode:'2002',
+                        message:'保存密钥失败!',
+                        data:null
+                    })
+                }
+            }   
+                const row=await officalkeys.findOneAndUpdate({_id},{
+                    chatgpt3Key,
+                    chatgpt4Key
+                 })
+                if(row){
+                        done()
+                        return res.json({
+                            errorCode:'0000',
+                            message:'修改成功!',
+                            data:null
+                        })
+                }else{
+                    done()
+                    return res.json({
+                        errorCode:'2002',
+                        message:'保存密钥失败!',
+                        data:null
+                    })
+                }
+        }catch(error){
+            done()
+            res.json({
+                errorCode: '500',
+                message: '服务器错误!',
+                data: error
+            })
+            throw error
+        }
+    });
 }
 
 const getUnofficalKeys=async (req,res)=>{
     let {userId}=req.user.userList
     try{
         const result=await unofficalkeys.findOne({userId})
+        // 如果密钥非启用状态，不返回密钥
+        if(result&&result.accesstoken3){
+            const obj=await tokenlist.findOne({token:result.accesstoken3}).exec()
+            if(obj&&obj.enablestatus!='启用'){
+                result.accesstoken3=''
+            }
+        }
+        if(result&&result.accesstoken4){
+            const obj=await tokenlist.findOne({token:result.accesstoken4}).exec()
+            if(obj&&obj.enablestatus!='启用'){
+                result.accesstoken4=''
+            }
+        }
+        if(result&&result.newbingKey&&result.newbingKey.newbingtoken){
+            const obj=await binglist.findOne({token:result.newbingKey.newbingtoken}).exec()
+            if(obj&&obj.enablestatus!='启用'){
+                result.newbingKey.newbingtoken=''
+                result.newbingKey.newbingcookie=''
+            }
+        }
         if(result){
             result.accesstoken3=result.accesstoken3?encrypt(result.accesstoken3):result.accesstoken3
             result.accesstoken4=result.accesstoken4?encrypt(result.accesstoken4):result.accesstoken4
@@ -153,6 +196,7 @@ const getUnofficalKeys=async (req,res)=>{
 }
 
 const postUnofficalKeys=async (req,res)=>{
+    await lock.acquire("unofficalkeysetting", async (done) => {
       let {_id,accesstoken3,accesstoken4,newbingKey}=req.body
         let {userId}=req.user.userList
         try{
@@ -232,12 +276,14 @@ const postUnofficalKeys=async (req,res)=>{
                     newbingKey
                 })
                 await unofficalKeys.save();
+                done()
                 return res.json({
                     errorCode:'0000',
                     message:'保存密钥成功!',
                     data:null
               })
               }catch(error){
+                done()
                 return res.json({
                     errorCode:'2002',
                     message:'保存密钥失败!',
@@ -251,12 +297,14 @@ const postUnofficalKeys=async (req,res)=>{
                 newbingKey
               })
               if(row){
+                done()
                 return res.json({
                     errorCode:'0000',
                     message:'保存密钥成功!',
                     data:null
                 })
               }else{
+                done()
                 return res.json({
                     errorCode:'2002',
                     message:'保存密钥失败!',
@@ -264,6 +312,7 @@ const postUnofficalKeys=async (req,res)=>{
                 })
               }
         }catch(error){
+            done()
             res.json({
                 errorCode: '500',
                 message: '服务器错误!',
@@ -271,6 +320,7 @@ const postUnofficalKeys=async (req,res)=>{
             })
             throw error
         }
+    })
 }
 
 const getOfficalKeyList=async (req,res)=>{
