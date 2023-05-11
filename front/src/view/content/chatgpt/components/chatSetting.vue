@@ -151,6 +151,7 @@
             @change="changeModel"
             v-if="chatsettingForm.chatchannel == 'newbing非官方'"
           >
+          <el-option label="balanced" value="balanced"></el-option>
             <el-option label="creative" value="creative"></el-option>
             <el-option label="precise" value="precise"></el-option>
             <el-option label="fast" value="fast"></el-option>

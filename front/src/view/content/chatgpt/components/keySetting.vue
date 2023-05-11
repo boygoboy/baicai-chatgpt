@@ -240,7 +240,7 @@ export default {
     },
     openUnOfficalSetting(){
         this.isEditUnOffical=true
-        this.initunofficalkeylist()
+        this.initunofficaltokenlist()
     },
     submitUnofficalForm(){
        const data={

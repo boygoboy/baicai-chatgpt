@@ -77,7 +77,8 @@ module.exports= class BingAIClient {
             baseURL:`${this.options.host}/turing/conversation/create`,
         };
         if (this.options.proxy) {
-         const proxyData= this.options.proxy.split(":")
+            let proxyObj=this.options.proxy
+         const proxyData= [proxyObj.proxytype,proxyObj.ip,proxyObj.port,proxyObj.username,proxyObj.password]
          if(proxyData[0]=='socks5'&&proxyData.length>=3){
             fetchOptions.httpsAgent=new SocksProxyAgent({
                 hostname: proxyData[1],
@@ -107,6 +108,7 @@ module.exports= class BingAIClient {
         }
         // const response = await fetch(, fetchOptions);
            const response = await axios(fetchOptions)
+           console.log(response)
         const { status, headers } = response;
         if (status === 200 && +headers.get('content-length') < 5) {
             throw new Error('/turing/conversation/create: Your IP is blocked by BingAI.');
@@ -122,7 +124,7 @@ module.exports= class BingAIClient {
     async createWebSocketConnection() {
         return new Promise((resolve, reject) => {
             let agent;
-            if (this.options.proxy) {
+            if (this.options.proxy.proxytype) {
                 agent = new HttpsProxyAgent(this.options.proxy);
             }
 
@@ -426,7 +428,7 @@ module.exports= class BingAIClient {
                             return;
                         }
                         const messages = event.arguments[0].messages;
-                        if (!messages?.length || messages[0].author !== 'bot') {
+                        if (!messages.length || messages[0].author !== 'bot') {
                             return;
                         }
                         const updatedText = messages[0].text;

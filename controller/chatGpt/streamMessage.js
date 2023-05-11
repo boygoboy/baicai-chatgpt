@@ -149,6 +149,7 @@ function getStreamGptMessage(options, handleMessage) {
         conversationId:null
     }
     let {url,key,model}=params
+    key=decrypt(key)
     let conversationResponse=null
     const onMessage=(data) =>{
         if (data === '[DONE]') {

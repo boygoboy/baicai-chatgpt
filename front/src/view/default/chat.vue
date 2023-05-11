@@ -137,13 +137,14 @@
       <div class="center-box" :style="{ width: isStrech ? '85%' : '70%' }">
         <div class="card">
           <div class="model-select" v-if="!messageData.length">
-            <el-select class="select"
+            <el-select
+              class="select"
               v-model="chatmodel"
               @change="changeModel"
               :popper-append-to-body="false"
             >
               <el-option
-                v-for="(item,index) in modelOptions"
+                v-for="(item, index) in modelOptions"
                 :key="index"
                 :label="item.label"
                 :value="item.value"
@@ -239,8 +240,17 @@
           </div>
           <div class="card">
             <div class="bot-list">
-              <div class="item" v-for="(item,index) in botList" :key="index">
-                 <el-button type="primary" round class="bot-btn" @click="switchBot(item.value)" :style="{background:selectBot==item.value?'#7F00FF':'#7e55d7'}">{{item.label}}</el-button>
+              <div class="item" v-for="(item, index) in botList" :key="index">
+                <el-button
+                  type="primary"
+                  round
+                  class="bot-btn"
+                  @click="switchBot(item.value)"
+                  :style="{
+                    background: selectBot == item.value ? '#7F00FF' : '#7e55d7',
+                  }"
+                  >{{ item.label }}</el-button
+                >
               </div>
             </div>
           </div>
@@ -267,10 +277,9 @@ import "prismjs/themes/prism-tomorrow.css";
 import MarkdownTypewriter from "./components/MarkdownTypewriter.vue";
 import ClipboardJS from "clipboard";
 import VueTypewriter from "./components/VueTypewriter.vue";
-import tm from 'markdown-it-texmath';
-import 'markdown-it-texmath/css/texmath.css'; // 引入样式表
-import 'katex/dist/katex.min.css';
-
+import tm from "markdown-it-texmath";
+import "markdown-it-texmath/css/texmath.css"; // 引入样式表
+import "katex/dist/katex.min.css";
 
 export default {
   components: {
@@ -370,35 +379,35 @@ export default {
         },
       }),
       userChatParams: {}, //用户聊天参数
-        chatObj:{
-            prompt:'',
-            conversationId:null,
-            messageId:null,
-            action:null,
-            parentMessageId:null
-       },
-       bingChatObj:{
+      chatObj: {
+        prompt: "",
+        conversationId: null,
+        messageId: null,
+        action: null,
+        parentMessageId: null,
+      },
+      bingChatObj: {
         url: null,
         key: null,
         proxytype: null,
         proxyurl: null,
         message: null,
-        jailbreakConversationId:null,
-        parentMessageId:null
+        jailbreakConversationId: null,
+        parentMessageId: null,
         //  conversationSignature:null,
         //  conversationId:null,
         //  clientId:null,
         //  invocationId:null
-       },
-       chatparamsdata:null,
-       gptmodeldata:null,
-       officalsettingdata:null,
-       unofficalsettingdata:null,
-       botList:[],
-       modelOptions:[],
-       selectBot:null,
-       chatmodel:null,
-       chatParams:{},
+      },
+      chatparamsdata: null,
+      gptmodeldata: null,
+      officalsettingdata: null,
+      unofficalsettingdata: null,
+      botList: [],
+      modelOptions: [],
+      selectBot: null,
+      chatmodel: null,
+      chatParams: {},
     };
   },
   methods: {
@@ -443,31 +452,53 @@ export default {
       this.$router.push({ path: "/login", query: { type: "login" } });
     },
     // 格式化聊天参数
-    formatChatConfig(){
-      this.chatParams={}
-      if(this.selectBot&&this.chatmodel){
-        let result=this.chatparamsdata.find(item=>item.chatchannel==this.selectBot&&item.model==this.chatmodel)
-        if(result){
-          this.chatParams={
-            chatchannel:result.chatchannel,
-            model:result.model,
-            url:result.url,
-            enablecontext:result.enablecontext,
-            proxyObj:result.proxyObj,
+    formatChatConfig() {
+      this.chatParams = {};
+      if (this.selectBot && this.chatmodel) {
+        let result = this.chatparamsdata.find(
+          (item) =>
+            item.chatchannel == this.selectBot && item.model == this.chatmodel
+        );
+        if (result) {
+          this.chatParams = {
+            chatchannel: result.chatchannel,
+            model: result.model,
+            url: result.url,
+            enablecontext: result.enablecontext,
+            proxyObj: result.proxyObj,
+          };
+        }
+        if (this.selectBot == "chatgpt官方") {
+          let filtermodeldata = this.gptmodeldata.filter(
+            (item) => item.model == this.chatmodel
+          );
+          if (filtermodeldata.length > 0) {
+            this.chatParams.gptmodeldata = filtermodeldata;
+          }
+          if (this.chatmodel == "gpt-4") {
+            this.chatParams.key = this.officalsettingdata.chatgpt4Key;
+          } else {
+            this.chatParams.key = this.officalsettingdata.chatgpt3Key;
           }
         }
-        if(this.selectBot=='chatgpt官方'){
-          let filtermodeldata=this.gptmodeldata.filter(item=>item.model==this.chatmodel)
-          if(filtermodeldata.length>0){
-            this.chatParams.gptmodeldata=filtermodeldata
+
+        if (this.selectBot == "chatgpt非官方") {
+          if (
+            this.chatmodel == "gpt-4" ||
+            this.chatmodel == "text-davinci-002-render-sha"
+          ) {
+            this.chatParams.key = this.unofficalsettingdata.accesstoken4;
+          } else {
+            this.chatParams.key = this.unofficalsettingdata.accesstoken3;
           }
-          if(this.chatmodel=='gpt-4'){
-            this.chatParams.key=this.officalsettingdata.chatgpt4Key
-        }else{
-          this.chatParams.key=this.officalsettingdata.chatgpt3Key
         }
-      }
-      }else{
+        if (this.selectBot == "newbing非官方") {
+          this.chatParams.token =
+            this.unofficalsettingdata.newbingKey.newbingtoken;
+          this.chatParams.cookie =
+            this.unofficalsettingdata.newbingKey.newbingcookie;
+        }
+      } else {
         this.$message.warning({
           message: "请选择聊天机器人和模型！",
           type: "warning",
@@ -498,45 +529,110 @@ export default {
         });
         return;
       }
-      this.formatChatConfig()
-      // if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model!='newbing'){
-      //   if(this.messageData.length){
-      //     const index=this.messageData.length-1
-      //     if(this.messageData[index].chatObj){
-      //    this.chatObj.conversationId=this.messageData[index].chatObj.conversationId?this.messageData[index].chatObj.conversationId:null
-      //     this.chatObj.action=this.messageData[index].chatObj.action?this.messageData[index].chatObj.action:null
-      //     this.chatObj.parentMessageId=this.messageData[index].chatObj.parentMessageId?this.messageData[index].chatObj.parentMessageId:null
-      //     }
-      //   }
-      // }
-      // if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model=='newbing'){
-      //   this.bingChatObj={
-      //   url: this.userChatParams.chatParam.url,
-      //   key: this.userChatParams.chatParam.key[0],
-      //   proxytype: this.userChatParams.chatParam.proxytype,
-      //   proxyurl: this.userChatParams.chatParam.proxyurl,
-      //   message: this.sendMessage,
-      //   jailbreakConversationId:null,
-      //   parentMessageId:null
-      //   //  conversationSignature:null,
-      //   //  conversationId:null,
-      //   //  clientId:null,
-      //   //  invocationId:null
-      //  }
-      //        if(this.messageData.length){
-      //         console.log(this.messageData)
-      //     const index=this.messageData.length-1
-      //     if(this.messageData[index].bingChatObj){
-      //     this.bingChatObj.conversationSignature=this.messageData[index].bingChatObj.conversationSignature?this.messageData[index].bingChatObj.conversationSignature:null
-      //     this.bingChatObj.conversationId=this.messageData[index].bingChatObj.conversationId?this.messageData[index].bingChatObj.conversationId:null
-      //     this.bingChatObj.clientId=this.messageData[index].bingChatObj.clientId?this.messageData[index].bingChatObj.clientId:null
-      //     this.bingChatObj.invocationId=this.messageData[index].bingChatObj.invocationId?this.messageData[index].bingChatObj.invocationId:null
-      //    this.bingChatObj.jailbreakConversationId=this.messageData[index].bingChatObj.jailbreakConversationId?this.messageData[index].bingChatObj.jailbreakConversationId:null
-      //     this.bingChatObj.parentMessageId=this.messageData[index].bingChatObj.messageId?this.messageData[index].bingChatObj.messageId:null
-      // }
-      //   }
-      //     newWebSocket.sendMsg(JSON.stringify(this.bingChatObj));
-      // }
+      this.formatChatConfig();
+      if (this.chatParams.chatchannel == "chatgpt非官方") {
+        if (this.messageData.length) {
+          const index = this.messageData.length - 1;
+          if (this.chatParams.enablecontext) {
+            if (this.messageData[index].chatObj) {
+              this.chatObj.conversationId = this.messageData[index].chatObj
+                .conversationId
+                ? this.messageData[index].chatObj.conversationId
+                : null;
+              this.chatObj.action = this.messageData[index].chatObj.action
+                ? this.messageData[index].chatObj.action
+                : null;
+              this.chatObj.parentMessageId = this.messageData[index].chatObj
+                .parentMessageId
+                ? this.messageData[index].chatObj.parentMessageId
+                : null;
+            }
+          } else {
+            if (this.messageData[index].chatObj) {
+              this.chatObj.conversationId = null;
+              this.chatObj.action = null;
+              this.chatObj.parentMessageId = null;
+            }
+          }
+        }
+      }
+      if (this.chatParams.chatchannel == "newbing非官方") {
+        this.bingChatObj = {
+          url: this.chatParams.url,
+          token: this.chatParams.token,
+          cookie: this.chatParams.cookie,
+          proxyObj: this.chatParams.proxyObj,
+          enablecontext: this.chatParams.enablecontext,
+          model: this.chatParams.model,
+          message: this.sendMessage,
+        };
+        if (this.chatParams.model == "Sydney") {
+          if (this.messageData.length) {
+            console.log(this.messageData);
+            const index = this.messageData.length - 1;
+            if (this.messageData[index].bingChatObj) {
+              if (this.chatParams.enablecontext) {
+                this.bingChatObj.jailbreakConversationId = this.messageData[
+                  index
+                ].bingChatObj.jailbreakConversationId
+                  ? this.messageData[index].bingChatObj.jailbreakConversationId
+                  : null;
+                this.bingChatObj.parentMessageId = this.messageData[index]
+                  .bingChatObj.messageId
+                  ? this.messageData[index].bingChatObj.messageId
+                  : null;
+              } else {
+                this.bingChatObj.jailbreakConversationId = null;
+                this.bingChatObj.parentMessageId = null;
+              }
+            }
+          } else {
+            this.bingChatObj.jailbreakConversationId = null;
+            this.bingChatObj.parentMessageId = null;
+          }
+        } else {
+          if (this.messageData.length) {
+            if (this.chatParams.enablecontext) {
+              console.log(this.messageData);
+              const index = this.messageData.length - 1;
+              if (this.messageData[index].bingChatObj) {
+                this.bingChatObj.conversationSignature = this.messageData[index]
+                  .bingChatObj.conversationSignature
+                  ? this.messageData[index].bingChatObj.conversationSignature
+                  : "";
+                this.bingChatObj.conversationId = this.messageData[index]
+                  .bingChatObj.conversationId
+                  ? this.messageData[index].bingChatObj.conversationId
+                  : "";
+                this.bingChatObj.clientId = this.messageData[index].bingChatObj
+                  .clientId
+                  ? this.messageData[index].bingChatObj.clientId
+                  : "";
+                this.bingChatObj.invocationId = this.messageData[index]
+                  .bingChatObj.invocationId
+                  ? this.messageData[index].bingChatObj.invocationId
+                  : "";
+              } else {
+                this.bingChatObj.conversationSignature = "";
+                this.bingChatObj.conversationId = "";
+                this.bingChatObj.clientId = "";
+                this.bingChatObj.invocationId = "";
+              }
+            } else {
+              this.bingChatObj.conversationSignature = "";
+              this.bingChatObj.conversationId = "";
+              this.bingChatObj.clientId = "";
+              this.bingChatObj.invocationId = "";
+            }
+          } else {
+            this.bingChatObj.conversationSignature = "";
+            this.bingChatObj.conversationId = "";
+            this.bingChatObj.clientId = "";
+            this.bingChatObj.invocationId = "";
+          }
+        }
+        newWebSocket.sendMsg(JSON.stringify(this.bingChatObj));
+      }
       this.loading = true;
       let meItem = {
         originalContent: this.sendMessage,
@@ -544,54 +640,60 @@ export default {
         type: "me",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
+      if (this.messageData.length == 0) {
+        meItem.historyModel = {
+          selectBot: this.selectBot,
+          chatmodel: this.chatmodel,
+        };
+      }
       this.messageData.push(meItem, {
         originalContent: "正在思考中，请耐心等待...",
         content: "正在思考中，请耐心等待...",
         type: "bot",
         time: "",
       });
-      // if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model!='newbing'){
-      //   this.chatObj.prompt=this.sendMessage
+      if (this.chatParams.chatchannel == "chatgpt非官方") {
+        this.chatObj.prompt = this.sendMessage;
 
-      //   const data={
-      //     options:this.chatObj,
-      //     params:{
-      //       url:this.userChatParams.chatParam.url,
-      //       key:this.userChatParams.chatParam.key[0],
-      //       model:this.userChatParams.chatParam.model,
-      //     }
-      //   }
-      //   newWebSocket.sendMsg(JSON.stringify(data));
-      // }
-      if(this.chatParams.chatchannel=='chatgpt官方'){
-       const data={
-        message:this.handleChatMessageContent(),
-        chatParams: this.handleChatParams()
-       }
-       console.log(data)
-      newWebSocket.sendMsg(JSON.stringify(data));
+        const data = {
+          options: this.chatObj,
+          params: {
+            url: this.chatParams.url,
+            key: this.chatParams.key,
+            model: this.chatParams.model,
+          },
+        };
+        newWebSocket.sendMsg(JSON.stringify(data));
+      }
+      if (this.chatParams.chatchannel == "chatgpt官方") {
+        const data = {
+          message: this.handleChatMessageContent(),
+          chatParams: this.handleChatParams(),
+        };
+        console.log(data);
+        newWebSocket.sendMsg(JSON.stringify(data));
       }
       this.sendMessage = "";
       this.scrollToBottom();
     },
     // 过滤聊天参数
-    handleChatParams(){
-      let {url,key,model,enablecontext,proxyObj}=this.chatParams
-      const params={
+    handleChatParams() {
+      let { url, key, model, enablecontext, proxyObj } = this.chatParams;
+      const params = {
         url,
         key,
         model,
         enablecontext,
         proxyObj,
-        modelParams:[]
-      }
-      this.chatParams.gptmodeldata.forEach(item=>{
+        modelParams: [],
+      };
+      this.chatParams.gptmodeldata.forEach((item) => {
         params.modelParams.push({
-          parameter:item.parameter,
-          value:item.value
-        })
-      })
-     return params
+          parameter: item.parameter,
+          value: item.value,
+        });
+      });
+      return params;
     },
     //  处理http收到的消息
     handleHttpMessage() {
@@ -606,10 +708,10 @@ export default {
         });
     },
 
-      // 处理非官方聊天接收到的消息
-    handleUnofficalWSMessage(data){
-        console.log(data)
-        if (data == "token校验失败!" || data == "缺少token!") {
+    // 处理非官方聊天接收到的消息
+    handleUnofficalWSMessage(data) {
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
         this.notifyInstance = this.$notify({
           title: "警告",
           message: "您还未登录，登录后可聊天！",
@@ -619,7 +721,7 @@ export default {
         });
       }
 
-            if (data == "[START]") {
+      if (data == "[START]") {
         // 开始打字
         this.$set(
           this.messageData[this.messageData.length - 1],
@@ -645,8 +747,8 @@ export default {
         setTimeout(() => {
           this.handleMessageOutputEnd();
         }, 300);
-        let resultParms=data.replace("[DONE]","")
-        this.chatObj=JSON.parse(resultParms)
+        let resultParms = data.replace("[DONE]", "");
+        this.chatObj = JSON.parse(resultParms);
         return;
       }
       if (data != "[START]" && !data.startsWith("[DONE]")) {
@@ -657,10 +759,10 @@ export default {
       }
     },
     // 处理newbing非官方聊天
-          // 处理bing非官方聊天接收到的消息
-    handleBingUnofficalWSMessage(data){
-        console.log(data)
-        if (data == "token校验失败!" || data == "缺少token!") {
+    // 处理bing非官方聊天接收到的消息
+    handleBingUnofficalWSMessage(data) {
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
         this.notifyInstance = this.$notify({
           title: "警告",
           message: "您还未登录，登录后可聊天！",
@@ -670,7 +772,7 @@ export default {
         });
       }
 
-            if (data == "[START]") {
+      if (data == "[START]") {
         // 开始打字
         this.$set(
           this.messageData[this.messageData.length - 1],
@@ -696,16 +798,16 @@ export default {
         setTimeout(() => {
           this.handleMessageOutputEnd();
         }, 300);
-        let resultParms=data.replace("[DONE]","")
-        this.bingChatObj=JSON.parse(resultParms)
+        let resultParms = data.replace("[DONE]", "");
+        this.bingChatObj = JSON.parse(resultParms);
 
         return;
       }
       if (data != "[START]" && !data.startsWith("[DONE]")) {
         setTimeout(() => {
           let newdata = data.replace(/\\n/g, "\r\n");
-          this.inputText+= newdata;
-          console.log(this.inputText)
+          this.inputText += newdata;
+          console.log(this.inputText);
         }, 50);
       }
     },
@@ -768,8 +870,8 @@ export default {
     async addMessageData() {
       let botItem = {
         // content: marked(this.inputText),
-        bingChatObj:JSON.parse(JSON.stringify(this.bingChatObj)),
-        chatObj:JSON.parse(JSON.stringify(this.chatObj)),
+        bingChatObj: JSON.parse(JSON.stringify(this.bingChatObj)),
+        chatObj: JSON.parse(JSON.stringify(this.chatObj)),
         originalContent: this.inputText,
         content: this.md.render(this.inputText),
         type: "bot",
@@ -794,56 +896,54 @@ export default {
       }
     },
     translateWs() {
-            console.log(this.userChatParams)
-      // if(this.userChatParams.chatParam.channel=='非官方'&&this.userChatParams.chatParam.model=='newbing'){
-      //      newWebSocket.init({
-      //   url: `${
-      //     process.env.VUE_APP_WS_API
-      //   }/api/ws/chatgpt/bingUnOfficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
-      //   onopen: (msg, data) => {
-      //     console.log(msg, data);
-      //   },
-      //   onmessage: (data) => {
-      //     this.handleBingUnofficalWSMessage(data);
-      //   },
-      //   onclose: (data) => {
-      //     console.log(data);
-      //   },
-      // });
-      //   return
-      // }
-      // if(this.userChatParams.chatParam.channel=='非官方'){
-
-      //        newWebSocket.init({
-      //   url: `${
-      //     process.env.VUE_APP_WS_API
-      //   }/api/ws/chatgpt/unofficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
-      //   onopen: (msg, data) => {
-      //     console.log(msg, data);
-      //   },
-      //   onmessage: (data) => {
-      //     this.handleUnofficalWSMessage(data);
-      //   },
-      //   onclose: (data) => {
-      //     console.log(data);
-      //   },
-      // });
-      // }
-      if(this.selectBot=='chatgpt官方'){
-              newWebSocket.init({
-        url: `${
-          process.env.VUE_APP_WS_API
-        }/api/ws/chatgpt/send?token=${Cookie.get("token")}`, // 自己的ws 地址
-        onopen: (msg, data) => {
-          console.log(msg, data);
-        },
-        onmessage: (data) => {
-          this.handleWSMessage(data);
-        },
-        onclose: (data) => {
-          console.log(data);
-        },
-      });
+      console.log(this.userChatParams);
+      if (this.selectBot == "newbing非官方") {
+        newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/bingUnOfficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleBingUnofficalWSMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
+      if (this.selectBot == "chatgpt非官方") {
+        newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/unofficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleUnofficalWSMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
+      if (this.selectBot == "chatgpt官方") {
+        newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/send?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleWSMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
       }
     },
 
@@ -885,9 +985,31 @@ export default {
       this.historyItem = item;
       this.messageData = item.messageData;
       console.log(this.messageData);
-      if(this.messageData.length){
-        if(this.messageData[0].time==""&&this.messageData[0].content==""){
-          this.messageData.splice(0,1)
+      if (this.messageData.length) {
+        if (
+          this.messageData[0].time == "" &&
+          this.messageData[0].content == ""
+        ) {
+          this.messageData.splice(0, 1);
+        }
+      }
+      if (this.messageData.length && this.messageData[0].historyModel) {
+        this.selectBot = this.messageData[0].historyModel.selectBot;
+        this.chatmodel = this.messageData[0].historyModel.chatmodel;
+        this.modelOptions = [];
+        this.chatparamsdata.forEach((item) => {
+          if (item.chatchannel == this.selectBot) {
+            this.modelOptions.push({
+              label: item.model,
+              value: item.model,
+            });
+          }
+        });
+        let findIndex = this.modelOptions.findIndex(
+          (item) => item.value == this.chatmodel
+        );
+        if (findIndex == -1) {
+          this.chatmodel = this.modelOptions[0].value;
         }
       }
       this.initClipboard();
@@ -996,16 +1118,19 @@ export default {
     },
     // 获取用户聊天参数
     getUserChatParam() {
-      return new Promise((resolve,reject)=>{
-      this.$http.getUserChatParam().then((res) => {
-        if (res.errorCode == "0000") {
-          this.userChatParams = res.data;
-          resolve('ok')
-        }
-      }).catch(error=>{
-        reject(error)
-      })
-      })
+      return new Promise((resolve, reject) => {
+        this.$http
+          .getUserChatParam()
+          .then((res) => {
+            if (res.errorCode == "0000") {
+              this.userChatParams = res.data;
+              resolve("ok");
+            }
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
     },
     //处理发送的聊天消息
     handleChatMessageContent() {
@@ -1036,65 +1161,74 @@ export default {
       return message;
     },
     // 获取聊天配置信息包括聊天参数，聊天模板，聊天密钥
-   async getChatConfig(){
-    let chatparamsdata=await this.$http.getChatParams()
-    let gptmodeldata=await this.$http.getModelParam()
-    let officalsettingdata=await this.$http.getOfficalKeys()
-    let unofficalsettingdata=await this.$http.getUnofficalKeys()
-     if(chatparamsdata.errorCode=='0000'){
-         this.chatparamsdata=chatparamsdata.data
-         this.botList=[]
-         this.chatparamsdata.forEach(item=>{
-          let findIndex=this.botList.findIndex(obj=>obj.value==item.chatchannel)
-            let obj={
-              label:item.chatchannel,
-              value:item.chatchannel,
-            }
-            if(findIndex==-1){
-            this.botList.push(obj)
-            }
-         })
-          this.selectBot=this.botList[0].value
-          this.switchBot(this.selectBot)
-     }
-      if(gptmodeldata.errorCode=='0000'){
-        this.gptmodeldata=gptmodeldata.data
+    async getChatConfig() {
+      let chatparamsdata = await this.$http.getChatParams();
+      let gptmodeldata = await this.$http.getModelParam();
+      let officalsettingdata = await this.$http.getOfficalKeys();
+      let unofficalsettingdata = await this.$http.getUnofficalKeys();
+      if (chatparamsdata.errorCode == "0000") {
+        this.chatparamsdata = chatparamsdata.data;
+        this.botList = [];
+        this.chatparamsdata.forEach((item) => {
+          let findIndex = this.botList.findIndex(
+            (obj) => obj.value == item.chatchannel
+          );
+          let obj = {
+            label: item.chatchannel,
+            value: item.chatchannel,
+          };
+          if (findIndex == -1) {
+            this.botList.push(obj);
+          }
+        });
+        this.selectBot = this.botList[0].value;
+        this.switchBot(this.selectBot);
       }
-      if(officalsettingdata.errorCode=='0000'){
-        this.officalsettingdata=officalsettingdata.data
+      if (gptmodeldata.errorCode == "0000") {
+        this.gptmodeldata = gptmodeldata.data;
       }
-      if(unofficalsettingdata.errorCode=='0000'){
-        this.unofficalsettingdata=unofficalsettingdata.data
+      if (officalsettingdata.errorCode == "0000") {
+        this.officalsettingdata = officalsettingdata.data;
+      }
+      if (unofficalsettingdata.errorCode == "0000") {
+        this.unofficalsettingdata = unofficalsettingdata.data;
       }
       Cookie.get("token") && this.translateWs();
     },
     // 切换聊天机器人
-    switchBot(val){
-      this.selectBot=val
-      this.modelOptions=[]
-      this.chatparamsdata.forEach(item=>{
-        if(item.chatchannel==val){
+    switchBot(val) {
+      this.selectBot = val;
+      this.modelOptions = [];
+      this.chatparamsdata.forEach((item) => {
+        if (item.chatchannel == val) {
           this.modelOptions.push({
-            label:item.model,
-            value:item.model
-          })
+            label: item.model,
+            value: item.model,
+          });
         }
-      })
-      this.chatmodel=this.modelOptions[0].value
+      });
+      this.chatmodel = this.modelOptions[0].value;
+      // 切换重新开聊天窗口
+      this.createChat();
     },
     // 改变聊天模型
-    changeModel(val){
-     this.chatmodel=val
-    }
+    changeModel(val) {
+      this.chatmodel = val;
+    },
   },
   computed: {
     formatMd() {
       return this.md.render(this.inputText);
     },
   },
+  watch: {
+    selectBot(val) {
+      this.translateWs();
+    },
+  },
   created() {
     this.initIndexDb();
-    this.getChatConfig()
+    this.getChatConfig();
   },
   mounted() {
     if (!this.token) {
@@ -1106,17 +1240,17 @@ export default {
         customClass: "notiyfy",
       });
     }
-        if (Cookie.get("token")) {
-      this.getUserChatParam().then(res=>{
-        if(res=='ok'){
-            // Cookie.get("token") && this.translateWs();
+    if (Cookie.get("token")) {
+      this.getUserChatParam().then((res) => {
+        if (res == "ok") {
+          // Cookie.get("token") && this.translateWs();
         }
       });
     }
     this.handleMessagebooxScroll();
     Prism.highlightAll();
     // 使用插件
-    this.md.use(tm, { engine: 'katex', delimiters: 'dollars' });
+    this.md.use(tm, { engine: "katex", delimiters: "dollars" });
   },
   beforeDestroy() {
     if (newWebSocket.websocket) {
@@ -1260,12 +1394,12 @@ export default {
         position: relative;
         background: #170a35 !important;
         padding-top: 10px;
-        .model-select{
-          position:absolute;
-          top:20px;
+        .model-select {
+          position: absolute;
+          top: 20px;
           left: 50%;
           transform: translate(-50%, 0);
-          .select{
+          .select {
             width: 300px;
           }
         }
@@ -1371,19 +1505,19 @@ export default {
         height: 100%;
         border-top-left-radius: 35px;
         border-bottom-left-radius: 35px;
-        .bot-list{
-         padding-top: 40px;
-         padding-left: 35px;
-         padding-right: 35px;
-         .item{
+        .bot-list {
+          padding-top: 40px;
+          padding-left: 35px;
+          padding-right: 35px;
+          .item {
             margin-bottom: 20px;
-          .bot-btn{
-            background: #7e55d7;
-            border: none;
-            height: 45px;
-            width: 100%;
+            .bot-btn {
+              background: #7e55d7;
+              border: none;
+              height: 45px;
+              width: 100%;
+            }
           }
-         }
         }
       }
     }
@@ -1497,14 +1631,14 @@ export default {
   height: 50px !important;
   line-height: 50px !important;
 }
-.select /deep/ .el-select-dropdown{
+.select /deep/ .el-select-dropdown {
   border: none !important;
   background: #39226a !important;
 }
-.select /deep/ .el-select-dropdown__item{
+.select /deep/ .el-select-dropdown__item {
   color: #c0c4cc !important;
 }
-.select /deep/ .el-select-dropdown__item:hover{
+.select /deep/ .el-select-dropdown__item:hover {
   background: #412877 !important;
 }
 </style>
@@ -1596,7 +1730,7 @@ export default {
 
 /* 定义滚动条的样式 */
 ::-webkit-scrollbar {
-  width: 0px;  /* 设置滚动条的宽度 */
+  width: 0px; /* 设置滚动条的宽度 */
   height: 0px; /* 设置滚动条的高度 */
 }
 
