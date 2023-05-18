@@ -8,7 +8,6 @@ const { v4: uuidv4 } = require('uuid');
 const {createParser} = require('eventsource-parser');
 const {decrypt}=require('../../utils/encryption')
 
-
 //   获取聊天消息
 function getStreamGptMessage(options, handleMessage) {
     let proxyAgent = null
@@ -85,8 +84,9 @@ function getStreamGptMessage(options, handleMessage) {
         config.data.prompt=handlePrompt(message)
     }
     let isstart = true
+
     axios(config).then(res => {
-        res.data.on('data', (chunck) => {
+        res.data.on('data', async(chunck) => {
             if (isstart) {
                 handleMessage('[START]')
                 isstart = false

@@ -19,6 +19,8 @@ const gptAccount=require('./routes/api/account')
 const gptChatParams=require('./routes/api/chatgpt/paramsSetting')
 const keySetting=require('./routes/api/chatgpt/keySetting')
 const KeyList=require('./routes/api/chatgpt/resourceManage')
+const interfaceRate=require('./routes/api/chatgpt/interfaceRate')
+const homeStatistics=require('./routes/api/homeStatistics/statistics')
 
 //导入配置项
 const {createFirstUser} = require("./controller/systemModule/user")
@@ -53,6 +55,8 @@ app.use('/api/gptaccount',gptAccount)
 app.use('/api/chatgpt',gptChatParams)
 app.use('/api/chatgpt',keySetting)
 app.use('/api/chatgpt',KeyList)
+app.use('/api/chatgpt',interfaceRate)
+app.use('/api/homestatistics',homeStatistics)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   //响应 404 

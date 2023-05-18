@@ -18,7 +18,7 @@
               >保存</el-button
             >
           </div>
-          <el-table height="calc(100vh - 260px)"
+          <el-table height="calc(100vh - 265px)"
             class="model-table"
             :span-method="objectSpanMethod"
             :data="tableData"
@@ -278,7 +278,7 @@ activated() {
  <style lang="less" scoped>
 .app {
   .main-box {
-    height: calc(100vh - 135px);
+    height: calc(100vh - 130px);
     .tab-box {
       height: 100%;
     padding: 20px;

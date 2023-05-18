@@ -5,6 +5,7 @@ import role from './modules/role'
 import chatgpt from './modules/chatgpt'
 import chatparams from './modules/chatgpt/chatParams'
 import keylist from './modules/chatgpt/resourceManage'
+import interfaceRate from './modules/chatgpt/interfaceRate'
 export default{
     ...login,
     ...menu,
@@ -12,5 +13,6 @@ export default{
     ...role,
     ...chatgpt,
     ...chatparams,
-    ...keylist
+    ...keylist,
+    ...interfaceRate
 }

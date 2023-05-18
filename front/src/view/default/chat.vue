@@ -38,7 +38,7 @@
                 ref="historychatinput"
                 class="historychat-input"
                 v-model="item.messageData[0].content"
-                v-if="item.isedit"
+                v-if="item.isedit&&item.messageData[0]"
                 @blur="saveHistoryItem(item)"
               ></el-input>
               <span v-else>{{
@@ -247,7 +247,7 @@
                   class="bot-btn"
                   @click="switchBot(item.value)"
                   :style="{
-                    background: selectBot == item.value ? '#7F00FF' : '#7e55d7',
+                    background: selectBot == item.value ? '#7F00FF !important' : '#7e55d7 !important',
                   }"
                   >{{ item.label }}</el-button
                 >
@@ -1182,7 +1182,7 @@ export default {
           }
         });
         this.selectBot = this.botList[0].value;
-        this.switchBot(this.selectBot);
+        this.switchBot(this.selectBot,'init');
       }
       if (gptmodeldata.errorCode == "0000") {
         this.gptmodeldata = gptmodeldata.data;
@@ -1196,7 +1196,10 @@ export default {
       Cookie.get("token") && this.translateWs();
     },
     // 切换聊天机器人
-    switchBot(val) {
+    switchBot(val,tag) {
+      if(this.selectBot == val&&tag!='init') {
+        return
+      }
       this.selectBot = val;
       this.modelOptions = [];
       this.chatparamsdata.forEach((item) => {
@@ -1294,8 +1297,8 @@ export default {
           justify-content: center;
           padding-top: 45px;
           .addchat-btn {
-            background: #7e55d7;
-            color: #ffffff;
+            background: #7e55d7 !important;
+            color: #ffffff !important;
             font-weight: 500;
             border: none;
             width: 80%;
@@ -1512,7 +1515,7 @@ export default {
           .item {
             margin-bottom: 20px;
             .bot-btn {
-              background: #7e55d7;
+              background: #7e55d7 !important;
               border: none;
               height: 45px;
               width: 100%;

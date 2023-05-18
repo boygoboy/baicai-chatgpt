@@ -449,26 +449,27 @@ export default {
       .header {
         height: 45px;
         line-height: 45px;
-        background: #eaeaf4;
+        background: #1b0055;
         padding: 0 20px;
         padding-right: 0px;
         font-size: 16px;
-        color: #303133;
+        color: #ffffff;;
         opacity: 0.9;
       }
       .body {
         padding: 20px;
-        height: calc(100vh - 280px);
+        height: calc(100vh - 260px);
         overflow-y: auto;
         .block {
           border: 1px solid #e4e7ed;
           margin-bottom: 20px;
           .title {
             font-size: 14px;
-            background: #ececf5;
+            background: #7e55d7;
             height: 35px;
             line-height: 35px;
             padding-left: 10px;
+            color: #ffffff;
           }
           .form-body {
             padding: 5px 20px;
@@ -493,26 +494,27 @@ export default {
       .header {
         height: 45px;
         line-height: 45px;
-        background: #eaeaf4;
+        background: #1b0055;
         padding: 0 20px;
      padding-right: 0px;
         font-size: 16px;
-        color: #303133;
+        color: #ffffff;
         opacity: 0.9;
       }
       .body {
         padding: 20px;
-        height: calc(100vh - 280px);
+        height: calc(100vh - 260px);
         overflow-y: auto;
         .block {
           border: 1px solid #e4e7ed;
           margin-bottom: 20px;
           .title {
             font-size: 14px;
-            background: #ececf5;
+            background: #7e55d7;
             height: 35px;
             line-height: 35px;
             padding-left: 10px;
+            color: #ffffff;
           }
           .form-body {
             padding: 5px 20px;

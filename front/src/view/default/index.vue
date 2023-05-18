@@ -1,6 +1,18 @@
 <template>
-  <div>
-    <h5>管理默认首页</h5>
-    <div>Welcome. 欢迎。</div>
+  <div class="app">
+  <consumer-home></consumer-home>
   </div>
 </template>
+
+<script>
+import ConsumerHome from './components/consumerhome.vue'
+export default {
+components:{
+  ConsumerHome
+}
+}
+</script>
+
+<style>
+
+</style>

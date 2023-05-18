@@ -191,6 +191,23 @@ const allRouterObj=[
         menuUrl:' /chatgpt/resource/newbing',
         permit:null
     },
+    // chatgpt管理---对话指标模块
+    {
+        routerUrl:'/api/chatgpt/interfaceratelist',
+        menuUrl:'/chatgpt/distribute',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/interfacepricelist',
+        menuUrl:'/chatgpt/distribute',
+        permit:null
+    },
+    // 首页统计模块
+    {
+        routerUrl:'/api/homestatistics/chatStatistics',
+        menuUrl:'/',
+        permit:null
+    }
 ]
 
 module.exports=allRouterObj

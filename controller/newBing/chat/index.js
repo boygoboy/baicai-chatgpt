@@ -1,8 +1,8 @@
 const BingAIClient =require('../utils/message.js')
 const {KeyvFile} = require('keyv-file');
-const bingUnOfficalChat=async (bingoptions,handleMessage)=>{
+const bingUnOfficalChat=async (bingoptions,handleMessage,req)=>{
 const {decrypt}=require('../../../utils/encryption.js')
-
+let {userId}=req.user.userList
 let { url, token,cookie,  proxyObj, model,enablecontext, message,conversationSignature, conversationId,
     clientId,invocationId,jailbreakConversationId,parentMessageId} = bingoptions
     console.log(jailbreakConversationId,parentMessageId)
@@ -27,9 +27,15 @@ let { url, token,cookie,  proxyObj, model,enablecontext, message,conversationSig
     };
     const cacheOptions = {
         namespace: model|| process.env.TONE_STYLE||'balanced',
-        store: new KeyvFile({ filename: 'cache.json' })
+        store: new KeyvFile({ filename: `cache${userId}.json` })
       }
-    let bingAIClient = new BingAIClient({...options,cache:cacheOptions});
+      let bingAIClient = null
+      if(model=='Sydney'&&enablecontext){
+         bingAIClient = new BingAIClient({...options,cache:cacheOptions});
+      }else{
+        bingAIClient=new BingAIClient({...options});
+      }
+    
     let isStart=true
     let chatoptions={
         // (Optional) Set a conversation style for this message (default: 'balanced')
@@ -53,10 +59,24 @@ let { url, token,cookie,  proxyObj, model,enablecontext, message,conversationSig
             chatoptions.parentMessageId=parentMessageId
         }
     }else{
-        chatoptions.conversationSignature= conversationSignature
-        chatoptions.conversationId=conversationId
-        chatoptions.clientId=clientId
-        chatoptions.invocationId=invocationId
+        if(enablecontext){
+            chatoptions.conversationSignature= conversationSignature
+            chatoptions.conversationId=conversationId
+            chatoptions.clientId=clientId
+            chatoptions.invocationId=invocationId
+        }
+    }
+    if(!chatoptions.conversationSignature){
+        delete chatoptions.conversationSignature
+    }
+    if(!chatoptions.conversationId){
+        delete chatoptions.conversationId
+    }
+    if(!chatoptions.clientId){
+        delete chatoptions.clientId
+    }
+    if(!chatoptions.invocationId){
+        delete chatoptions.invocationId
     }
     let response = await bingAIClient.sendMessage(message, chatoptions);
     handleMessage(`[DONE]${JSON.stringify(response, null, 2)}`)

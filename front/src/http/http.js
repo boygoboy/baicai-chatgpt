@@ -69,7 +69,7 @@ service.interceptors.request.use((config) => {
     if (data.isShowToast) { isShowToast = data.isShowToast; delete data.isShowToast }
     if (data.loading) { loading = data.loading; delete data.loading }
     //可以开启全局loading
-    if (loading&&!excludeRoutes.includes(config.url)) loadingInstance = Loading.service({ background: 'rgba(0, 0, 0, 0.3)' });
+    // if (loading&&!excludeRoutes.includes(config.url)) loadingInstance = Loading.service({ background: 'rgba(0, 0, 0, 0.3)' });
 
     const token = Cookies.get('token')
     //判断token
@@ -85,7 +85,7 @@ service.interceptors.request.use((config) => {
 }, (error) => {
     // 错误抛到业务代码
     //关闭弹窗
-    if (loading) loadingInstance.close()
+    // if (loading) loadingInstance.close()
     error.data = {}
     error.data.message = '服务器异常，请联系管理员！'
     return Promise.resolve(error)
@@ -96,7 +96,7 @@ service.interceptors.response.use((response) => {
     const status = response.status
     let message = ''
     //关闭弹窗
-    if (loading) loadingInstance.close()
+    // if (loading) loadingInstance.close()
 
     if (status < 200 || status >= 300) {
         // 处理http错误，抛到业务代码
@@ -154,7 +154,7 @@ service.interceptors.response.use((response) => {
     //     type: 'warning'
     // })
     //关闭弹窗
-    if (loading) loadingInstance.close()
+    // if (loading) loadingInstance.close()
     return Promise.resolve(errorMsg)
 })
 const $http = (options) => {

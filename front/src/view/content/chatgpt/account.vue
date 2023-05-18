@@ -35,7 +35,7 @@
 </el-form>
   </div>
   <div class="action-btn">
-    <el-button type="primary" size="small" @click="addAccount">新建</el-button>
+    <el-button type="primary" size="small" @click="addAccount" icon="el-icon-plus">新建</el-button>
   </div>
   <div class="table-box">
      <el-table

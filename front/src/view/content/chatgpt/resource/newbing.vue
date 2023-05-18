@@ -40,7 +40,7 @@
     </div>
     <div class="table-box">
       <div class="action-btn">
-        <el-button type="primary" size="small" @click="addAccount"
+        <el-button type="primary" size="small" @click="addAccount" icon="el-icon-plus"
           >新建</el-button
         >
       </div>

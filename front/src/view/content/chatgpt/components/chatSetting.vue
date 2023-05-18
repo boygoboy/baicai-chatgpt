@@ -2,7 +2,7 @@
   <div class="app">
     <div class="main-box">
       <div class="action-btn">
-        <el-button type="primary" @click="createSetting">新建配置</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="createSetting">新建配置</el-button>
       </div>
       <div class="table-box">
         <el-table
@@ -451,7 +451,7 @@ export default {
  <style lang="less" scoped>
 .app {
   .main-box {
-    height: calc(100vh - 135px);
+    height: calc(100vh - 90px);
     .tab-box {
       height: 100%;
 

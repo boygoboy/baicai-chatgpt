@@ -6,6 +6,8 @@ var aWss = wss.getWss('/api/ws/chatgpt/send');
 const {getStreamGptMessage,unOfficalChat}=require('../../controller/chatGpt/streamMessage')
 const checkWsTokenMiddleware=require('../../middlewares/checkWsTokenMiddleware')
 const {bingUnOfficalChat}=require('../../controller/newBing/chat/index')
+const {limitRequestCount}=require('../../controller/chatGpt/utils/limitRequestCount')
+const {createChatInfo}=require('../../controller/homeStatistics/createChatInfo')
 
 /**
  * route.ws('/url',(ws, req)=>{  })
@@ -16,7 +18,7 @@ const {bingUnOfficalChat}=require('../../controller/newBing/chat/index')
  * ws.on方法用于监听事件（如监听message事件，或监听close事件）
  * */
 router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
-  ws.on('message', function (data) {
+  ws.on('message', async function (data) {
     if(data=="heartbeat"){
       return
     }
@@ -24,7 +26,16 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
       data=JSON.parse(data)
      const msg=data.message
      const chatParams=data.chatParams
+
+      let result=await limitRequestCount(req,{type:"chatgpt官方",model:chatParams.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
     getStreamGptMessage({...chatParams,message:msg},(message)=>{
+      if(message=="[DONE]"){
+        createChatInfo(req,'chatgpt官方',chatParams.model)
+      }
       ws.send(message)
     })
 
@@ -43,13 +54,18 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
 
 
 router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
-  ws.on('message', function (data) {
+  ws.on('message', async function (data) {
     if(data=="heartbeat"){
       return
     }
     console.log(data)
       let reqData=JSON.parse(data)
       let {options,params}=reqData
+      let result=await limitRequestCount(req,{type:"chatgpt非官方",model:params.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
     unOfficalChat(options,params,(message)=>{
       ws.send(message)
     })
@@ -67,14 +83,19 @@ router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
 
 // new bing非官方聊天
 router.ws('/bingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
-  ws.on('message', function (data) {
+  ws.on('message', async function (data) {
     if(data=="heartbeat"){
       return
     }
       let options=JSON.parse(data)
+      let result=await limitRequestCount(req,{type:"newbing非官方",model:options.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
       bingUnOfficalChat(options,(message)=>{
       ws.send(message)
-    })
+    },req)
   })
 
 

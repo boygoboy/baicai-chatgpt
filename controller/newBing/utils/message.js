@@ -1,5 +1,5 @@
 //  require('./fetch-polyfill.js')
-// const  {fetch}= require('fetch-undici');
+const  {fetch}= require('fetch-undici');
 const crypto = require('crypto');
 const WebSocket = require('ws');
 const Keyv = require('keyv');
@@ -76,39 +76,46 @@ module.exports= class BingAIClient {
             },
             baseURL:`${this.options.host}/turing/conversation/create`,
         };
-        if (this.options.proxy) {
-            let proxyObj=this.options.proxy
-         const proxyData= [proxyObj.proxytype,proxyObj.ip,proxyObj.port,proxyObj.username,proxyObj.password]
-         if(proxyData[0]=='socks5'&&proxyData.length>=3){
-            fetchOptions.httpsAgent=new SocksProxyAgent({
+        if (this.options.proxy.proxytype) {
+         const proxyObj= this.options.proxy
+         const proxyData=[proxyObj.proxytype,proxyObj.ip,proxyObj.port,proxyObj.username,proxyObj.password]
+         if(proxyData[0]=='socks5'){
+            let proxyoptions={
                 hostname: proxyData[1],
                 port: proxyData[2],
-                username: proxyData[3] ? proxyData[3] : "",
-                password: proxyData[4] ? proxyData[4] : "",
                 protocol: 'socks5',
-            }); 
+            }
+            if(proxyData[3]&&proxyData[4]){
+             proxyoptions.username=proxyData[3]
+             proxyoptions.password=proxyData[4]
+            }
+            fetchOptions.httpsAgent=new SocksProxyAgent(proxyoptions); 
          }
-         if(proxyData[0]=='https'&&proxyData.length>=3){
-            fetchOptions.httpsAgent=new HttpsProxyAgent({
+         if(proxyData[0]=='https'){
+            let proxyoptions={
                 hostname: proxyData[1],
                 port: proxyData[2],
-                username: proxyData[3] ? proxyData[3] : "",
-                password: proxyData[4] ? proxyData[4] : "",
-            }); 
+            }
+            if(proxyData[3]&&proxyData[4]){
+                proxyoptions.username=proxyData[3]
+                proxyoptions.password=proxyData[4]
+            }
+            fetchOptions.httpsAgent=new HttpsProxyAgent(proxyoptions); 
          }
-         if(proxyData[0]=='http'&&proxyData.length>=3){
+         if(proxyData[0]=='http'){
             fetchOptions.proxy={
                 protocol:"http",
                 host: proxyData[1],
                 port: proxyData[2],
-                username:proxyData[3] ? proxyData[3] : "",
-                password:proxyData[4] ? proxyData[4] : "",
+           }
+           if(proxyData[3]&&proxyData[4]){
+            fetchOptions.proxy.username=proxyData[3]
+            fetchOptions.proxy.password=proxyData[4]
            }
          }
         }
         // const response = await fetch(, fetchOptions);
            const response = await axios(fetchOptions)
-           console.log(response)
         const { status, headers } = response;
         if (status === 200 && +headers.get('content-length') < 5) {
             throw new Error('/turing/conversation/create: Your IP is blocked by BingAI.');
@@ -125,7 +132,32 @@ module.exports= class BingAIClient {
         return new Promise((resolve, reject) => {
             let agent;
             if (this.options.proxy.proxytype) {
-                agent = new HttpsProxyAgent(this.options.proxy);
+                const proxyObj= this.options.proxy
+                const proxyData=[proxyObj.proxytype,proxyObj.ip,proxyObj.port,proxyObj.username,proxyObj.password]
+                if(proxyObj.proxytype=='socks5'){
+                    let proxyoptions={
+                        hostname: proxyData[1],
+                        port: proxyData[2],
+                        protocol: 'socks5',
+                    }
+                    if(proxyData[3]&&proxyData[4]){
+                        proxyoptions.username=proxyData[3];
+                        proxyoptions.password=proxyData[4];
+                    }
+                    agent=new SocksProxyAgent(proxyoptions); 
+                }
+                if(proxyObj.proxytype=='https'||proxyObj.proxytype=='http'){
+                    let proxyoptions={
+                        hostname: proxyData[1],
+                        port: proxyData[2],
+                    }
+                    if(proxyData[3]&&proxyData[4]){
+                        proxyoptions.username=proxyData[3];
+                        proxyoptions.password=proxyData[4];
+                    }
+                    agent = new HttpsProxyAgent(proxyoptions);
+                }
+
             }
 
             const ws = new WebSocket('wss://sydney.bing.com/sydney/ChatHub', { agent });
@@ -221,7 +253,7 @@ module.exports= class BingAIClient {
                 || !createNewConversationResponse.conversationId
                 || !createNewConversationResponse.clientId
             ) {
-                const resultValue = createNewConversationResponse.result.value;
+                const resultValue = createNewConversationResponse.result?.value;
                 if (resultValue) {
                     const e = new Error(createNewConversationResponse.result.message); // default e.name is 'Error'
                     e.name = resultValue; // such as "UnauthorizedRequest"
@@ -281,7 +313,7 @@ module.exports= class BingAIClient {
             }
 
             // prepare messages for prompt injection
-            previousMessagesFormatted = previousMessages.map((previousMessage) => {
+            previousMessagesFormatted = previousMessages?.map((previousMessage) => {
                 switch (previousMessage.author) {
                     case 'user':
                         return `[user](#message)\n${previousMessage.text}`;
@@ -427,8 +459,8 @@ module.exports= class BingAIClient {
                         if (stopTokenFound) {
                             return;
                         }
-                        const messages = event.arguments[0].messages;
-                        if (!messages.length || messages[0].author !== 'bot') {
+                        const messages = event?.arguments?.[0]?.messages;
+                        if (!messages?.length || messages[0].author !== 'bot') {
                             return;
                         }
                         const updatedText = messages[0].text;
@@ -450,13 +482,13 @@ module.exports= class BingAIClient {
                     case 2: {
                         clearTimeout(messageTimeout);
                         this.constructor.cleanupWebSocketConnection(ws);
-                        if (event.item.result.value === 'InvalidSession') {
+                        if (event.item?.result?.value === 'InvalidSession') {
                             reject(new Error(`${event.item.result.value}: ${event.item.result.message}`));
                             return;
                         }
-                        const messages = event.item.messages || [];
+                        const messages = event.item?.messages || [];
                         const eventMessage = messages.length ? messages[messages.length - 1] : null;
-                        if (event.item.result.error) {
+                        if (event.item?.result?.error) {
                             if (this.debug) {
                                 console.debug(event.item.result.value, event.item.result.message);
                                 console.debug(event.item.result.error);
@@ -467,7 +499,7 @@ module.exports= class BingAIClient {
                                 eventMessage.text = replySoFar;
                                 resolve({
                                     message: eventMessage,
-                                    conversationExpiryTime: event.item.conversationExpiryTime,
+                                    conversationExpiryTime: event?.item?.conversationExpiryTime,
                                 });
                                 return;
                             }
@@ -478,7 +510,7 @@ module.exports= class BingAIClient {
                             reject(new Error('No message was generated.'));
                             return;
                         }
-                        if (eventMessage.author !== 'bot') {
+                        if (eventMessage?.author !== 'bot') {
                             reject(new Error('Unexpected message author.'));
                             return;
                         }
@@ -501,7 +533,7 @@ module.exports= class BingAIClient {
                         }
                         resolve({
                             message: eventMessage,
-                            conversationExpiryTime: event.item.conversationExpiryTime,
+                            conversationExpiryTime: event?.item?.conversationExpiryTime,
                         });
                         // eslint-disable-next-line no-useless-return
                         return;
@@ -554,6 +586,7 @@ module.exports= class BingAIClient {
             response: reply.text,
             details: reply,
         };
+        console.log('jailbreakConversationId',jailbreakConversationId)
         if (jailbreakConversationId) {
             returnData.jailbreakConversationId = jailbreakConversationId;
             returnData.parentMessageId = replyMessage.parentMessageId;
