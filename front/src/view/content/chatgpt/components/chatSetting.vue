@@ -95,6 +95,7 @@
             <el-option label="chatgpt官方" value="chatgpt官方"></el-option>
             <el-option label="chatgpt非官方" value="chatgpt非官方"></el-option>
             <el-option label="newbing非官方" value="newbing非官方"></el-option>
+            <el-option label="bard非官方" value="bard非官方"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item
@@ -157,6 +158,16 @@
             <el-option label="fast" value="fast"></el-option>
             <el-option label="Sydney" value="Sydney"></el-option>
           </el-select>
+                    <el-select
+            v-model="chatsettingForm.model"
+            placeholder="请选择聊天模型"
+            :clearable="true"
+            style="width: 100%"
+            @change="changeModel"
+            v-if="chatsettingForm.chatchannel == 'bard非官方'"
+          >
+          <el-option label="PaLM 2" value="PaLM 2"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item
           label="聊天接口："
@@ -209,7 +220,7 @@
           prop="proxyUrlData"
           v-if="
             chatsettingForm.chatchannel == 'chatgpt官方' ||
-            chatsettingForm.chatchannel == 'newbing非官方'
+            chatsettingForm.chatchannel == 'newbing非官方'||chatsettingForm.chatchannel == 'bard非官方'
           "
         >
           <div class="proxy-url">

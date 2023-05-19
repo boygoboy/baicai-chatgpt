@@ -8,7 +8,7 @@ export const countOption={
     },
     tooltip: {
         trigger: 'item',
-        formatter: "{b} <br/>{a}: {c}行"
+        formatter: "{b} <br/>{a}: {c}次"
     },
     grid: {
         left: '3%',
@@ -22,7 +22,7 @@ export const countOption={
     },
     xAxis: {
         type: 'category',
-        data: ['1号','2号','3号','4号','5号','6号','7号','8号','9号','10号','11号','12号','13号','14号','15号','16号','17号','18号','19号','20号','21号','22号','23号','24号','25号','26号','27号','28号','29号','30号','31号'],
+        data: [],
         axisLine: {
             lineStyle: {
                 color: '#666666'
@@ -52,7 +52,7 @@ export const countOption={
         }
     },
     series: [{
-        name: '增长',
+        name: '对话',
         type: 'bar',
         barWidth: '30%',
         itemStyle: {
@@ -66,7 +66,7 @@ export const countOption={
                return params.dataIndex % 2 === 0 ? params.data : '';
             }
         },
-        data: [100, 120, 80, 123, 96, 89, 152, 114, 120, 119,50,60,70,80,9,10,100,200,50,80,90,70,60,90,300,200,10,60,80,200,40,70]
+        data: []
     }]
 }
 
@@ -80,7 +80,7 @@ export const moneyOption={
     },
     tooltip: {
         trigger: 'item',
-        formatter: "{b} <br/>{a}: {c}行"
+        formatter: "{b} <br/>{a}: {c}分"
     },
     grid: {
         left: '3%',
@@ -94,7 +94,7 @@ export const moneyOption={
     },
     xAxis: {
         type: 'category',
-        data: ['1号','2号','3号','4号','5号','6号','7号','8号','9号','10号','11号','12号','13号','14号','15号','16号','17号','18号','19号','20号','21号','22号','23号','24号','25号','26号','27号','28号','29号','30号','31号'],
+        data: [],
         axisLine: {
             lineStyle: {
                 color: '#666666'
@@ -124,7 +124,7 @@ export const moneyOption={
         }
     },
     series: [{
-        name: '增长',
+        name: '使用',
         type: 'bar',
         barWidth: '30%',
         itemStyle: {
@@ -138,6 +138,6 @@ export const moneyOption={
                return params.dataIndex % 2 === 0 ? params.data : '';
             }
         },
-        data: [100, 120, 80, 123, 96, 89, 152, 114, 120, 119,50,60,70,80,9,10,100,200,50,80,90,70,60,90,300,200,10,60,80,200,40,70]
+        data: []
     }]
 }

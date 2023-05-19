@@ -6,6 +6,7 @@ import chatgpt from './modules/chatgpt'
 import chatparams from './modules/chatgpt/chatParams'
 import keylist from './modules/chatgpt/resourceManage'
 import interfaceRate from './modules/chatgpt/interfaceRate'
+import consumerhome from './modules/homStastics/consumerhome.js'
 export default{
     ...login,
     ...menu,
@@ -14,5 +15,6 @@ export default{
     ...chatgpt,
     ...chatparams,
     ...keylist,
-    ...interfaceRate
+    ...interfaceRate,
+    ...consumerhome
 }

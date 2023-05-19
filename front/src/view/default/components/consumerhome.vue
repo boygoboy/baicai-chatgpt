@@ -5,7 +5,7 @@
         <div class="header">近一个月对话</div>
         <div class="content">
         <div class="title">总次数</div>
-        <div class="number">300</div>
+        <div class="number">{{totalChatCount}}</div>
         </div>
         <img src="@/assets/images/home/line.png"/>
      </div>
@@ -13,7 +13,7 @@
         <div class="header">近一个月对话</div>
         <div class="content">
         <div class="title">消耗积分</div>
-         <div class="number">300</div>
+         <div class="number">{{totalUsageCount}}</div>
         </div>
          <img src="@/assets/images/home/line.png"/>
      </div>
@@ -69,8 +69,8 @@
                </el-select>
                 </el-form-item>
                <el-form-item>
-                <el-button type="primary"  style="margin-left: 10px;">查 询</el-button>
-                <el-button   style="margin-left: 10px;">重 置</el-button>
+                <el-button type="primary"  style="margin-left: 10px;" @click="searchecharts">查 询</el-button>
+                <el-button   style="margin-left: 10px;" @click="resetecharts">重 置</el-button>
                </el-form-item>
                 </el-form>
              </div>
@@ -103,8 +103,8 @@
                </el-select>
                 </el-form-item>
                <el-form-item>
-                <el-button type="primary"  style="margin-left: 10px;">查 询</el-button>
-                <el-button   style="margin-left: 10px;">重 置</el-button>
+                <el-button type="primary"  style="margin-left: 10px;" @click="searchDetail">查 询</el-button>
+                <el-button   style="margin-left: 10px;" @click="resetDetail">重 置</el-button>
                </el-form-item>
                 </el-form>
             </div>  
@@ -124,9 +124,9 @@
               </el-table-column>
               <el-table-column label="对话模型" prop="model"> 
               </el-table-column>
-             <el-table-column label="消耗积分" prop="integral"> 
+             <el-table-column label="消耗积分" prop="count"> 
               </el-table-column>
-              <el-table-column label="对话时间" prop="time"> 
+              <el-table-column label="对话时间" prop="date"> 
               </el-table-column>
              </el-table>
                      <div style="float:right;margin:15px 0px;">
@@ -222,7 +222,10 @@ export default {
             }
             ],
             countOption,
-            moneyOption
+            moneyOption,
+            totalChatCount:0,
+            totalUsageCount:0,
+            remainCount:0,
         };
      },
      methods:{
@@ -233,11 +236,67 @@ export default {
             this.modelOptions1 = this.modelArr.filter(item=>item.type == value)[0].modelOptions
       },
       handleCurrentChange(val){
-        
+        this.currentPage = val
+        this.getChatDetail()
       },
       handleSizeChange(val){
-
+        this.pageSize = val
+        this.getChatDetail()
+      },
+      async getChatStatistics(type,model){
+        let query={
+           type,
+           model
+        } 
+      let res=await this.$http.getChatStatistics(query)
+      if(res.errorCode=='0000'){
+       this.countOption.xAxis.data = res.data.xAxisData
+       this.countOption.series[0].data = res.data.yAxisCountsData
+       this.moneyOption.xAxis.data = res.data.xAxisData
+        this.moneyOption.series[0].data = res.data.yAxisTotalPointsData
+        this.totalChatCount = res.data.totalUsage.totalChats
+        this.totalUsageCount = res.data.totalUsage.totalPoints
+      }else{
+        this.$message.error(res.message)
       }
+      },
+      searchecharts(){
+         this.getChatStatistics(this.searchForm.type,this.searchForm.model)
+      },
+      resetecharts(){
+        this.searchForm.type=''
+        this.searchForm.model=''
+        this.getChatStatistics('','')
+      },
+     async getChatDetail(){
+        const query={
+            type:this.searchDetailForm.type,
+            model:this.searchDetailForm.model,
+            pageNum:this.currentPage,
+            pageSize:this.pageSize
+        }
+       let res=await this.$http.getChatDetail(query)
+         if(res.errorCode=='0000'){
+              this.tableData = res.data.chatlist
+              this.total = res.data.pager.total
+      }
+     },
+     searchDetail(){
+        this.currentPage=1
+        this.pageSize=10
+        this.getChatDetail()
+     },
+     resetDetail(){
+        this.searchDetailForm.type=''
+        this.searchDetailForm.model=''
+        this.currentPage=1
+        this.pageSize=10
+        this.getChatDetail()
+     }
+     },
+     created(){
+        this.getChatStatistics('','')
+        this.getChatDetail()
      }
 }
 </script>

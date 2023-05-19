@@ -8,7 +8,7 @@ const checkWsTokenMiddleware=require('../../middlewares/checkWsTokenMiddleware')
 const {bingUnOfficalChat}=require('../../controller/newBing/chat/index')
 const {limitRequestCount}=require('../../controller/chatGpt/utils/limitRequestCount')
 const {createChatInfo}=require('../../controller/homeStatistics/createChatInfo')
-
+const {bardUnofficalChat}=require('../../controller/googleBard/chat.js')
 /**
  * route.ws('/url',(ws, req)=>{  })
  * 建立WebSocket服务，并指定对应接口url，及相应回调
@@ -67,6 +67,9 @@ router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
         return
       }
     unOfficalChat(options,params,(message)=>{
+      if(message=="[DONE]"){
+        createChatInfo(req,'chatgpt非官方',params.model)
+      }
       ws.send(message)
     })
     aWss.clients.forEach((client)=> {
@@ -94,6 +97,9 @@ router.ws('/bingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
         return
       }
       bingUnOfficalChat(options,(message)=>{
+        if(message.startsWith('[DONE]')){
+          createChatInfo(req,'newbing非官方',options.model)
+        }
       ws.send(message)
     },req)
   })
@@ -104,5 +110,30 @@ router.ws('/bingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
     console.log('连接关闭')
   })
 })
+
+// router.ws('/bardUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
+//   ws.on('message', async function (data) {
+//     if(data=="heartbeat"){
+//       return
+//     }
+//       let options=JSON.parse(data)
+//       let result=await limitRequestCount(req,{type:"bard非官方",model:options.model})
+//       if(!result){
+//         ws.send('该模型接口请求次数超过限制！')
+//         return
+//       }
+//       bingUnOfficalChat(options,(message)=>{
+//         if(message.startsWith('[DONE]')){
+//           createChatInfo(req,'bard非官方',options.model)
+//         }
+//       ws.send(message)
+//     },req)
+//   })
+// })
+
+router.post('/test',(req,res)=>{
+   bardUnofficalChat(req,res)
+})
+
 
 module.exports = router // 暴露出去方便管理

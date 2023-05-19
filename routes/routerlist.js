@@ -207,6 +207,11 @@ const allRouterObj=[
         routerUrl:'/api/homestatistics/chatStatistics',
         menuUrl:'/',
         permit:null
+    },
+    {
+        routerUrl:'/api/homestatistics/chatdetaildata',
+        menuUrl:'/',
+        permit:null
     }
 ]
 
