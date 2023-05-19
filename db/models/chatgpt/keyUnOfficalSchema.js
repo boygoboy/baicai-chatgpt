@@ -17,8 +17,8 @@ const keyUnOfficalSchema =mongoose.Schema({
     newbingKey:{
         newbingtoken:String,
         newbingcookie:String
-    }
-
+    },
+    bardToken:String
 })
 const keyunofficalschema = mongoose.model('keyUnOfficalSchema',keyUnOfficalSchema,'keyUnOfficalSchema')
 module.exports = keyunofficalschema

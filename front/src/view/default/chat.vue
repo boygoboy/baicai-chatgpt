@@ -399,6 +399,11 @@ export default {
         //  clientId:null,
         //  invocationId:null
       },
+      bardChatObj:{
+       url:null,
+       key:null,
+       enablecontext:null,
+      },
       chatparamsdata: null,
       gptmodeldata: null,
       officalsettingdata: null,
@@ -497,6 +502,10 @@ export default {
             this.unofficalsettingdata.newbingKey.newbingtoken;
           this.chatParams.cookie =
             this.unofficalsettingdata.newbingKey.newbingcookie;
+        }
+        if(this.selectBot=="bard非官方"){
+          //TODO:暂时写死用于测试
+          this.chatParams.token ='WghNQIF4JGlcY7QiulKkEWqpaFPf1LctIqJ9xYWePLwhV6BcM_zbP6Cla7v_xlUxjqtEUg.'
         }
       } else {
         this.$message.warning({
@@ -633,6 +642,23 @@ export default {
         }
         newWebSocket.sendMsg(JSON.stringify(this.bingChatObj));
       }
+     if(this.chatParams.chatchannel == "bard非官方"){
+       
+          this.bardChatObj = {
+            url: this.chatParams.url,
+            token: this.chatParams.token,
+            proxyObj: this.chatParams.proxyObj,
+            enablecontext: this.chatParams.enablecontext,
+            model: this.chatParams.model,
+            message: this.sendMessage,
+          };
+          if(this.messageData.length==0){
+            this.bardChatObj.connectId=Date.now()
+          }else{
+            this.bardChatObj.connectId=this.messageData[0].bardChatObj.connectId
+          }
+          newWebSocket.sendMsg(JSON.stringify(this.bardChatObj));
+      }
       this.loading = true;
       let meItem = {
         originalContent: this.sendMessage,
@@ -645,6 +671,7 @@ export default {
           selectBot: this.selectBot,
           chatmodel: this.chatmodel,
         };
+        meItem.bardChatObj = this.bardChatObj;
       }
       this.messageData.push(meItem, {
         originalContent: "正在思考中，请耐心等待...",
@@ -811,6 +838,57 @@ export default {
         }, 50);
       }
     },
+    // 处理bard非官方聊天消息
+    handleBardUnofficalMessage(data){
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+      if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data== "[DONE]") {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        let resultParms = data.replace("[DONE]", "");
+        console.log(data)
+        return;
+      }
+      if (data != "[START]" && data != "[DONE]") {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText += newdata;
+          console.log(this.inputText);
+        }, 50);
+      }
+    },
     // 处理ws收到的消息
     handleWSMessage(data) {
       console.log(data);
@@ -939,6 +1017,22 @@ export default {
           },
           onmessage: (data) => {
             this.handleWSMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
+      if(this.selectBot=="bard非官方"){
+                newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/bardunofficalchat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleBardUnofficalMessage(data);
           },
           onclose: (data) => {
             console.log(data);
