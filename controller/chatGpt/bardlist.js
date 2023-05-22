@@ -1,14 +1,10 @@
 const Counter = require('../../db/models/counterSchema')
-const keyUnOffical = require('../../db/models/chatgpt/keyUnOfficalSchema')
-const Role = require('../../db/models/roleSchema')
-const User = require('../../db/models/userSchema')
-const binglist = require('../../db/models/chatgpt/bingListSchema')
+const bardList = require('../../db/models/chatgpt/bardListSchema')
 const pagerFun = require('../../utils/pager')
-const axios = require('axios')
-const {newBingIsLive} =require('./utils/gptCommon')
-const {updateBingStatus,updateBingUsedCount}=require('../../utils/timedTask')
+const {bardIsLive} =require('./utils/gptCommon')
+const {updateBardUsedCount}=require('../../utils/timedTask')
 
-const getBingList=async(req,res)=>{
+const getBardList=async(req,res)=>{
     let {email,enablestatus,tokenstatus, pageNum, pageSize }=req.query
     let pager = {}
     let params = {}
@@ -16,22 +12,22 @@ const getBingList=async(req,res)=>{
      if(enablestatus)params.enablestatus=enablestatus
         if(tokenstatus)params.tokenstatus=tokenstatus
     try{
-        updateBingUsedCount()
-        const query = binglist.find(params)
-        const bingList = await query.skip(pagerFun(pageNum, pageSize).skipIndex).limit(pagerFun(pageNum, pageSize).pager.pageSize)
-        const total = await binglist.countDocuments(params)
+        updateBardUsedCount()
+        const query =  bardList.find(params)
+        const bardlist = await query.skip(pagerFun(pageNum, pageSize).skipIndex).limit(pagerFun(pageNum, pageSize).pager.pageSize)
+        const total = await bardList.countDocuments(params)
         pager.total = total
         pager.pageNum = parseInt(pageNum)
-        if (bingList) { 
+        if (bardlist) { 
             return res.json({
                 errorCode: '0000',
-                message: '查询token资源列表成功!',
-                data: { bingList, pager }
+                message: '查询bard资源列表成功!',
+                data: { bardlist, pager }
             })
      }
         return res.json({
             errorCode: '2002',
-            message: '查询bing资源列表失败!',
+            message: '查询bard资源列表失败!',
             data:null
         })
     }catch(error){
@@ -40,19 +36,20 @@ const getBingList=async(req,res)=>{
             message: '服务器错误!',
             data: error
         })
+        throw error
     }
 }
-const postBingList=async(req,res)=>{
-    let {email,password,token,cookie,sharecount,shareroles,shareroleNames,endtime} = req.body
+const postBardList=async(req,res)=>{
+    let {email,password,token,sharecount,shareroles,shareroleNames,endtime} = req.body
     //新增gptaccount
-    if (!email||!password||!token||!cookie||!sharecount||!shareroles,!shareroleNames) {
+    if (!email||!password||!token||!sharecount||!shareroles,!shareroleNames) {
         return res.json({
             errorCode: '2002',
             message: '参数缺失!',
             data: null
         })
     }
-    const result = await binglist.findOne({token})
+    const result = await bardList.findOne({token})
     if (result) {
         return res.json({
             errorCode: '2002',
@@ -60,39 +57,30 @@ const postBingList=async(req,res)=>{
             data: null
         })
     }
-    const result1 = await binglist.findOne({cookie})
-    if (result1) {
-        return res.json({
-            errorCode: '2002',
-            message: '新建cookie已存在!',
-            data: null
-        })
-    }
     try {
         //这一步运行一次就可以注释掉，自增需要有个初始值
-        const result = await Counter.findOne({ id: "bingListId" })
+        const result = await Counter.findOne({ id: "bardListId" })
         if (!result) {
             await Counter.create({
-                "id": "bingListId",
+                "id": "bardListId",
                 "sequence_value": 0
             })
         }
-       let islive= await newBingIsLive(token,cookie)
+       let islive= bardIsLive(token)
        if(!islive){
         return res.json({
             errorCode: '2002',
-            message: 'token或cookie不可用!',
+            message: 'token不可用!',
             data: null
         })
        }
         //处理自增userId
-        const count = await Counter.findOneAndUpdate({ id: 'bingListId' }, { $inc: { sequence_value: 1 } }, { new: true })
-        const bingList = await new binglist({
-        bingListId: count.sequence_value,
+        const count = await Counter.findOneAndUpdate({ id: 'bardListId' }, { $inc: { sequence_value: 1 } }, { new: true })
+        const bardlist = await new bardList({
+         bardListId: count.sequence_value,
         email,
         password,
         token,
-        cookie,
         sharecount,
         shareroles,
         usedcount:0,
@@ -102,16 +90,16 @@ const postBingList=async(req,res)=>{
         tokenstatus:'在线'
     })
     try{
-        await bingList.save();
+        await bardlist.save();
         return res.json({
             errorCode: '0000',
-            message: '新增bing资源成功!',
+            message: '新增bard资源成功!',
             data: null
         })
     }catch(error){
         res.json({
             errorCode: '2002',
-            message: '新增bing资源失败!',
+            message: '新增bard资源失败!',
             data: error
         })
     }
@@ -124,9 +112,9 @@ const postBingList=async(req,res)=>{
         throw error
     }
 }
-const putBingList=async (req,res)=>{
-    let {_id,email,password,token,cookie,sharecount,shareroles,shareroleNames,endtime} = req.body
-    if (!_id||!email||!password||!token||!cookie||!sharecount||!shareroles,!shareroleNames) {
+const putBardList=async (req,res)=>{
+    let {_id,email,password,token,sharecount,shareroles,shareroleNames,endtime} = req.body
+    if (!_id||!email||!password||!token||!sharecount||!shareroles,!shareroleNames) {
         return res.json({
             errorCode: '2002',
             message: '参数缺失!',
@@ -134,7 +122,7 @@ const putBingList=async (req,res)=>{
         })
     }    
     try {
-        const result =await binglist.findOne({
+        const result =await bardList.findOne({
             $and: [
               { token},
               { _id: { $ne: _id } }
@@ -148,23 +136,9 @@ const putBingList=async (req,res)=>{
                 data: null
             })
         }
-        const result1 =await binglist.findOne({
-            $and: [
-              { cookie},
-              { _id: { $ne: _id } }
-            ]
-          });
-
-        if (result1) {
-            return res.json({
-                errorCode: '2002',
-                message: '修改的cookie已存在!',
-                data: null
-            })
-        }
 
         //这里更新的时候需要判断分享人数要大于等于已经分享的人数
-         let filterResult= await binglist.findOne({_id})
+         let filterResult= await bardList.findOne({_id})
          if(sharecount<filterResult.usedcount){
             return res.json({
                 errorCode: '2002',
@@ -173,36 +147,35 @@ const putBingList=async (req,res)=>{
             })
          }
 
-         let islive= await newBingIsLive(token,cookie)
+         let islive= await bardIsLive(token)
          if(!islive){
           return res.json({
               errorCode: '2002',
-              message: 'token或cookie不可用!',
+              message: 'token不可用!',
               data: null
           })
          }
 
-        const bingList = await binglist.findOneAndUpdate({ _id }, {
+        const bardlist = await bardList.findOneAndUpdate({ _id }, {
             email,
             password,
             token,
-            cookie,
             sharecount,
             shareroles,
             shareroleNames,
             tokenstatus:'在线',
             endtime
         })
-        if (bingList) {
+        if (bardlist) {
             return res.json({
                 errorCode: '0000',
-                message: '修改bing资源成功!',
+                message: '修改bard资源成功!',
                 data:null
             })
         }
         return res.json({
             errorCode: '2002',
-            message: '修改bing资源失败!',
+            message: '修改bard资源失败!',
             data: null
         })
     } catch (error) {
@@ -214,7 +187,7 @@ const putBingList=async (req,res)=>{
     }
 }
 
-const getBingDetail=async(req,res)=>{
+const getBardDetail=async(req,res)=>{
     let _id = req.params.id;
     if (!_id) {
         return res.json({
@@ -224,17 +197,17 @@ const getBingDetail=async(req,res)=>{
         })
     }
     try{
-        const result = await binglist.findOne({_id})
+        const result = await bardList.findOne({_id})
         if(result){
             return res.json({
                 errorCode: '0000',
-                message: '查询bing资源成功!',
+                message: '查询bard资源成功!',
                 data: result
             })
         }
         return res.json({
             errorCode: '2002',
-            message: '获取bing资源失败!',
+            message: '获取bard资源失败!',
             data: null
         })
     }catch(error){
@@ -247,7 +220,7 @@ const getBingDetail=async(req,res)=>{
     }
 }
 
-const deleteBingList=async (req,res)=>{
+const deleteBardList=async (req,res)=>{
     let _ids = req.params.ids.split(',');
     if (_ids.length==0) {
         return res.json({
@@ -256,7 +229,7 @@ const deleteBingList=async (req,res)=>{
             data: null
         })
     }
-    const results = await binglist.find({ _id: { $in: _ids } });
+    const results = await bardList.find({ _id: { $in: _ids } });
     if(results.length==0){
         return res.json({
             errorCode: '2002',
@@ -274,7 +247,7 @@ const deleteBingList=async (req,res)=>{
    }
     //_id接收数组
     try {
-        const result = await binglist.deleteMany({ _id: { $in: _ids } })
+        const result = await bardList.deleteMany({ _id: { $in: _ids } })
         return res.json({
             errorCode: '0000',
             message: `删除成功${result.deletedCount}条`,
@@ -290,7 +263,7 @@ const deleteBingList=async (req,res)=>{
     }
 }
 
-const changeBingStatus=async (req,res)=>{
+const changeBardStatus=async (req,res)=>{
     let {_id,enablestatus} = req.body
     if (!_id||!enablestatus) {
         return res.json({
@@ -300,17 +273,17 @@ const changeBingStatus=async (req,res)=>{
         })
     }
     try {
-        const result = await binglist.findOneAndUpdate({ _id }, { enablestatus})
+        const result = await bardList.findOneAndUpdate({ _id }, { enablestatus})
         if (result) {
             return res.json({
                 errorCode: '0000',
-                message: '修改bing资源状态成功!',
+                message: '修改bard资源状态成功!',
                 data:null
             })
         }
         return res.json({
             errorCode: '2002',
-            message: '修改bing资源状态失败!',
+            message: '修改bard资源状态失败!',
             data: null
         })
     } catch (error) {
@@ -323,5 +296,5 @@ const changeBingStatus=async (req,res)=>{
 }
 
 module.exports={
-    getBingList,postBingList,putBingList,deleteBingList,getBingDetail,changeBingStatus,
+    getBardList,postBardList,putBardList,getBardDetail,deleteBardList,changeBardStatus,
 }

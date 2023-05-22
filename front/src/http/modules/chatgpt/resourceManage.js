@@ -163,9 +163,110 @@ const changeBingStatus= (data) => {
     })
 }
 
+
+
+// 提交bard信息
+const postBardList = (data) => {
+    return $http({
+        url:'/api/chatgpt/bardlist',
+        method:'post',
+        data
+    })
+}
+// 获取Bard信息
+const getBardList = (query) => {
+    console.log(query)
+    return $http({
+        url:'/api/chatgpt/bardlist',
+        method:'get',
+        data:query
+    })
+}
+// 删除Bard信息
+const deleteBardList = (ids) => {
+    return $http({
+        url:`/api/chatgpt/bardlist/${ids}`,
+        method:'delete',
+    })
+}
+// 修改Bard信息
+const putBardList= (data) => {
+    return $http({
+        url:`/api/chatgpt/bardlist`,
+        method:'put',
+        data
+    })
+}
+// 获取单个Bard信息
+const getBardDetail= (id) => {
+    return $http({
+        url:`/api/chatgpt/onebard/${id}`,
+        method:'get',
+    })
+}
+// 修改Bard状态
+const changeBardStatus= (data) => {
+    return $http({
+        url:`/api/chatgpt/bardlist/bardstatus`,
+        method:'put',
+        data
+    })
+}
+
+
+// 提交claude信息
+const postClaudeList = (data) => {
+    return $http({
+        url:'/api/chatgpt/claudelist',
+        method:'post',
+        data
+    })
+}
+// 获取Bard信息
+const getClaudeList = (query) => {
+    console.log(query)
+    return $http({
+        url:'/api/chatgpt/claudelist',
+        method:'get',
+        data:query
+    })
+}
+// 删除Bard信息
+const deleteClaudeList = (ids) => {
+    return $http({
+        url:`/api/chatgpt/claudelist/${ids}`,
+        method:'delete',
+    })
+}
+// 修改Bard信息
+const putClaudeList= (data) => {
+    return $http({
+        url:`/api/chatgpt/claudelist`,
+        method:'put',
+        data
+    })
+}
+// 获取单个Bard信息
+const getClaudeDetail= (id) => {
+    return $http({
+        url:`/api/chatgpt/oneclaude/${id}`,
+        method:'get',
+    })
+}
+// 修改Bard状态
+const changeClaudeStatus= (data) => {
+    return $http({
+        url:`/api/chatgpt/claudelist/claudestatus`,
+        method:'put',
+        data
+    })
+}
+
 export default{
     postKeyList,getKeyList,deleteKeyList,putKeyList,getKeyDetail,changeKeyStatus,
     postTokenList,getTokenList,deleteTokenList,putTokenList,getTokenDetail,changeTokenStatus,
     loginToken,loginSession,
-    postBingList,getBingList,deleteBingList,putBingList,getBingDetail,changeBingStatus
+    postBingList,getBingList,deleteBingList,putBingList,getBingDetail,changeBingStatus,
+    postBardList,getBardList,deleteBardList,putBardList,getBardDetail,changeBardStatus,
+    postClaudeList,getClaudeList,deleteClaudeList,putClaudeList,getClaudeDetail,changeClaudeStatus
 }

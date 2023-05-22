@@ -5,7 +5,7 @@ const dotenv = require("dotenv")
 dotenv.config()
 const db = require('../db/db');
 const {updateAccountStatus,loopupdateGptAccountStatus,loopUpdateTokenStatus,loopUpdateTokenAndSessionStatus,loopUpdateBingUsedCount,
-  loopUpdateBingStatus} =require('../utils/timedTask')
+  loopUpdateBingStatus,loopUpdateBardUsedCount,loopUpdateBardStatus,loopUpdateClaudeUsedCount,loopUpdateClaudeStatus} =require('../utils/timedTask')
 //调用 db 函数
 db(() => {
   /**
@@ -31,6 +31,12 @@ db(() => {
   loopUpdateTokenAndSessionStatus()
   loopUpdateBingUsedCount()
   loopUpdateBingStatus()
+  // 定时更新bard账号情况
+  loopUpdateBardUsedCount()
+  loopUpdateBardStatus()
+  // 定时更新claude账号情况
+  loopUpdateClaudeUsedCount()
+  loopUpdateClaudeStatus()
   //调用系统定时任务结束
   /**
    * Create HTTP server.
@@ -43,8 +49,8 @@ db(() => {
    * Listen on provided port, on all network interfaces.
    */
 
-  server.listen(port,"10.0.0.140");
-  // server.listen(port,"192.168.2.230");
+  // server.listen(port,"10.0.0.140");
+  server.listen(port,"192.168.2.230");
   // server.listen(port,"192.168.2.7");
   server.on('error', onError);
   server.on('listening', onListening);

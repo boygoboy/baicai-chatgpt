@@ -1,37 +1,34 @@
 const Counter = require('../../db/models/counterSchema')
-const keyUnOffical = require('../../db/models/chatgpt/keyUnOfficalSchema')
-const Role = require('../../db/models/roleSchema')
-const User = require('../../db/models/userSchema')
-const binglist = require('../../db/models/chatgpt/bingListSchema')
+const claudeList = require('../../db/models/chatgpt/claudeListSchema')
 const pagerFun = require('../../utils/pager')
-const axios = require('axios')
-const {newBingIsLive} =require('./utils/gptCommon')
-const {updateBingStatus,updateBingUsedCount}=require('../../utils/timedTask')
+const {claudeceIsLive} =require('./utils/gptCommon')
+const {updateClaudeUsedCount}=require('../../utils/timedTask')
 
-const getBingList=async(req,res)=>{
-    let {email,enablestatus,tokenstatus, pageNum, pageSize }=req.query
+const getClaudeList=async(req,res)=>{
+    let {type, email,enablestatus,tokenstatus, pageNum, pageSize }=req.query
     let pager = {}
     let params = {}
+    if(type)params.type=type
     if(email)params.email=email
      if(enablestatus)params.enablestatus=enablestatus
         if(tokenstatus)params.tokenstatus=tokenstatus
     try{
-        updateBingUsedCount()
-        const query = binglist.find(params)
-        const bingList = await query.skip(pagerFun(pageNum, pageSize).skipIndex).limit(pagerFun(pageNum, pageSize).pager.pageSize)
-        const total = await binglist.countDocuments(params)
+        updateClaudeUsedCount()
+        const query =  claudeList.find(params)
+        const claudelist = await query.skip(pagerFun(pageNum, pageSize).skipIndex).limit(pagerFun(pageNum, pageSize).pager.pageSize)
+        const total = await claudeList.countDocuments(params)
         pager.total = total
         pager.pageNum = parseInt(pageNum)
-        if (bingList) { 
+        if (claudelist) { 
             return res.json({
                 errorCode: '0000',
-                message: '查询token资源列表成功!',
-                data: { bingList, pager }
+                message: '查询claude资源列表成功!',
+                data: { claudelist, pager }
             })
      }
         return res.json({
             errorCode: '2002',
-            message: '查询bing资源列表失败!',
+            message: '查询claude资源列表失败!',
             data:null
         })
     }catch(error){
@@ -40,19 +37,20 @@ const getBingList=async(req,res)=>{
             message: '服务器错误!',
             data: error
         })
+        throw error
     }
 }
-const postBingList=async(req,res)=>{
-    let {email,password,token,cookie,sharecount,shareroles,shareroleNames,endtime} = req.body
+const postClaudeList=async(req,res)=>{
+    let {type,email,password,token,appid,sharecount,shareroles,shareroleNames,endtime} = req.body
     //新增gptaccount
-    if (!email||!password||!token||!cookie||!sharecount||!shareroles,!shareroleNames) {
+    if (!type||!email||!password||!token||!appid||!sharecount||!shareroles,!shareroleNames) {
         return res.json({
             errorCode: '2002',
             message: '参数缺失!',
             data: null
         })
     }
-    const result = await binglist.findOne({token})
+    const result = await claudeList.findOne({token})
     if (result) {
         return res.json({
             errorCode: '2002',
@@ -60,39 +58,32 @@ const postBingList=async(req,res)=>{
             data: null
         })
     }
-    const result1 = await binglist.findOne({cookie})
-    if (result1) {
-        return res.json({
-            errorCode: '2002',
-            message: '新建cookie已存在!',
-            data: null
-        })
-    }
     try {
         //这一步运行一次就可以注释掉，自增需要有个初始值
-        const result = await Counter.findOne({ id: "bingListId" })
+        const result = await Counter.findOne({ id: "claudeListId" })
         if (!result) {
             await Counter.create({
-                "id": "bingListId",
+                "id": "claudeListId",
                 "sequence_value": 0
             })
         }
-       let islive= await newBingIsLive(token,cookie)
+       let islive= claudeceIsLive(token,appid)
        if(!islive){
         return res.json({
             errorCode: '2002',
-            message: 'token或cookie不可用!',
+            message: 'token不可用!',
             data: null
         })
        }
         //处理自增userId
-        const count = await Counter.findOneAndUpdate({ id: 'bingListId' }, { $inc: { sequence_value: 1 } }, { new: true })
-        const bingList = await new binglist({
-        bingListId: count.sequence_value,
+        const count = await Counter.findOneAndUpdate({ id: 'claudeListId' }, { $inc: { sequence_value: 1 } }, { new: true })
+        const claudelist = await new claudeList({
+         claudeListId: count.sequence_value,
+         type,
         email,
         password,
         token,
-        cookie,
+        appid,
         sharecount,
         shareroles,
         usedcount:0,
@@ -102,16 +93,16 @@ const postBingList=async(req,res)=>{
         tokenstatus:'在线'
     })
     try{
-        await bingList.save();
+        await claudelist.save();
         return res.json({
             errorCode: '0000',
-            message: '新增bing资源成功!',
+            message: '新增claude资源成功!',
             data: null
         })
     }catch(error){
         res.json({
             errorCode: '2002',
-            message: '新增bing资源失败!',
+            message: '新增claude资源失败!',
             data: error
         })
     }
@@ -124,9 +115,9 @@ const postBingList=async(req,res)=>{
         throw error
     }
 }
-const putBingList=async (req,res)=>{
-    let {_id,email,password,token,cookie,sharecount,shareroles,shareroleNames,endtime} = req.body
-    if (!_id||!email||!password||!token||!cookie||!sharecount||!shareroles,!shareroleNames) {
+const putClaudeList=async (req,res)=>{
+    let {_id,type,email,password,token,appid,sharecount,shareroles,shareroleNames,endtime} = req.body
+    if (!_id||!type||!email||!password||!token||!appid||!sharecount||!shareroles,!shareroleNames) {
         return res.json({
             errorCode: '2002',
             message: '参数缺失!',
@@ -134,7 +125,7 @@ const putBingList=async (req,res)=>{
         })
     }    
     try {
-        const result =await binglist.findOne({
+        const result =await claudeList.findOne({
             $and: [
               { token},
               { _id: { $ne: _id } }
@@ -148,23 +139,9 @@ const putBingList=async (req,res)=>{
                 data: null
             })
         }
-        const result1 =await binglist.findOne({
-            $and: [
-              { cookie},
-              { _id: { $ne: _id } }
-            ]
-          });
-
-        if (result1) {
-            return res.json({
-                errorCode: '2002',
-                message: '修改的cookie已存在!',
-                data: null
-            })
-        }
 
         //这里更新的时候需要判断分享人数要大于等于已经分享的人数
-         let filterResult= await binglist.findOne({_id})
+         let filterResult= await claudeList.findOne({_id})
          if(sharecount<filterResult.usedcount){
             return res.json({
                 errorCode: '2002',
@@ -173,36 +150,37 @@ const putBingList=async (req,res)=>{
             })
          }
 
-         let islive= await newBingIsLive(token,cookie)
+         let islive= await claudeceIsLive(token,appid)
          if(!islive){
           return res.json({
               errorCode: '2002',
-              message: 'token或cookie不可用!',
+              message: 'token不可用!',
               data: null
           })
          }
 
-        const bingList = await binglist.findOneAndUpdate({ _id }, {
+        const claudelist = await claudeList.findOneAndUpdate({ _id }, {
+            type,
             email,
             password,
             token,
-            cookie,
+            appid,
             sharecount,
             shareroles,
             shareroleNames,
             tokenstatus:'在线',
             endtime
         })
-        if (bingList) {
+        if (claudelist) {
             return res.json({
                 errorCode: '0000',
-                message: '修改bing资源成功!',
+                message: '修改claude资源成功!',
                 data:null
             })
         }
         return res.json({
             errorCode: '2002',
-            message: '修改bing资源失败!',
+            message: '修改claude资源失败!',
             data: null
         })
     } catch (error) {
@@ -214,7 +192,7 @@ const putBingList=async (req,res)=>{
     }
 }
 
-const getBingDetail=async(req,res)=>{
+const getClaudeDetail=async(req,res)=>{
     let _id = req.params.id;
     if (!_id) {
         return res.json({
@@ -224,17 +202,17 @@ const getBingDetail=async(req,res)=>{
         })
     }
     try{
-        const result = await binglist.findOne({_id})
+        const result = await claudeList.findOne({_id})
         if(result){
             return res.json({
                 errorCode: '0000',
-                message: '查询bing资源成功!',
+                message: '查询claude资源成功!',
                 data: result
             })
         }
         return res.json({
             errorCode: '2002',
-            message: '获取bing资源失败!',
+            message: '获取claude资源失败!',
             data: null
         })
     }catch(error){
@@ -247,7 +225,7 @@ const getBingDetail=async(req,res)=>{
     }
 }
 
-const deleteBingList=async (req,res)=>{
+const deleteClaudeList=async (req,res)=>{
     let _ids = req.params.ids.split(',');
     if (_ids.length==0) {
         return res.json({
@@ -256,7 +234,7 @@ const deleteBingList=async (req,res)=>{
             data: null
         })
     }
-    const results = await binglist.find({ _id: { $in: _ids } });
+    const results = await claudeList.find({ _id: { $in: _ids } });
     if(results.length==0){
         return res.json({
             errorCode: '2002',
@@ -274,7 +252,7 @@ const deleteBingList=async (req,res)=>{
    }
     //_id接收数组
     try {
-        const result = await binglist.deleteMany({ _id: { $in: _ids } })
+        const result = await claudeList.deleteMany({ _id: { $in: _ids } })
         return res.json({
             errorCode: '0000',
             message: `删除成功${result.deletedCount}条`,
@@ -290,7 +268,7 @@ const deleteBingList=async (req,res)=>{
     }
 }
 
-const changeBingStatus=async (req,res)=>{
+const changeClaudeStatus=async (req,res)=>{
     let {_id,enablestatus} = req.body
     if (!_id||!enablestatus) {
         return res.json({
@@ -300,17 +278,17 @@ const changeBingStatus=async (req,res)=>{
         })
     }
     try {
-        const result = await binglist.findOneAndUpdate({ _id }, { enablestatus})
+        const result = await claudeList.findOneAndUpdate({ _id }, { enablestatus})
         if (result) {
             return res.json({
                 errorCode: '0000',
-                message: '修改bing资源状态成功!',
+                message: '修改claude资源状态成功!',
                 data:null
             })
         }
         return res.json({
             errorCode: '2002',
-            message: '修改bing资源状态失败!',
+            message: '修改claude资源状态失败!',
             data: null
         })
     } catch (error) {
@@ -323,5 +301,5 @@ const changeBingStatus=async (req,res)=>{
 }
 
 module.exports={
-    getBingList,postBingList,putBingList,deleteBingList,getBingDetail,changeBingStatus,
+    getClaudeList,postClaudeList,putClaudeList,getClaudeDetail,deleteClaudeList,changeClaudeStatus,
 }

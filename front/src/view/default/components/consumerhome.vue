@@ -59,6 +59,8 @@
                     <el-option label="chatgpt官方" value="chatgpt官方"></el-option>
                      <el-option label="chatgpt非官方" value="chatgpt非官方"></el-option>
                      <el-option label="newbing非官方" value="newbing非官方"></el-option>
+                     <el-option label="bard非官方" value="bard非官方"></el-option>
+                     <el-option label="claude非官方" value="claude非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -93,6 +95,8 @@
                     <el-option label="chatgpt官方" value="chatgpt官方"></el-option>
                      <el-option label="chatgpt非官方" value="chatgpt非官方"></el-option>
                      <el-option label="newbing非官方" value="newbing非官方"></el-option>
+                     <el-option label="bard非官方" value="bard非官方"></el-option>
+                     <el-option label="claude非官方" value="claude非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -218,6 +222,18 @@ export default {
                     {label:'fast',value:'fast'},
                     {label:'balanced',value:'balanced'},
                     {label:'Sydney',value:'Sydney'},
+                ]
+            },
+                {
+                type:'bard非官方',  
+                modelOptions:[
+                    {label:'PaLM 2',value:'PaLM 2'},
+                ]
+            },
+               {
+                type:'claude非官方',  
+                modelOptions:[
+                    {label:'slack',value:'slack'},
                 ]
             }
             ],

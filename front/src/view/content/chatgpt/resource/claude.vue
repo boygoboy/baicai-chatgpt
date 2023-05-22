@@ -3,6 +3,16 @@
     <el-card>
     <div class="search" slot="header">
       <el-form :inline="true" :model="searchForm" class="inline-form">
+        <el-form-item label="类型：">
+          <el-select
+            style="width: 160px"
+            v-model="searchForm.type"
+            placeholder="请选择类型"
+            clearable
+          >
+            <el-option label="slack" value="slack"></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="邮箱：">
           <el-input
             style="width: 160px"
@@ -14,7 +24,7 @@
           <el-select
             style="width: 160px"
             v-model="searchForm.tokenstatus"
-            placeholder="请选择启用状态"
+            placeholder="请选择账号状态"
             clearable
           >
             <el-option label="在线" value="在线"></el-option>
@@ -62,14 +72,12 @@
             type="textarea" style="width:80%;" :autosize="true"
             ></el-input>
           </el-form-item>
-          <el-form-item label="cookie：">
-            <el-input v-model="scope.row.cookie" :disabled="true"
-            style="width:80%;"
-            ></el-input>
+            <el-form-item label="appid：">
+            <el-input v-model="scope.row.appid" :disabled="true" style="width:80%;"></el-input>
           </el-form-item>
           </div>
           <div style="flex:1;">
-          <el-form-item label="共享者角色：">
+             <el-form-item label="共享者角色：">
             <span>{{ scope.row.shareroleNames.join(',') }}</span>
           </el-form-item>
             <el-form-item label="到期时间：">
@@ -80,6 +88,8 @@
         </el-form>
       </template>
     </el-table-column>
+          <el-table-column prop="type" label="类型" min-width="20" show-overflow-tooltip>
+          </el-table-column>
           <el-table-column prop="email" label="邮箱" min-width="20" show-overflow-tooltip>
           </el-table-column>
           <el-table-column prop="password" label="密码" min-width="20" show-overflow-tooltip>
@@ -88,7 +98,7 @@
           </el-table-column>
           <el-table-column prop="enablestatus" label="启用状态" min-width="15">
             <template slot-scope="scope">
-                <el-switch @change="switchBingStatus(scope.row)" :disabled="scope.row.tokenstatus=='离线'"
+                <el-switch @change="switchClaudeStatus(scope.row)" :disabled="scope.row.tokenstatus=='离线'"
                     v-model="scope.row.enablestatus"
                     active-color="#13ce66"
                     inactive-color="#ff4949"
@@ -138,6 +148,11 @@
         ref="tokenForm"
         label-width="110px"
       >
+      <el-form-item label="类型：" prop="type">
+       <el-select v-model="tokenForm.type" style="width:100%;">
+        <el-option label="slack" value="slack"></el-option>
+       </el-select>
+      </el-form-item>
         <el-form-item label="账号邮箱：" prop="email">
           <el-input
             v-model="tokenForm.email"
@@ -156,10 +171,10 @@
             placeholder="请输入token"
           ></el-input>
         </el-form-item>
-        <el-form-item label="cookie：" prop="cookie">
-          <el-input type="textarea" :maxrows="5"
-            v-model="tokenForm.cookie"
-            placeholder="请输入cookie"
+           <el-form-item label="appid：" prop="appid">
+          <el-input
+            v-model="tokenForm.appid"
+            placeholder="请输入appid"
           ></el-input>
         </el-form-item>
         <el-form-item label="共享人数：" prop="sharecount">
@@ -215,16 +230,18 @@ export default {
   data() {
     return {
       searchForm: {
+        type: "",
         email: "",
         enablestatus: "",
         tokenstatus: "",
       },
       tokenForm: {
         _id: "",
+        type: "",
         email: "",
         password: "",
         token: "",
-        cookie:"",
+        appid: "",
         sharecount: "",
         shareroles: [],
         shareroleNames: [],
@@ -234,6 +251,9 @@ export default {
       dialogVisible: false,
       roleOptions: [],
       rules: {
+        type:[
+            { required: true, message: "请选择类型", trigger: "change" },
+        ],
         email:[
             { required: true, message: "请输入账号邮箱", trigger: "blur" },
         ],
@@ -243,8 +263,8 @@ export default {
         token:[
             { required: true, message: "请输入token", trigger: "blur" },
         ],
-        cookie:[
-            { required: true, message: "请输入cookie", trigger: "blur" },
+        appid:[
+            { required: true, message: "请输入appid", trigger: "blur" },
         ],
         sharecount:[
             { required: true, message: "请输入共享人数", trigger: "blur" },
@@ -263,18 +283,19 @@ export default {
     search() {
        this.currentPage=1
        this.pageSize=10
-       this.getBingList()
+       this.getClaudeList()
     },
     reset() {
       this.currentPage=1
       this.pageSize=10
       this.total=0
       this.searchForm = {
+        type: "",
         email: "",
         enablestatus: "",
         tokenstatus: "",
       };
-      this.getBingList()
+      this.getClaudeList()
     },
     addAccount() {
       this.dialogVisible = true;
@@ -283,13 +304,14 @@ export default {
     handleClose() {
       this.$refs.tokenForm.resetFields();
       this.dialogVisible = false;
-      this.getBingList()
+      this.getClaudeList()
       this.tokenForm={
         _id: "",
+        type: "",
         email: "",
         password: "",
         token: "",
-        session:"",
+        appid: "",
         sharecount: "",
         shareroles: [],
         shareroleNames: [],
@@ -308,10 +330,11 @@ export default {
                     })
                 })
                 const data={
+                    type:this.tokenForm.type,
                     email:this.tokenForm.email,
                     password:this.tokenForm.password,
                     token:this.tokenForm.token,
-                    cookie:this.tokenForm.cookie,
+                    appid:this.tokenForm.appid,
                     sharecount:this.tokenForm.sharecount,
                     shareroles:this.tokenForm.shareroles,
                     shareroleNames:shareroleNames,
@@ -320,16 +343,16 @@ export default {
 
                 if(this.tokenForm._id){
                    data._id=this.tokenForm._id
-                   this.$http.putBingList(data).then(res=>{
+                   this.$http.putClaudeList(data).then(res=>{
                     if(res.errorCode=='0000'){
-                        this.$message.success('编辑bing资源成功！')
+                        this.$message.success('编辑claude资源成功！')
                         this.handleClose()
                     }else{
                         this.$message.warning(res.message)
                     }
                    })
                 }else{
-                     this.$http.postBingList(data).then(res=>{
+                     this.$http.postClaudeList(data).then(res=>{
                     if(res.errorCode=='0000'){
                         this.$message.success('操作成功')
                         this.handleClose()
@@ -349,7 +372,7 @@ export default {
       }
     },
     // 获取token列表
-    getBingList(){
+    getClaudeList(){
         const query={
             email:this.searchForm.email,
             enablestatus:this.searchForm.enablestatus,
@@ -357,9 +380,9 @@ export default {
             pageNum:this.currentPage,
             pageSize:this.pageSize,
         }
-        this.$http.getBingList(query).then(res=>{
+        this.$http.getClaudeList(query).then(res=>{
             if(res.errorCode=='0000'){
-                this.tableData = res.data.bingList
+                this.tableData = res.data.claudelist
                 this.total=res.data.pager.total
             }else{
                 this.$message.warning(res.message)
@@ -369,15 +392,16 @@ export default {
    editKey(row){
     this.dialogVisible=true
     this.getRoleOptions()
-      this.$http.getBingDetail(row._id).then(res=>{
+      this.$http.getClaudeDetail(row._id).then(res=>{
           if(res.errorCode=='0000'){
             let result=res.data
             this.tokenForm={
                 _id: result._id,
+                type: result.type,
                 email: result.email,
                 password: result.password,
                 token: result.token,
-                cookie:result.cookie,
+                appid: result.appid,
                 sharecount: result.sharecount,
                 shareroles: result.shareroles,
                 shareroleNames: result.shareroleNames,
@@ -387,30 +411,30 @@ export default {
       })
     },
     deleteKey(row){
-        this.$confirm('是否删除该bing账号？', '提示', {
+        this.$confirm('是否删除该claude账号？', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-          this.$http.deleteBingList(row._id).then(res=>{
+          this.$http.deleteClaudeList(row._id).then(res=>{
         if(res.errorCode=='0000'){
             this.$message.success(res.message)
-            this.getBingList()
+            this.getClaudeList()
         }else{
             this.$message.warning(res.message)
         }
       })
           })
     },
-    switchBingStatus(row){
+    switchClaudeStatus(row){
        const data={
               _id:row._id,
               enablestatus:row.enablestatus
        }
-       this.$http.changeBingStatus(data).then(res=>{
+       this.$http.changeClaudeStatus(data).then(res=>{
         if(res.errorCode=='0000'){
             this.$message.success(`${row.enablestatus}状态成功！`)
-            this.getBingList()
+            this.getClaudeList()
         }else{
             this.$message.warning(res.message)
         }
@@ -418,11 +442,11 @@ export default {
     },
     handleCurrentChange(val){
         this.currentPage=val
-        this.getBingList()
+        this.getClaudeList()
     },
     handleSizeChange(val){
         this.pageSize=val
-        this.getBingList()
+        this.getClaudeList()
     },
   },
   created(){

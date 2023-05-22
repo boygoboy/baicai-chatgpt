@@ -145,6 +145,16 @@ const allRouterObj=[
         menuUrl:'/chatgpt/setting',
         permit:null
     },
+    {
+        routerUrl:'/api/chatgpt/bardtokenlist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/claudetokenlist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
     // chatgpt管理---资源管理模块
     {
         routerUrl:'/api/chatgpt/keylist',
@@ -191,6 +201,37 @@ const allRouterObj=[
         menuUrl:' /chatgpt/resource/newbing',
         permit:null
     },
+    {
+        routerUrl:'/api/chatgpt/bardlist',
+        menuUrl:' /chatgpt/resource/googlebard',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/onebard',
+        menuUrl:' /chatgpt/resource/googlebard',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/bardlist/bardstatus',
+        menuUrl:' /chatgpt/resource/googlebard',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/claudelist',
+        menuUrl:' /chatgpt/resource/claude',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/oneclaude',
+        menuUrl:' /chatgpt/resource/claude',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/claudelist/claudestatus',
+        menuUrl:' /chatgpt/resource/claude',
+        permit:null
+    },
+
     // chatgpt管理---对话指标模块
     {
         routerUrl:'/api/chatgpt/interfaceratelist',

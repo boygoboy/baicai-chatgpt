@@ -14,7 +14,7 @@
           <el-select
             style="width: 160px"
             v-model="searchForm.tokenstatus"
-            placeholder="请选择启用状态"
+            placeholder="请选择账号状态"
             clearable
           >
             <el-option label="在线" value="在线"></el-option>
@@ -62,16 +62,11 @@
             type="textarea" style="width:80%;" :autosize="true"
             ></el-input>
           </el-form-item>
-          <el-form-item label="cookie：">
-            <el-input v-model="scope.row.cookie" :disabled="true"
-            style="width:80%;"
-            ></el-input>
+            <el-form-item label="共享者角色：">
+            <span>{{ scope.row.shareroleNames.join(',') }}</span>
           </el-form-item>
           </div>
           <div style="flex:1;">
-          <el-form-item label="共享者角色：">
-            <span>{{ scope.row.shareroleNames.join(',') }}</span>
-          </el-form-item>
             <el-form-item label="到期时间：">
             <span>{{ scope.row.endtime&&scope.row.endtime.split('T')[0] }}</span>
           </el-form-item>
@@ -88,7 +83,7 @@
           </el-table-column>
           <el-table-column prop="enablestatus" label="启用状态" min-width="15">
             <template slot-scope="scope">
-                <el-switch @change="switchBingStatus(scope.row)" :disabled="scope.row.tokenstatus=='离线'"
+                <el-switch @change="switchBardStatus(scope.row)" :disabled="scope.row.tokenstatus=='离线'"
                     v-model="scope.row.enablestatus"
                     active-color="#13ce66"
                     inactive-color="#ff4949"
@@ -156,12 +151,6 @@
             placeholder="请输入token"
           ></el-input>
         </el-form-item>
-        <el-form-item label="cookie：" prop="cookie">
-          <el-input type="textarea" :maxrows="5"
-            v-model="tokenForm.cookie"
-            placeholder="请输入cookie"
-          ></el-input>
-        </el-form-item>
         <el-form-item label="共享人数：" prop="sharecount">
           <el-input-number
             v-model="tokenForm.sharecount"
@@ -224,7 +213,6 @@ export default {
         email: "",
         password: "",
         token: "",
-        cookie:"",
         sharecount: "",
         shareroles: [],
         shareroleNames: [],
@@ -243,9 +231,6 @@ export default {
         token:[
             { required: true, message: "请输入token", trigger: "blur" },
         ],
-        cookie:[
-            { required: true, message: "请输入cookie", trigger: "blur" },
-        ],
         sharecount:[
             { required: true, message: "请输入共享人数", trigger: "blur" },
         ],
@@ -263,7 +248,7 @@ export default {
     search() {
        this.currentPage=1
        this.pageSize=10
-       this.getBingList()
+       this.getBardList()
     },
     reset() {
       this.currentPage=1
@@ -274,7 +259,7 @@ export default {
         enablestatus: "",
         tokenstatus: "",
       };
-      this.getBingList()
+      this.getBardList()
     },
     addAccount() {
       this.dialogVisible = true;
@@ -283,13 +268,12 @@ export default {
     handleClose() {
       this.$refs.tokenForm.resetFields();
       this.dialogVisible = false;
-      this.getBingList()
+      this.getBardList()
       this.tokenForm={
         _id: "",
         email: "",
         password: "",
         token: "",
-        session:"",
         sharecount: "",
         shareroles: [],
         shareroleNames: [],
@@ -311,7 +295,6 @@ export default {
                     email:this.tokenForm.email,
                     password:this.tokenForm.password,
                     token:this.tokenForm.token,
-                    cookie:this.tokenForm.cookie,
                     sharecount:this.tokenForm.sharecount,
                     shareroles:this.tokenForm.shareroles,
                     shareroleNames:shareroleNames,
@@ -320,16 +303,16 @@ export default {
 
                 if(this.tokenForm._id){
                    data._id=this.tokenForm._id
-                   this.$http.putBingList(data).then(res=>{
+                   this.$http.putBardList(data).then(res=>{
                     if(res.errorCode=='0000'){
-                        this.$message.success('编辑bing资源成功！')
+                        this.$message.success('编辑bard资源成功！')
                         this.handleClose()
                     }else{
                         this.$message.warning(res.message)
                     }
                    })
                 }else{
-                     this.$http.postBingList(data).then(res=>{
+                     this.$http.postBardList(data).then(res=>{
                     if(res.errorCode=='0000'){
                         this.$message.success('操作成功')
                         this.handleClose()
@@ -349,7 +332,7 @@ export default {
       }
     },
     // 获取token列表
-    getBingList(){
+    getBardList(){
         const query={
             email:this.searchForm.email,
             enablestatus:this.searchForm.enablestatus,
@@ -357,9 +340,9 @@ export default {
             pageNum:this.currentPage,
             pageSize:this.pageSize,
         }
-        this.$http.getBingList(query).then(res=>{
+        this.$http.getBardList(query).then(res=>{
             if(res.errorCode=='0000'){
-                this.tableData = res.data.bingList
+                this.tableData = res.data.bardlist
                 this.total=res.data.pager.total
             }else{
                 this.$message.warning(res.message)
@@ -369,7 +352,7 @@ export default {
    editKey(row){
     this.dialogVisible=true
     this.getRoleOptions()
-      this.$http.getBingDetail(row._id).then(res=>{
+      this.$http.getBardDetail(row._id).then(res=>{
           if(res.errorCode=='0000'){
             let result=res.data
             this.tokenForm={
@@ -377,7 +360,6 @@ export default {
                 email: result.email,
                 password: result.password,
                 token: result.token,
-                cookie:result.cookie,
                 sharecount: result.sharecount,
                 shareroles: result.shareroles,
                 shareroleNames: result.shareroleNames,
@@ -387,30 +369,30 @@ export default {
       })
     },
     deleteKey(row){
-        this.$confirm('是否删除该bing账号？', '提示', {
+        this.$confirm('是否删除该bard账号？', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-          this.$http.deleteBingList(row._id).then(res=>{
+          this.$http.deleteBardList(row._id).then(res=>{
         if(res.errorCode=='0000'){
             this.$message.success(res.message)
-            this.getBingList()
+            this.getBardList()
         }else{
             this.$message.warning(res.message)
         }
       })
           })
     },
-    switchBingStatus(row){
+    switchBardStatus(row){
        const data={
               _id:row._id,
               enablestatus:row.enablestatus
        }
-       this.$http.changeBingStatus(data).then(res=>{
+       this.$http.changeBardStatus(data).then(res=>{
         if(res.errorCode=='0000'){
             this.$message.success(`${row.enablestatus}状态成功！`)
-            this.getBingList()
+            this.getBardList()
         }else{
             this.$message.warning(res.message)
         }
@@ -418,11 +400,11 @@ export default {
     },
     handleCurrentChange(val){
         this.currentPage=val
-        this.getBingList()
+        this.getBardList()
     },
     handleSizeChange(val){
         this.pageSize=val
-        this.getBingList()
+        this.getBardList()
     },
   },
   created(){

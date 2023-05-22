@@ -89,8 +89,26 @@ const getBingTokenList = (query) => {
     })
 }
 
+// 获取bard非官方token下拉列表
+const getBardTokenList = (query) => {
+    return $http({
+        url:'/api/chatgpt/bardtokenlist',
+        method:'get',
+        data:query
+    })
+}
+// 获取claudetoken非官方token下拉列表
+const getClaudeTokenList = (query) => {
+    return $http({
+        url:'/api/chatgpt/claudetokenlist',
+        method:'get',
+        data:query
+    })
+}
+
 export default{
     postChatParams,getChatParams,deleteChatParams,putChatParams
     ,getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,
-    getOfficalKeyList,getUnofficaltokenList,getBingTokenList
+    getOfficalKeyList,getUnofficaltokenList,getBingTokenList,getBardTokenList,
+    getClaudeTokenList
 }

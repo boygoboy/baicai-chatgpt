@@ -175,6 +175,53 @@ const BingAIClient =require('../../newBing/utils/message.js')
         }
     }
 
+    // bard测活
+    const bardIsLive=async(token)=>{
+        try{
+            const {Bard} = await import("googlebard")
+            let cookies = `__Secure-1PSID=${token}`;
+            let bot = new Bard(cookies);
+            let response = await bot.ask('hello');
+            console.log(response); 
+            if(response){
+                return true
+            }else{
+                return false
+            }
+        }catch(error){
+             return false
+        }
+    }
+
+    // claudece测活
+    const claudeceIsLive=async(token,appid)=>{
+        try{
+            const module = await import('claude-api');
+            const Authenticator = module.default;
+            // user-token
+            token = token,
+            // claude appid
+            bot = appid,
+            text = 'hello'
+    
+          const authenticator = new Authenticator(token, bot)
+          // 创建一个频道，已存在则直接返回频道ID
+          const channel = await authenticator.newChannel('chat-7890')
+          let result = await authenticator.sendMessage({
+            text, channel, onMessage: (data) => {
+            }
+          })
+          console.log('==============1\n', result)
+          if(result.result.conversationId){
+            return true
+          }else{
+            return false
+          }
+        }catch(error){
+            return false
+        }
+    }
+
     module.exports={
-        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive
+        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive
     }

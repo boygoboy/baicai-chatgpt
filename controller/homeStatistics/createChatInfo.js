@@ -29,7 +29,6 @@ try{
         date:new Date()
     })
     await conversation.save()
-    generateData(type,model,userId)
    }
 }catch(error){
     throw error
@@ -37,33 +36,6 @@ try{
 
 }
 
-
-
-async function generateData(type,model,userId) {
-    // 近30天的日期列表
-    const dates = Array.from({length: 30}, (_, i) => moment().subtract(i, 'days').toDate());
-    
-    const data = dates.flatMap(date => {
-        // 每天生成10条数据
-        return Array.from({length: 10}, (_, i) => {
-            return {
-                statisticsId: i + 1,
-                userId,
-                type: type,
-                model: model,
-                count: Math.floor(Math.random() * 30) + 1, // 生成1-30的随机数
-                date: date
-            };
-        });
-    });
-
-    try {
-        await conversationStatistics.insertMany(data);
-        console.log('Data inserted successfully');
-    } catch (err) {
-        console.error(err);
-    }
-}
 
 module.exports={
     createChatInfo

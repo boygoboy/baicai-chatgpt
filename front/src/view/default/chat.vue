@@ -413,6 +413,7 @@ export default {
       selectBot: null,
       chatmodel: null,
       chatParams: {},
+      claudechatObj:{},
     };
   },
   methods: {
@@ -504,8 +505,11 @@ export default {
             this.unofficalsettingdata.newbingKey.newbingcookie;
         }
         if(this.selectBot=="bard非官方"){
-          //TODO:暂时写死用于测试
-          this.chatParams.token ='WghNQIF4JGlcY7QiulKkEWqpaFPf1LctIqJ9xYWePLwhV6BcM_zbP6Cla7v_xlUxjqtEUg.'
+          this.chatParams.token =this.unofficalsettingdata.bardtoken
+        }
+        if(this.selectBot=="claude非官方"){
+          this.chatParams.token =this.unofficalsettingdata.claudeKey.token
+          this.chatParams.appid=this.unofficalsettingdata.claudeKey.appid
         }
       } else {
         this.$message.warning({
@@ -537,6 +541,12 @@ export default {
           customClass: "notiyfy",
         });
         return;
+      }
+      // 如果对话框是全新的，那么需要在对话列表开头添加一个空对话项
+      if(this.messageData.length==0){
+       let temmsg= this.sendMessage
+          this.createChat()
+          this.sendMessage=temmsg
       }
       this.formatChatConfig();
       if (this.chatParams.chatchannel == "chatgpt非官方") {
@@ -658,6 +668,23 @@ export default {
             this.bardChatObj.connectId=this.messageData[0].bardChatObj.connectId
           }
           newWebSocket.sendMsg(JSON.stringify(this.bardChatObj));
+      }
+           if(this.chatParams.chatchannel == "claude非官方"){
+          this.claudechatObj = {
+            token: this.chatParams.token,
+            appid: this.chatParams.appid,
+            enablecontext: this.chatParams.enablecontext,
+            model: this.chatParams.model,
+            message: this.sendMessage,
+          };
+          if(this.messageData.length==0){
+            this.claudechatObj.conversationId=null
+            this.claudechatObj.channelId=null
+          }else{
+            this.claudechatObj.conversationId=this.messageData[this.messageData.length-1].claudechatObj.conversationId
+            this.claudechatObj.channelId=this.messageData[this.messageData.length-1].claudechatObj.channelId
+         }
+          newWebSocket.sendMsg(JSON.stringify(this.claudechatObj));
       }
       this.loading = true;
       let meItem = {
@@ -877,7 +904,6 @@ export default {
         setTimeout(() => {
           this.handleMessageOutputEnd();
         }, 300);
-        let resultParms = data.replace("[DONE]", "");
         console.log(data)
         return;
       }
@@ -885,6 +911,59 @@ export default {
         setTimeout(() => {
           let newdata = data.replace(/\\n/g, "\r\n");
           this.inputText += newdata;
+          console.log(this.inputText);
+        }, 50);
+      }
+    },
+    // 处理claude非官方聊天消息
+        handleClaudeUnofficalMessage(data){
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+      if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        let result= JSON.parse(data.replace("[DONE]", ""));
+        this.claudechatObj.conversationId=result.conversationId;
+        this.claudechatObj.channelId=result.channel;
+        console.log(data)
+        return;
+      }
+      if (data != "[START]" && !data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText = newdata;
           console.log(this.inputText);
         }, 50);
       }
@@ -921,7 +1000,7 @@ export default {
             this.typeEnable = true;
             clearInterval(tempIntervalInstance);
           }
-        }, 200);
+        }, 150);
       }
       if (data == "[DONE]") {
         setTimeout(() => {
@@ -955,6 +1034,9 @@ export default {
         type: "bot",
         time: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
+      if(this.selectBot=='claude非官方'){
+        botItem.claudechatObj = JSON.parse(JSON.stringify(this.claudechatObj));
+      }
       this.messageData.splice(this.messageData.length - 1, 1, botItem);
       this.inputText = "";
       this.botobj.output = "";
@@ -971,6 +1053,11 @@ export default {
           .equals(this.messageData[0].time)
           .toArray();
         this.allMessageData.splice(0, 1, ...result);
+      }
+      // 主动选中左边的消息列表
+      console.log(this.historyItem)
+      if(this.historyItem.id==-1){
+        this.historyItem = this.allMessageData[0];
       }
     },
     translateWs() {
@@ -1039,6 +1126,22 @@ export default {
           },
         });
       }
+            if(this.selectBot=="claude非官方"){
+                newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/claudeunofficalchat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleClaudeUnofficalMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
     },
 
     initTyped(input, fn, hooks) {
@@ -1076,7 +1179,7 @@ export default {
     },
     // 选中历史聊天记录
     selectHistoryItem(item) {
-      this.historyItem = item;
+      this.historyItem = JSON.parse(JSON.stringify(item));
       this.messageData = item.messageData;
       console.log(this.messageData);
       if (this.messageData.length) {
@@ -1146,6 +1249,7 @@ export default {
         chats: "++id, &time, messageData",
       });
       this.allMessageData = await this.chatdb.chats.toArray();
+      this.allMessageData=this.allMessageData.reverse();
     },
     // 添加聊天记录到indexdb数据库
     async addChatIndexDb() {

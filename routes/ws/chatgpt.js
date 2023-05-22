@@ -9,6 +9,7 @@ const {bingUnOfficalChat}=require('../../controller/newBing/chat/index')
 const {limitRequestCount}=require('../../controller/chatGpt/utils/limitRequestCount')
 const {createChatInfo}=require('../../controller/homeStatistics/createChatInfo')
 const {bardUnofficalChat}=require('../../controller/googleBard/chat.js')
+const {claudeUnofficalChat}=require('../../controller/claude/chat.js')
 /**
  * route.ws('/url',(ws, req)=>{  })
  * 建立WebSocket服务，并指定对应接口url，及相应回调
@@ -25,6 +26,7 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
     console.log(data)
       data=JSON.parse(data)
      const msg=data.message
+     const modelParams=data.chatParams.modelParams
      const chatParams=data.chatParams
 
       let result=await limitRequestCount(req,{type:"chatgpt官方",model:chatParams.model})
@@ -32,11 +34,20 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
         ws.send('该模型接口请求次数超过限制！')
         return
       }
+      let isstream= modelParams.find(item => item.parameter=='stream')&&modelParams.find(item => item.parameter=='stream').value==1?true:false
     getStreamGptMessage({...chatParams,message:msg},(message)=>{
       if(message=="[DONE]"){
         createChatInfo(req,'chatgpt官方',chatParams.model)
       }
-      ws.send(message)
+      if(!isstream){
+        if(message!="[START]"&&message!="[DONE]"){
+          setTimeout(()=>{ws.send(message)},600)
+        }else{
+          ws.send(message)
+        }
+      }else{
+        ws.send(message)
+      }
     })
 
     aWss.clients.forEach((client)=> {
@@ -67,7 +78,7 @@ router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
         return
       }
     unOfficalChat(options,params,(message)=>{
-      if(message=="[DONE]"){
+      if(message.startsWith('[DONE]')){
         createChatInfo(req,'chatgpt非官方',params.model)
       }
       ws.send(message)
@@ -117,24 +128,43 @@ router.ws('/bardUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
       return
     }
       let options=JSON.parse(data)
-      // let result=await limitRequestCount(req,{type:"bard非官方",model:options.model})
-      // if(!result){
-      //   ws.send('该模型接口请求次数超过限制！')
-      //   return
-      // }
+      let result=await limitRequestCount(req,{type:"bard非官方",model:options.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
       let {userId}=req.user.userList
       options.userId=userId
       bardUnofficalChat(options,(message)=>{
         if(message.startsWith('[DONE]')){
-          // createChatInfo(req,'bard非官方',options.model)
+          createChatInfo(req,'bard非官方',options.model)
         }
       ws.send(message)
     },req)
   })
 })
 
-router.post('/test',(req,res)=>{
-   bardUnofficalChat(req,res)
+router.ws('/claudeUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
+  ws.on('message', async function (data) {
+    if(data=="heartbeat"){
+      return
+    }
+      let options=JSON.parse(data)
+      console.log(options)
+      let result=await limitRequestCount(req,{type:"claude非官方",model:options.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
+      let {userId}=req.user.userList
+      options.userId=userId
+      claudeUnofficalChat(options,(message)=>{
+        if(message.startsWith('[DONE]')){
+          createChatInfo(req,'claude非官方',options.model)
+        }
+      ws.send(message)
+    },req)
+  })
 })
 
 

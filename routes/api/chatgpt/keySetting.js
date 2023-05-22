@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,
-getOfficalKeyList,getUnofficaltokenList,getBingTokenList}=require('../../../controller/chatGpt/keySetting.js')
+getOfficalKeyList,getUnofficaltokenList,getBingTokenList,getBardUnofficalList,getClaudeTokenList}=require('../../../controller/chatGpt/keySetting.js')
 router.get("/officalkeysetting", (req, res) => {
     getOfficalKeys(req,res)
 })
@@ -30,6 +30,13 @@ router.get("/bingtokenlist",(req,res)=>{
     getBingTokenList(req,res)
 })
 
+router.get("/bardtokenlist",(req,res)=>{
+    getBardUnofficalList(req,res)
+})
+
+router.get("/claudetokenlist",(req,res)=>{
+    getClaudeTokenList(req,res)
+})
 
 
 module.exports = router;

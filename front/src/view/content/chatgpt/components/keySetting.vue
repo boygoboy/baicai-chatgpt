@@ -199,6 +199,88 @@
                 </el-form-item>
               </div>
             </div>
+
+              <div class="block">
+              <div class="title">
+                <span>bard</span>
+              </div>
+              <div class="form-body">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">token</span>
+                    <div>
+                      <el-select :disabled="!isEditUnOffical"
+                        popper-class="popper-class"
+                        :popper-append-to-body="false"
+                        :multiple-limit="1"
+                        multiple
+                        filterable
+                        allow-create
+                        clearable
+                        default-first-option
+                        v-model="unofficalkeyForm.bardtoken"
+                        placeholder="请选择或输入token"
+                        style="width: 100%"
+                      >
+                     <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in bardtokenOptions" :key="index">
+                       </el-option>
+                      </el-select>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+            </div>
+
+               <div class="block">
+              <div class="title">
+                <span>claude</span>
+              </div>
+              <div class="form-body">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">token</span>
+                    <div>
+                      <el-select :disabled="!isEditUnOffical"
+                        popper-class="popper-class"
+                        :popper-append-to-body="false"
+                        :multiple-limit="1"
+                        multiple
+                        filterable
+                        allow-create
+                        clearable
+                        default-first-option
+                        v-model="unofficalkeyForm.claudetoken"
+                        placeholder="请选择或输入token"
+                        style="width: 100%"
+                        @change="selectClaudeToken"
+                      >
+                     <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in claudetokenOptions" :key="index">
+                       </el-option>
+                      </el-select>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+               <div class="form-body" style="padding-top:0px;">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">appid</span>
+                    <div>
+                    <el-input :disabled="!isEditUnOffical||unofficalkeyForm.claudetoken==''"
+                      type="textarea"
+                      :rows="1"
+                      placeholder="请输入appid"
+                      v-model="unofficalkeyForm.claudeappid">
+                      </el-input>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+            </div>
+            
+
           </el-form>
                   <div class="action-btn" v-if="isEditUnOffical">
              <el-button @click="cancelUnOfficalEdit">取 消</el-button>
@@ -223,6 +305,9 @@ export default {
         accesstoken4: [],
         newbingtoken: [],
         newbingcookie: "",
+        bardtoken:[],
+        claudetoken:[],
+        claudeappid:"",
       },
       isEditOffical:false,
       isEditUnOffical:false,
@@ -231,6 +316,8 @@ export default {
       accesstoken3Options:[],
       accesstoken4Options:[],
       bingtokenOptions:[],
+      bardtokenOptions:[],
+      claudetokenOptions:[],
     };
   },
   methods:{
@@ -249,8 +336,13 @@ export default {
           newbingKey:{
             newbingtoken:this.unofficalkeyForm.newbingtoken.length>0?this.unofficalkeyForm.newbingtoken[0]:'',
             newbingcookie:this.unofficalkeyForm.newbingcookie?this.unofficalkeyForm.newbingcookie:''
+          },
+          bardtoken:this.unofficalkeyForm.bardtoken.length>0?this.unofficalkeyForm.bardtoken[0]:'',
+          claudeKey:{
+            token:this.unofficalkeyForm.claudetoken.length>0?this.unofficalkeyForm.claudetoken[0]:'',
+            appid:this.unofficalkeyForm.claudeappid?this.unofficalkeyForm.claudeappid:''
           }
-        }
+       }
         if(this.unofficalkeyForm._id){
           data._id=this.unofficalkeyForm._id
         }
@@ -302,6 +394,9 @@ export default {
         accesstoken4: [],
         newbingtoken: [],
         newbingcookie: "",
+        bardtoken:[],
+        claudetoken:[],
+        claudeappid:"",
       }
     },
     getOfficalKeys(){
@@ -341,6 +436,9 @@ export default {
           this.unofficalkeyForm.accesstoken4=res.data.accesstoken4?[res.data.accesstoken4]:[]
           this.unofficalkeyForm.newbingtoken=(res.data.newbingKey&&res.data.newbingKey.newbingtoken)?[res.data.newbingKey.newbingtoken]:[]
           this.unofficalkeyForm.newbingcookie=(res.data.newbingKey&&res.data.newbingKey.newbingcookie)?res.data.newbingKey.newbingcookie:''
+          this.unofficalkeyForm.bardtoken=res.data.bardtoken?[res.data.bardtoken]:[]
+          this.unofficalkeyForm.claudetoken=(res.data.claudeKey&&res.data.claudeKey.token)?[res.data.claudeKey.token]:[]
+          this.unofficalkeyForm.claudeappid=(res.data.claudeKey&&res.data.claudeKey.appid)?res.data.claudeKey.appid:''
           if(res.data._id){
             this.unofficalkeyForm._id=res.data._id
           }
@@ -356,6 +454,16 @@ export default {
           })
           this.bingtokenOptions.forEach(item=>{
             if(item.token==this.unofficalkeyForm.newbingtoken[0]){
+              item.disabled=false
+            }
+          })
+          this.bardtokenOptions.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.bardtoken[0]){
+              item.disabled=false
+            }
+          })
+          this.claudetokenOptions.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.claudetoken[0]){
               item.disabled=false
             }
           })
@@ -414,11 +522,27 @@ export default {
         this.bingtokenOptions=res.data
       }
     },
+        // 获取claude token下拉列表
+    async getClaudeTokenList(){
+      let res=await this.$http.getClaudeTokenList()
+      if(res.errorCode=='0000'){
+        this.claudetokenOptions=res.data
+      }
+    },
+    // 获取bard token下拉列表
+    async getBardTokenList(){
+      let res=await this.$http.getBardTokenList()
+      if(res.errorCode=='0000'){
+        this.bardtokenOptions=res.data
+      }
+    },
     // 初始化chatgpt非官方token下拉列表
     async initunofficaltokenlist(){
       await this.getUnofficaltokenList('免费账号')
       await this.getUnofficaltokenList('升级账号')
       await this.getBingTokenList()
+      await this.getBardTokenList()
+      await this.getClaudeTokenList()
       this.getUnOfficalKeys()  
     },
     // 选择bingtoken事件
@@ -428,7 +552,15 @@ export default {
       if(result){
         this.unofficalkeyForm.newbingcookie=result.cookie
       }
-    }
+    },
+    // 选择claudetoken事件
+    selectClaudeToken(val){
+      this.unofficalkeyForm.claudeappid=''
+      let result=this.claudetokenOptions.find(item=>item.token==val)
+      if(result){
+        this.unofficalkeyForm.claudeappid=result.appid
+      }
+    },
   },
   created(){
     this.initofficalkeylist()

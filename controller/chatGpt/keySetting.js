@@ -4,9 +4,12 @@ const unofficalkeys = require('../../db/models/chatgpt/keyUnOfficalSchema')
 const keylist =require('../../db/models/chatgpt/keyListSchema')
 const tokenlist=require('../../db/models/chatgpt/tokenListSchema')
 const binglist=require('../../db/models/chatgpt/bingListSchema')
+const bardlist=require('../../db/models/chatgpt/bardListSchema')
+const claudelist=require('../../db/models/chatgpt/claudeListSchema')
 const {encrypt,decrypt}=require('../../utils/encryption')
-const {updateAccountStatusOnce,updateTokenStatus,updateBingUsedCount}=require('../../utils/timedTask')
+const {updateAccountStatusOnce,updateTokenStatus,updateBingUsedCount,updateBardUsedCount,updateClaudeUsedCount}=require('../../utils/timedTask')
 const AsyncLock = require('async-lock');
+const { type } = require('fetch-undici')
 const lock = new AsyncLock();
 
 const getOfficalKeys=async (req,res)=>{
@@ -174,11 +177,27 @@ const getUnofficalKeys=async (req,res)=>{
                 result.newbingKey.newbingcookie=''
             }
         }
+        if(result&&result.bardtoken){
+            const obj=await bardlist.findOne({token:result.bardtoken}).exec()
+            if(obj&&obj.enablestatus!='启用'){
+                result.bardtoken=''
+            }
+        }
+        if(result&&result.claudeKey&&result.claudeKey.token){
+            const obj=await claudelist.findOne({token:result.claudeKey.token}).exec()
+            if(obj&&obj.enablestatus!='启用'){
+                result.claudeKey.token=''
+                result.claudeKey.appid=''
+            }
+        }
         if(result){
             result.accesstoken3=result.accesstoken3?encrypt(result.accesstoken3):result.accesstoken3
             result.accesstoken4=result.accesstoken4?encrypt(result.accesstoken4):result.accesstoken4
             result.newbingKey.newbingtoken=result.newbingKey.newbingtoken?encrypt(result.newbingKey.newbingtoken):result.newbingKey.newbingtoken
             result.newbingKey.newbingcookie=result.newbingKey.newbingcookie?encrypt(result.newbingKey.newbingcookie):result.newbingKey.newbingcookie
+            result.bardtoken=result.bardtoken?encrypt(result.bardtoken):result.bardtoken
+            result.claudeKey.token=result.claudeKey.token?encrypt(result.claudeKey.token):result.claudeKey.token
+            result.claudeKey.appid=result.claudeKey.appid?encrypt(result.claudeKey.appid):result.claudeKey.appid
         }
         return res.json({
             errorCode:'0000',
@@ -197,11 +216,13 @@ const getUnofficalKeys=async (req,res)=>{
 
 const postUnofficalKeys=async (req,res)=>{
     await lock.acquire("unofficalkeysetting", async (done) => {
-      let {_id,accesstoken3,accesstoken4,newbingKey}=req.body
+      let {_id,accesstoken3,accesstoken4,newbingKey,bardtoken,claudeKey}=req.body
         let {userId}=req.user.userList
         try{
              await updateTokenStatus()
              await updateBingUsedCount()
+             await updateBardUsedCount()
+             await updateClaudeUsedCount()
             const countResult= await Counter.findOne({id:'unofficalkeyId'})
             if(!countResult){
               await Counter.create({
@@ -214,6 +235,9 @@ const postUnofficalKeys=async (req,res)=>{
             accesstoken4=accesstoken4?decrypt(accesstoken4):accesstoken4
             newbingKey.newbingtoken=newbingKey.newbingtoken?decrypt(newbingKey.newbingtoken):newbingKey.newbingtoken
             newbingKey.newbingcookie=newbingKey.newbingcookie?decrypt(newbingKey.newbingcookie):newbingKey.newbingcookie
+            bardtoken=bardtoken?decrypt(bardtoken):bardtoken
+            claudeKey.token=claudeKey.token?decrypt(claudeKey.token):claudeKey.token
+            claudeKey.appid=claudeKey.appid?decrypt(claudeKey.appid):claudeKey.appid
             const count = await Counter.findOneAndUpdate({ id: 'unofficalkeyId' }, { $inc: { sequence_value: 1 } }, { new: true })
         //   判断资源被使用数量校验能够提交
             if(accesstoken3){
@@ -266,6 +290,40 @@ const postUnofficalKeys=async (req,res)=>{
                 } 
             }
           
+            if(bardtoken){
+                let result4=await bardlist.findOne({token:bardtoken})
+                // 如果更新的是已经绑定的密钥则跳过校验
+                let obj=await unofficalkeys.findOne({userId})
+                if(!obj||obj.bardtoken!=bardtoken){
+                    if(result4){
+                        if(result4.usedcount>=result4.sharecount){
+                            return res.json({
+                                errorCode:'2002',
+                                message:'该token已被使用完!',
+                                data:null
+                            })
+                        }
+                    }
+                }
+            }
+
+            if(claudeKey.token){
+                let result=await claudelist.findOne({token:claudeKey.token}).exec()
+            // 如果更新的是已经绑定的密钥则跳过校验
+            let obj= await unofficalkeys.findOne({userId})
+                if(!obj||obj.claudeKey.token!=claudeKey.token){
+                    if(result){
+                        if(result.usedcount>=result.sharecount){
+                            return res.json({
+                                errorCode:'2002',
+                                message:'该token已被使用完!',
+                                data:null
+                            })
+                        }
+                    }
+                } 
+            }
+
             if(!_id){
               try{
                 const unofficalKeys = await new unofficalkeys({
@@ -273,7 +331,9 @@ const postUnofficalKeys=async (req,res)=>{
                     userId,
                     accesstoken3,
                     accesstoken4,
-                    newbingKey
+                    newbingKey,
+                    bardtoken,
+                    claudeKey
                 })
                 await unofficalKeys.save();
                 done()
@@ -294,7 +354,9 @@ const postUnofficalKeys=async (req,res)=>{
               const row=await unofficalkeys.findOneAndUpdate({_id},{
                 accesstoken3,
                 accesstoken4,
-                newbingKey
+                newbingKey,
+                bardtoken,
+                claudeKey
               })
               if(row){
                 done()
@@ -405,6 +467,7 @@ const findKeys = async (roleNames, type, role) => {
 const findTokens = async (roleNames, type, role) => {
     const query = tokenlist.find({
         enablestatus: '启用',
+        tokenstatus: '在线',
         $expr: {
           $lte: ['$usedcount', '$sharecount']
         }
@@ -477,6 +540,7 @@ const getUnofficaltokenList=async (req,res)=>{
 const findBingTokens = async (roleNames, role) => {
     const query = binglist.find({
         enablestatus: '启用',
+        tokenstatus: '在线',
         $expr: {
           $lte: ['$usedcount', '$sharecount']
         }
@@ -532,9 +596,126 @@ const getBingTokenList=async (req,res)=>{
     }
 }
 
+// 获取bard token下拉列表
+const getBardUnofficalList=async (req,res)=>{
+    let {userId,role,roleNames}=req.user.userList
+    try{
+        await updateBardUsedCount()
+        const results = await findBardTokens(roleNames, role);
+        console.log(results);
+       const finalResult= filterBardTokenList(results)
+        return res.json({
+            errorCode:'0000',
+            message:'查询成功！',
+            data:finalResult
+        })
+    }catch(error){
+        res.json({
+            errorCode: '500',
+            message: '服务器错误!',
+            data: error
+        })
+        throw error
+    }
+}
+
+const findBardTokens = async (roleNames, role) => {
+    const query = bardlist.find({
+        enablestatus: '启用',
+        tokenstatus: '在线',
+        $expr: {
+          $lte: ['$usedcount', '$sharecount']
+        }
+      });
+
+  if (role !== 0) {
+    query.where('shareroles').in(roleNames);
+  }
+  const results = await query.exec();
+  return results;
+};
+
+const filterBardTokenList = (results) => {
+    let finalResult = [];
+    results.forEach((item,index) => {
+        let obj={
+            id:item._id,
+            token:encrypt(item.token),
+            usedcount:item.usedcount,
+            sharecount:item.sharecount,
+            label:`bard-线路${index+1}`
+        }
+        if(item.usedcount==item.sharecount){
+            obj.disabled=true
+        }else{
+            obj.disabled=false
+        }
+        finalResult.push(obj)
+    })
+    return finalResult
+}
+// 获取claude token下拉列表
+const getClaudeTokenList=async (req,res)=>{
+    let {userId,role,roleNames}=req.user.userList
+    try{
+        await updateClaudeUsedCount()
+        const results = await findClaudeTokens(roleNames, role);
+        console.log(results);
+       const finalResult= filterClaudeTokenList(results)
+        return res.json({
+            errorCode:'0000',
+            message:'查询成功！',
+            data:finalResult
+        })
+    }catch(error){
+        res.json({
+            errorCode: '500',
+            message: '服务器错误!',
+            data: error
+        })
+        throw error
+    }
+}
+
+const findClaudeTokens = async (roleNames, role) => {
+    const query = claudelist.find({
+        enablestatus: '启用',
+        tokenstatus: '在线',
+        $expr: {
+          $lte: ['$usedcount', '$sharecount']
+        }
+      });
+
+  if (role !== 0) {
+    query.where('shareroles').in(roleNames);
+  }
+  const results = await query.exec();
+  return results;
+};
+const filterClaudeTokenList = (results) => {
+    let finalResult = [];
+    results.forEach((item,index) => {
+        let obj={
+            id:item._id,
+            type:item.type,
+            token:encrypt(item.token),
+            appid:encrypt(item.appid),
+            usedcount:item.usedcount,
+            sharecount:item.sharecount,
+            label:`claude-${item.type}线路${index+1}`
+        }
+        if(item.usedcount==item.sharecount){
+            obj.disabled=true
+        }else{
+            obj.disabled=false
+        }
+        finalResult.push(obj)
+    })
+    return finalResult
+}
 
 
 module.exports={
     getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,getOfficalKeyList,
-    getUnofficaltokenList,getBingTokenList
+    getUnofficaltokenList,getBingTokenList,getBardUnofficalList,getClaudeTokenList
 }

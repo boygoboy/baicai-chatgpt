@@ -182,6 +182,116 @@
         </el-table>
                 </div>
             </div>
+            <!-- bard非官方 -->
+                <div class="block-item">
+                <div class="header">
+                    <span class="block-title">bard非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openbardunofficalSetting" @click="openbardunofficalSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveBardUnOfficalSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="bardUnOfficalTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openbardunofficalSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openbardunofficalSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="次数" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openbardunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="cycle" label="周期" min-width="15">
+                 <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.cycle"  v-if="openbardunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.cycle}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="单位" min-width="15">
+                            <template slot-scope="scope">
+                     <el-select v-model="scope.row.unit"  style="width:100%;" class="table-select"
+                     v-if="openbardunofficalSetting">
+                        <el-option label="分钟" value="分钟"></el-option>
+                        <el-option label="小时" value="小时"></el-option>
+                     </el-select>
+                    <span v-else>{{scope.row.unit}}</span>
+                </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
+
+            <!-- claude非官方 -->
+                    <div class="block-item">
+                <div class="header">
+                    <span class="block-title">claude非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openclaudeunofficalSetting" @click="openclaudeunofficalSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveClaudeUnOfficalSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="claudeUnOfficalTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openclaudeunofficalSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openclaudeunofficalSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="次数" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openclaudeunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="cycle" label="周期" min-width="15">
+                 <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.cycle"  v-if="openclaudeunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.cycle}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="单位" min-width="15">
+                            <template slot-scope="scope">
+                     <el-select v-model="scope.row.unit"  style="width:100%;" class="table-select"
+                     v-if="openclaudeunofficalSetting">
+                        <el-option label="分钟" value="分钟"></el-option>
+                        <el-option label="小时" value="小时"></el-option>
+                     </el-select>
+                    <span v-else>{{scope.row.unit}}</span>
+                </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
+
          </div>
           <el-divider direction="vertical"></el-divider>
           <div class="right">
@@ -309,6 +419,89 @@
         </el-table>
                 </div>
             </div>
+<!-- bard非官方 -->
+             <div class="block-item">
+                <div class="header">
+                    <span class="block-title">bard非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openbardunofficalpriceSetting" @click="openbardunofficalpriceSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveBardUnOfficalPriceSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="bardunofficalPriceTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openbardunofficalpriceSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openbardunofficalpriceSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="积分" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openbardunofficalpriceSetting" class="select-inputnumber"
+                    size="mini" :min="0"  style="width:100%;"
+                     :step="10"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="计量值" min-width="15">
+            <template slot-scope="scope">
+                <span :style="{paddingLeft:openbardunofficalpriceSetting?'6px':'0px'}">{{scope.row.unit}}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
+
+            <!-- claude非官方 -->
+             <div class="block-item">
+                <div class="header">
+                    <span class="block-title">claude非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openclaudeunofficalpriceSetting" @click="openclaudeunofficalpriceSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveClaudeUnOfficalPriceSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="claudeunofficalPriceTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openclaudeunofficalpriceSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openclaudeunofficalpriceSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="积分" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openclaudeunofficalpriceSetting" class="select-inputnumber"
+                    size="mini" :min="0"  style="width:100%;"
+                     :step="10"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="计量值" min-width="15">
+            <template slot-scope="scope">
+                <span :style="{paddingLeft:openclaudeunofficalpriceSetting?'6px':'0px'}">{{scope.row.unit}}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
 
           </div>
         </div>
@@ -367,6 +560,22 @@ export default {
                   {model:'balanced',count:0,unit:'1 次'},
             ],
             openbingunofficalpriceSetting:false,
+             bardUnOfficalTableData:[
+                 {model:'PaLM 2',count:0,cycle:0,unit:'分钟'},
+            ],
+            openbardunofficalSetting:false,
+            openbardunofficalpriceSetting:false,
+            bardunofficalPriceTableData:[
+                {model:'PaLM 2',count:0,unit:'1 次'},
+            ],
+            openclaudeunofficalSetting:false,
+             claudeUnOfficalTableData:[
+                 {model:'slack',count:0,cycle:0,unit:'分钟'},
+            ],
+            openclaudeunofficalpriceSetting:false,
+            claudeunofficalPriceTableData:[
+                {model:'slack',count:0,unit:'1 次'},
+            ],
              roleData:[],
              selectRoleItem:null,
         };
@@ -428,6 +637,48 @@ export default {
                     type: "success",
                 });
                 this.getIngerfaceRateList(this.selectRoleItem._id,'newbing非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
+               async saveBardUnOfficalSetting(){
+            this.openbardunofficalSetting=false;
+                     let data={
+            roleId:this.selectRoleItem._id,
+            type:'bard非官方',
+            rateData:this.bardUnOfficalTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfaceRate(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getIngerfaceRateList(this.selectRoleItem._id,'bard非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
+             async saveClaudeUnOfficalSetting(){
+            this.openclaudeunofficalSetting=false;
+                     let data={
+            roleId:this.selectRoleItem._id,
+            type:'claude非官方',
+            rateData:this.claudeUnOfficalTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfaceRate(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getIngerfaceRateList(this.selectRoleItem._id,'claude非官方');
             }else{
                 this.$message({
                     message: message,
@@ -498,6 +749,48 @@ export default {
                 });
             }
         },
+               async saveBardUnOfficalPriceSetting(){
+            this.openbardunofficalpriceSetting=false;
+            let data={
+            roleId:this.selectRoleItem._id,
+            type:'bard非官方',
+            priceData:this.bardunofficalPriceTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfacePrice(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getInterfacePriceList(this.selectRoleItem._id,'bard非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
+          async saveClaudeUnOfficalPriceSetting(){
+            this.openclaudeunofficalpriceSetting=false;
+            let data={
+            roleId:this.selectRoleItem._id,
+            type:'claude非官方',
+            priceData:this.claudeunofficalPriceTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfacePrice(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getInterfacePriceList(this.selectRoleItem._id,'claude非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
             //获取角色
     async getRoleList() {
         const query={
@@ -515,6 +808,8 @@ export default {
             this.getIngerfaceRateList(this.roleData[0]._id,'chatgpt官方');//   查询对应角色的对话指标数据
             this.getIngerfaceRateList(this.roleData[0]._id,'chatgpt非官方');//   查询对应角色的对话指标数据
             this.getIngerfaceRateList(this.roleData[0]._id,'newbing非官方');
+            this.getIngerfaceRateList(this.roleData[0]._id,'bard非官方');
+            this.getIngerfaceRateList(this.roleData[0]._id,'claude非官方');
         }
     },
     switchRole(item){
@@ -538,11 +833,17 @@ export default {
                  {model:'Sydney',count:0,cycle:0,unit:'分钟'},
                   {model:'balanced',count:0,cycle:0,unit:'分钟'},
             ]
+              this.bardUnOfficalTableData=[
+                {model:'PaLM 2',count:0,cycle:0,unit:'分钟'},
+            ]
+            this.claudeUnOfficalTableData=[
+                {model:'slack',count:0,cycle:0,unit:'分钟'},
+            ]
             this.gptofficalPriceTableData=[
-                {model:'gpt-4',count:0,unit:'1000 tokens'},
-                {model:'gpt-3.5-turbo-0301',count:0,unit:'1000 tokens'},
-                {model:'gpt-3.5-turbo',count:0,unit:'1000 tokens'},
-                {model:'text-davinci-003',count:0,unit:'1000 tokens'}
+                {model:'gpt-4',count:0,unit:'1次'},
+                {model:'gpt-3.5-turbo-0301',count:0,unit:'1次'},
+                {model:'gpt-3.5-turbo',count:0,unit:'1次'},
+                {model:'text-davinci-003',count:0,unit:'1次'}
             ],
             this.gptunofficalPriceTableData=[
                {model:'gpt-4',count:0,unit:'1 次'},
@@ -558,13 +859,23 @@ export default {
                  {model:'Sydney',count:0,unit:'1 次'},
                   {model:'balanced',count:0,unit:'1 次'},
             ],
+            this.bardunofficalPriceTableData=[
+                {model:'PaLM 2',count:0,unit:'1 次'},
+            ]
+            this.claudeunofficalPriceTableData=[
+                {model:'slack',count:0,unit:'1 次'},
+            ]
         this.selectRoleItem=item;
         this.getIngerfaceRateList(item._id,'chatgpt官方');//   查询对应角色的对话指标数据
         this.getIngerfaceRateList(item._id,'chatgpt非官方');//   查询对应角色的对话指标数据
         this.getIngerfaceRateList(item._id,'newbing非官方');
+        this.getIngerfaceRateList(item._id,'bard非官方');
+        this.getIngerfaceRateList(item._id,'claude非官方');
         this.getInterfacePriceList(item._id,'chatgpt官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(item._id,'chatgpt非官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(item._id,'newbing非官方');
+        this.getInterfacePriceList(item._id,'bard非官方');
+        this.getInterfacePriceList(item._id,'claude非官方');
     },
     // 获取对应角色的对话指标数据
     async getIngerfaceRateList(roleId,type){
@@ -587,6 +898,16 @@ export default {
             if(type=='newbing非官方'){
                 if(data.length){
                 this.bingUnOfficalTableData=data;
+                }
+            }
+                if(type=='bard非官方'){
+                if(data.length){
+                this.bardUnOfficalTableData=data;
+                }
+            }
+                if(type=='claude非官方'){
+                if(data.length){
+                this.claudeUnOfficalTableData=data;
                 }
             }
         }
@@ -612,6 +933,16 @@ export default {
             if(type=='newbing非官方'){
                 if(data.length){
                 this.bingunofficalPriceTableData=data;
+                }
+            }
+            if(type=='bard非官方'){
+                if(data.length){
+                this.bardunofficalPriceTableData=data;
+                }
+            }
+            if(type=='claude非官方'){
+                if(data.length){
+                this.claudeunofficalPriceTableData=data;
                 }
             }
         }

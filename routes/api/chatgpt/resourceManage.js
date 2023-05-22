@@ -3,6 +3,8 @@ const router = express.Router();
 const {getKeyList,postKeyList,putKeyList,deleteKeyList,getKeyDetail,changeKeyStatus}=require('../../../controller/chatGpt/keylist.js')
 const {getTokenList,postTokenList,putTokenList,deleteTokenList,getTokenDetail,changeEnableStatus,loginToken,loginSession}=require('../../../controller/chatGpt/tokenlist.js')
 const {getBingList,postBingList,putBingList,deleteBingList,getBingDetail,changeBingStatus}=require('../../../controller/chatGpt/binglist.js')
+const {getBardList,postBardList,putBardList,getBardDetail,deleteBardList,changeBardStatus}=require('../../../controller/chatGpt/bardlist.js')
+const {getClaudeList,postClaudeList,putClaudeList,getClaudeDetail,deleteClaudeList,changeClaudeStatus}=require('../../../controller/chatGpt/claudelist.js')
 router.get("/keylist", (req, res) => {
     getKeyList(req,res)
 })
@@ -88,6 +90,57 @@ router.delete("/binglist/:ids", (req, res) => {
 
 router.put("/binglist/bingstatus",(req,res)=>{
     changeBingStatus(req,res)
+})
+
+// bard接口模块
+
+router.get("/bardlist",(req,res)=>{
+    getBardList(req,res)
+})
+
+router.get("/onebard/:id",(req,res)=>{
+    getBardDetail(req,res)
+})
+
+router.post("/bardlist",(req,res)=>{
+    postBardList(req,res)
+})
+
+router.put("/bardlist",(req,res)=>{
+    putBardList(req,res)
+})
+
+router.delete("/bardlist/:ids",(req,res)=>{
+    deleteBardList(req,res)
+})
+
+router.put("/bardlist/bardstatus",(req,res)=>{
+    changeBardStatus(req,res)
+})
+
+// claude接口模块
+router.get("/claudelist",(req,res)=>{
+    getClaudeList(req,res)
+})
+
+router.get("/oneclaude/:id",(req,res)=>{
+    getClaudeDetail(req,res)
+})
+
+router.post("/claudelist",(req,res)=>{
+    postClaudeList(req,res)
+})
+
+router.put("/claudelist",(req,res)=>{
+    putClaudeList(req,res)
+})
+
+router.delete("/claudelist/:ids",(req,res)=>{
+    deleteClaudeList(req,res)
+})
+
+router.put("/claudelist/claudestatus",(req,res)=>{
+    changeClaudeStatus(req,res)
 })
 
 module.exports = router;

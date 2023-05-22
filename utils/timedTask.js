@@ -2,15 +2,21 @@ const mongoose = require('mongoose');
 const keylist = require('../db/models/chatgpt/keyListSchema')
 const tokenlist=require('../db/models/chatgpt/tokenListSchema')
 const binglist=require('../db/models/chatgpt/bingListSchema')
+const bardlist=require('../db/models/chatgpt/bardListSchema')
+const claudelist=require('../db/models/chatgpt/claudeListSchema')
 const keyoffical=require('../db/models/chatgpt/keyOfficalSchema')
 const keyunoffical=require('../db/models/chatgpt/keyUnOfficalSchema')
-const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive} =require('../controller/chatGpt/utils/gptCommon');
+const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive} =require('../controller/chatGpt/utils/gptCommon');
 let intervalInstance = null;
 let updateGptAccountInstance = null;
 let updateTokenInstance = null;
 let updateTokenAndSessionInstance=null;
 let updateBingUsedCountInstance=null;
 let updateBingStatusInstance=null;
+let updateBardUsedCountInstance=null;
+let updateBardStatusInstance=null;
+let updateClaudeUsedCountInstance=null;
+let updateClaudeStatusInstance=null;
 const intervalTime = 1000 * 60 * 60; // 3 minutes
 async function updateApikeyCount() {
  const apikeyUsedInfo = {};
@@ -139,6 +145,34 @@ async function updateBingTokenUsedCount(token, usedCount) {
     }
 
     const result = await binglist.findOneAndUpdate(
+      { token: token},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+
+// 将bardtoken数量更新到bardlist表中
+async function updateBardTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'bardListSchema');
+
+    if (!collectionExists) {
+      console.log('bardListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await bardlist.findOneAndUpdate(
       { token: token},
       { usedcount: usedCount },
       { new: true }
@@ -392,6 +426,191 @@ const updateBingStatus =async ()=>{
   }
 }
 
+// 更新bard的使用数量
+const updateBardUsedCount =async ()=>{
+  const bardUsedInfo = {};
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+
+    if (!collectionExists) {
+      console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+      return;
+    }
+   
+    const collectionExists1 = collections.some((collection) => collection.name === 'bardListSchema');
+
+    if (!collectionExists1) {
+      console.log('bardListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+
+    await bardlist.updateMany({}, { $set: { usedcount: 0 } });
+
+    const aggregation = await keyunoffical.aggregate([
+     { $match: { "bardtoken": { $exists: true, $ne: "" } } },
+     { $group: { _id: "$bardtoken", count: { $sum: 1 } } },
+ ]);
+ 
+    aggregation.forEach(({ _id, count }) => {
+      bardUsedInfo[_id] = count;
+    });
+
+
+    // 将统计的token被使用数量更新到bingList表中
+    for (const [bardtoken, usedCount] of Object.entries(bardUsedInfo)) {
+        await updateBardTokenUsedCount(bardtoken, usedCount);
+    }
+
+    console.log('Updated token count:', JSON.stringify(bardUsedInfo));
+  } catch (error) {
+    console.error('Error fetching API key count:', error);
+  }
+}
+
+// 更新bard的状态
+const updateBardStatus =async ()=>{
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'bardListSchema');
+
+    if (!collectionExists) {
+      console.log('bardListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const records = await bardlist.find({});
+
+    const updatedRecords = records.map(async(record) => {
+      // 根据需要修改字段
+      if(record.token){
+       let tokenstatus= await bardIsLive(record.token)
+       if(tokenstatus){
+        record.tokenstatus = '在线'
+       }else{
+        record.tokenstatus='离线'
+       }
+      }
+      return record.save();
+    });
+
+    await Promise.all(updatedRecords);
+    console.log('Updated all records in the bardList collection.');
+  } catch (error) {
+    console.error('Error updating records:', error);
+  }
+}
+
+
+
+// 更新claude的使用数量
+const updateClaudeUsedCount =async ()=>{
+  const claudeUsedInfo = {};
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+
+    if (!collectionExists) {
+      console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+      return;
+    }
+   
+    const collectionExists1 = collections.some((collection) => collection.name === 'claudeListSchema');
+
+    if (!collectionExists1) {
+      console.log('claudeListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+
+    await claudelist.updateMany({}, { $set: { usedcount: 0 } });
+
+    const aggregation = await keyunoffical.aggregate([
+      { $match: { "claudeKey.token": { $exists: true, $ne: "" } } },
+      { $group: { _id: "$claudeKey.token", count: { $sum: 1 } } },
+ ]);
+ 
+    aggregation.forEach(({ _id, count }) => {
+      claudeUsedInfo[_id] = count;
+    });
+
+
+    // 将统计的token被使用数量更新到bingList表中
+    for (const [claudetoken, usedCount] of Object.entries(claudeUsedInfo)) {
+        await updateClaudeTokenUsedCount(claudetoken, usedCount);
+    }
+
+    console.log('Updated token count:', JSON.stringify(claudeUsedInfo));
+  } catch (error) {
+    console.error('Error fetching API key count:', error);
+  }
+}
+
+// 将claudetoken数量更新到claudelist表中
+async function updateClaudeTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'claudeListSchema');
+
+    if (!collectionExists) {
+      console.log('claudeListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await claudelist.findOneAndUpdate(
+      { token: token},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+
+// 更新claude的状态
+const updateClaudeStatus =async ()=>{
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'claudeListSchema');
+
+    if (!collectionExists) {
+      console.log('claudeListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const records = await claudelist.find({});
+
+    const updatedRecords = records.map(async(record) => {
+      // 根据需要修改字段
+      if(record.token){
+       let tokenstatus= await claudeceIsLive(record.token,record.appid)
+       if(tokenstatus){
+        record.tokenstatus = '在线'
+       }else{
+        record.tokenstatus='离线'
+       }
+      }
+      return record.save();
+    });
+
+    await Promise.all(updatedRecords);
+    console.log('Updated all records in the claudeList collection.');
+  } catch (error) {
+    console.error('Error updating records:', error);
+  }
+}
 
 
 // 定时更新apikey被使用情况
@@ -462,10 +681,51 @@ const loopUpdateBingStatus=async ()=>{
   }, intervalTime);
 }
 
+// 定时更新bard的使用情况
+const loopUpdateBardUsedCount=async ()=>{
+  if(updateBardUsedCountInstance){
+      clearInterval(updateBardUsedCountInstance);
+  }
+  updateBardUsedCountInstance= setInterval(()=>{
+    updateBardUsedCount()
+  }, intervalTime);
+}
+// 定时更新bard的状态
+const loopUpdateBardStatus=async ()=>{
+  if(updateBardStatusInstance){
+      clearInterval(updateBardStatusInstance);
+  }
+  updateBardStatusInstance= setInterval(()=>{
+    updateBardStatus()
+  }, intervalTime);
+}
+
+// 定时更新claude的使用情况
+const loopUpdateClaudeUsedCount=async ()=>{
+  if(updateClaudeUsedCountInstance){
+      clearInterval(updateClaudeUsedCountInstance);
+  }
+  updateClaudeUsedCountInstance= setInterval(()=>{
+    updateClaudeUsedCount()
+  }, intervalTime);
+}
+
+// 定时更新claude的状态
+const loopUpdateClaudeStatus=async ()=>{
+  if(updateClaudeStatusInstance){
+      clearInterval(updateClaudeStatusInstance);
+  }
+  updateClaudeStatusInstance= setInterval(()=>{
+    updateClaudeStatus()
+  }, intervalTime);
+}
+
 module.exports={
     updateAccountStatus,updateAccountStatusOnce,updateGptAccountStatusOnce,loopupdateGptAccountStatus,
     loopUpdateTokenStatus,updateTokenStatus,updateTokenAndSessionStatus,loopUpdateTokenAndSessionStatus,
-    updateBingUsedCount,loopUpdateBingUsedCount,updateBingStatus,loopUpdateBingStatus
+    updateBingUsedCount,loopUpdateBingUsedCount,updateBingStatus,loopUpdateBingStatus,
+    updateBardUsedCount,loopUpdateBardUsedCount,updateBardStatus,loopUpdateBardStatus,
+    updateClaudeUsedCount,loopUpdateClaudeUsedCount,updateClaudeStatus,loopUpdateClaudeStatus
 }
 
 
