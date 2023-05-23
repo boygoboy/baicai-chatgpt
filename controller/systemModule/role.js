@@ -1,6 +1,8 @@
 const Role = require('../../db/models/roleSchema')
 const Counter = require('../../db/models/counterSchema')
 const pagerFun = require('../../utils/pager')
+const {initInterfaceRate}=require('../../db/initdb/utils/initInterfaceRate.js')
+const {initInterfacePrice}=require('../../db/initdb/utils/initInterfacePrice.js')
 //查询角色
 const rolelist = async (req,res) => {
     let { roleName, pageNum, pageSize }=req.query
@@ -69,6 +71,9 @@ const addrole = async (req,res) => {
             roleId: count.sequence_value, ...updataPrams
         })
         await Roles.save();
+        // 初始化对话速率数据
+        initInterfaceRate()
+        initInterfacePrice()
         return res.json({
             errorCode: '0000',
             message: '新增角色成功!',
@@ -124,6 +129,8 @@ const deleterole = async (req,res) => {
     //_id接收数组
     try {
         await Role.deleteMany({ _id: { $in: _id } })
+        initInterfaceRate()
+        initInterfacePrice()
          return res.json({
             errorCode: '0000',
             message:'删除角色成功！',

@@ -146,6 +146,7 @@ const BingAIClient =require('../../newBing/utils/message.js')
 
     // new bing测活
     const newBingIsLive=async(token,cookie)=>{
+        console.log(token,cookie)
         const options = {
             // Necessary for some people in different countries, e.g. China (https://cn.bing.com)
             host: 'https://www.bing.com',
@@ -171,6 +172,7 @@ const BingAIClient =require('../../newBing/utils/message.js')
             console.log(JSON.stringify(response, null, 2)); 
             return true
         }catch(error){
+            console.log(error)
             return false
         }
     }
@@ -212,7 +214,7 @@ const BingAIClient =require('../../newBing/utils/message.js')
             }
           })
           console.log('==============1\n', result)
-          if(result.result.conversationId){
+          if(result.conversationId){
             return true
           }else{
             return false

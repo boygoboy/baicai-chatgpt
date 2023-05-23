@@ -515,66 +515,66 @@ export default {
     data() {
         return {
             gptOfficalTableData: [
-                {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
-                {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'}
+                // {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
+                // {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'}
             ],
             opengptofficalSetting:false,
             gptUnOfficalTableData:[
-                 {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
-                {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'},
-                 {model:'text-davinci-002-render-sha',count:0,cycle:0,unit:'分钟'},
+                //  {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
+                // {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'},
+                //  {model:'text-davinci-002-render-sha',count:0,cycle:0,unit:'分钟'},
             ],
             opengptunofficalSetting:false,
             bingUnOfficalTableData:[
-                {model:'creative',count:0,cycle:0,unit:'分钟'},
-                {model:'precise',count:0,cycle:0,unit:'分钟'},
-                {model:'fast',count:0,cycle:0,unit:'分钟'},
-                 {model:'Sydney',count:0,cycle:0,unit:'分钟'},
-                  {model:'balanced',count:0,cycle:0,unit:'分钟'},
+                // {model:'creative',count:0,cycle:0,unit:'分钟'},
+                // {model:'precise',count:0,cycle:0,unit:'分钟'},
+                // {model:'fast',count:0,cycle:0,unit:'分钟'},
+                //  {model:'Sydney',count:0,cycle:0,unit:'分钟'},
+                //   {model:'balanced',count:0,cycle:0,unit:'分钟'},
             ],
             openbingunofficalSetting:false,
             gptofficalPriceTableData:[
-                {model:'gpt-4',count:0,unit:'1次'},
-                {model:'gpt-3.5-turbo-0301',count:0,unit:'1次'},
-                {model:'gpt-3.5-turbo',count:0,unit:'1次'},
-                {model:'text-davinci-003',count:0,unit:'1次'}
+                // {model:'gpt-4',count:0,unit:'1次'},
+                // {model:'gpt-3.5-turbo-0301',count:0,unit:'1次'},
+                // {model:'gpt-3.5-turbo',count:0,unit:'1次'},
+                // {model:'text-davinci-003',count:0,unit:'1次'}
             ],
             opengptofficalpriceSetting:false,
             gptunofficalPriceTableData:[
-               {model:'gpt-4',count:0,unit:'1 次'},
-                {model:'gpt-3.5-turbo-0301',count:0,unit:'1 次'},
-                {model:'gpt-3.5-turbo',count:0,unit:'1 次'},
-                {model:'text-davinci-003',count:0,unit:'1 次'},
-                 {model:'text-davinci-002-render-sha',count:0,unit:'1 次'},
+            //    {model:'gpt-4',count:0,unit:'1 次'},
+            //     {model:'gpt-3.5-turbo-0301',count:0,unit:'1 次'},
+            //     {model:'gpt-3.5-turbo',count:0,unit:'1 次'},
+            //     {model:'text-davinci-003',count:0,unit:'1 次'},
+            //      {model:'text-davinci-002-render-sha',count:0,unit:'1 次'},
             ],
             opengptunofficalpriceSetting:false,
             bingunofficalPriceTableData:[
-                {model:'creative',count:0,unit:'1 次'},
-                {model:'precise',count:0,unit:'1 次'},
-                {model:'fast',count:0,unit:'1 次'},
-                 {model:'Sydney',count:0,unit:'1 次'},
-                  {model:'balanced',count:0,unit:'1 次'},
+                // {model:'creative',count:0,unit:'1 次'},
+                // {model:'precise',count:0,unit:'1 次'},
+                // {model:'fast',count:0,unit:'1 次'},
+                //  {model:'Sydney',count:0,unit:'1 次'},
+                //   {model:'balanced',count:0,unit:'1 次'},
             ],
             openbingunofficalpriceSetting:false,
              bardUnOfficalTableData:[
-                 {model:'PaLM 2',count:0,cycle:0,unit:'分钟'},
+                //  {model:'PaLM 2',count:0,cycle:0,unit:'分钟'},
             ],
             openbardunofficalSetting:false,
             openbardunofficalpriceSetting:false,
             bardunofficalPriceTableData:[
-                {model:'PaLM 2',count:0,unit:'1 次'},
+                // {model:'PaLM 2',count:0,unit:'1 次'},
             ],
             openclaudeunofficalSetting:false,
              claudeUnOfficalTableData:[
-                 {model:'slack',count:0,cycle:0,unit:'分钟'},
+                //  {model:'slack',count:0,cycle:0,unit:'分钟'},
             ],
             openclaudeunofficalpriceSetting:false,
             claudeunofficalPriceTableData:[
-                {model:'slack',count:0,unit:'1 次'},
+                // {model:'slack',count:0,unit:'1 次'},
             ],
              roleData:[],
              selectRoleItem:null,
@@ -810,60 +810,65 @@ export default {
             this.getIngerfaceRateList(this.roleData[0]._id,'newbing非官方');
             this.getIngerfaceRateList(this.roleData[0]._id,'bard非官方');
             this.getIngerfaceRateList(this.roleData[0]._id,'claude非官方');
+        this.getInterfacePriceList(this.roleData[0]._id,'chatgpt官方');//   查询对应角色的价格数据
+        this.getInterfacePriceList(this.roleData[0]._id,'chatgpt非官方');//   查询对应角色的价格数据
+        this.getInterfacePriceList(this.roleData[0]._id,'newbing非官方');
+        this.getInterfacePriceList(this.roleData[0]._id,'bard非官方');
+        this.getInterfacePriceList(this.roleData[0]._id,'claude非官方');
         }
     },
     switchRole(item){
                     this.gptOfficalTableData=[
-                {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
-                {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'}
+                // {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
+                // {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'}
             ]
            this.gptUnOfficalTableData=[
-                 {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
-                {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
-                {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'},
-                 {model:'text-davinci-002-render-sha',count:0,cycle:0,unit:'分钟'},
+                //  {model:'gpt-4',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo-0301',count:0,cycle:0,unit:'分钟'},
+                // {model:'gpt-3.5-turbo',count:0,cycle:0,unit:'分钟'},
+                // {model:'text-davinci-003',count:0,cycle:0,unit:'分钟'},
+                //  {model:'text-davinci-002-render-sha',count:0,cycle:0,unit:'分钟'},
             ]
            this.bingUnOfficalTableData=[
-                {model:'creative',count:0,cycle:0,unit:'分钟'},
-                {model:'precise',count:0,cycle:0,unit:'分钟'},
-                {model:'fast',count:0,cycle:0,unit:'分钟'},
-                 {model:'Sydney',count:0,cycle:0,unit:'分钟'},
-                  {model:'balanced',count:0,cycle:0,unit:'分钟'},
+                // {model:'creative',count:0,cycle:0,unit:'分钟'},
+                // {model:'precise',count:0,cycle:0,unit:'分钟'},
+                // {model:'fast',count:0,cycle:0,unit:'分钟'},
+                //  {model:'Sydney',count:0,cycle:0,unit:'分钟'},
+                //   {model:'balanced',count:0,cycle:0,unit:'分钟'},
             ]
               this.bardUnOfficalTableData=[
-                {model:'PaLM 2',count:0,cycle:0,unit:'分钟'},
+                // {model:'PaLM 2',count:0,cycle:0,unit:'分钟'},
             ]
             this.claudeUnOfficalTableData=[
-                {model:'slack',count:0,cycle:0,unit:'分钟'},
+                // {model:'slack',count:0,cycle:0,unit:'分钟'},
             ]
             this.gptofficalPriceTableData=[
-                {model:'gpt-4',count:0,unit:'1次'},
-                {model:'gpt-3.5-turbo-0301',count:0,unit:'1次'},
-                {model:'gpt-3.5-turbo',count:0,unit:'1次'},
-                {model:'text-davinci-003',count:0,unit:'1次'}
+                // {model:'gpt-4',count:0,unit:'1次'},
+                // {model:'gpt-3.5-turbo-0301',count:0,unit:'1次'},
+                // {model:'gpt-3.5-turbo',count:0,unit:'1次'},
+                // {model:'text-davinci-003',count:0,unit:'1次'}
             ],
             this.gptunofficalPriceTableData=[
-               {model:'gpt-4',count:0,unit:'1 次'},
-                {model:'gpt-3.5-turbo-0301',count:0,unit:'1 次'},
-                {model:'gpt-3.5-turbo',count:0,unit:'1 次'},
-                {model:'text-davinci-003',count:0,unit:'1 次'},
-                 {model:'text-davinci-002-render-sha',count:0,unit:'1 次'},
+            //    {model:'gpt-4',count:0,unit:'1 次'},
+            //     {model:'gpt-3.5-turbo-0301',count:0,unit:'1 次'},
+            //     {model:'gpt-3.5-turbo',count:0,unit:'1 次'},
+            //     {model:'text-davinci-003',count:0,unit:'1 次'},
+            //      {model:'text-davinci-002-render-sha',count:0,unit:'1 次'},
             ]
             this.bingunofficalPriceTableData=[
-                {model:'creative',count:0,unit:'1 次'},
-                {model:'precise',count:0,unit:'1 次'},
-                {model:'fast',count:0,unit:'1 次'},
-                 {model:'Sydney',count:0,unit:'1 次'},
-                  {model:'balanced',count:0,unit:'1 次'},
+                // {model:'creative',count:0,unit:'1 次'},
+                // {model:'precise',count:0,unit:'1 次'},
+                // {model:'fast',count:0,unit:'1 次'},
+                //  {model:'Sydney',count:0,unit:'1 次'},
+                //   {model:'balanced',count:0,unit:'1 次'},
             ],
             this.bardunofficalPriceTableData=[
-                {model:'PaLM 2',count:0,unit:'1 次'},
+                // {model:'PaLM 2',count:0,unit:'1 次'},
             ]
             this.claudeunofficalPriceTableData=[
-                {model:'slack',count:0,unit:'1 次'},
+                // {model:'slack',count:0,unit:'1 次'},
             ]
         this.selectRoleItem=item;
         this.getIngerfaceRateList(item._id,'chatgpt官方');//   查询对应角色的对话指标数据

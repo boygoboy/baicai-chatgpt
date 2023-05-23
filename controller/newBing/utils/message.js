@@ -76,7 +76,7 @@ module.exports= class BingAIClient {
             },
             baseURL:`${this.options.host}/turing/conversation/create`,
         };
-        if (this.options.proxy.proxytype) {
+        if (this.options.proxy&&this.options.proxy.proxytype) {
          const proxyObj= this.options.proxy
          const proxyData=[proxyObj.proxytype,proxyObj.ip,proxyObj.port,proxyObj.username,proxyObj.password]
          if(proxyData[0]=='socks5'){
@@ -131,7 +131,7 @@ module.exports= class BingAIClient {
     async createWebSocketConnection() {
         return new Promise((resolve, reject) => {
             let agent;
-            if (this.options.proxy.proxytype) {
+            if (this.options.proxy&&this.options.proxy.proxytype) {
                 const proxyObj= this.options.proxy
                 const proxyData=[proxyObj.proxytype,proxyObj.ip,proxyObj.port,proxyObj.username,proxyObj.password]
                 if(proxyObj.proxytype=='socks5'){

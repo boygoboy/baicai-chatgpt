@@ -1,0 +1,97 @@
+[{
+    "model": "gpt-4",
+    "type": "chatgpt官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "gpt-3.5-turbo-0301",
+    "type": "chatgpt官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "gpt-3.5-turbo",
+    "type": "chatgpt官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "text-davinci-003",
+    "type": "chatgpt官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "gpt-3.5-turbo-0301",
+    "type": "chatgpt非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "gpt-4",
+    "type": "chatgpt非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "小时"
+  },{
+    "model": "text-davinci-003",
+    "type": "chatgpt非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "text-davinci-002-render-sha",
+    "type": "chatgpt非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "gpt-3.5-turbo",
+    "type": "chatgpt非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "creative",
+    "type": "newbing非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "小时"
+  },{
+    "model": "precise",
+    "type": "newbing非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "fast",
+    "type": "newbing非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "Sydney",
+    "type": "newbing非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "balanced",
+    "type": "newbing非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "PaLM 2",
+    "type": "bard非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },{
+    "model": "slack",
+    "type": "claude非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  }]
