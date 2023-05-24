@@ -25,6 +25,10 @@ const keyUnOfficalSchema =mongoose.Schema({
     claudeKey:{
         token:String,
         appid:String
+    },
+    huggingtoken:{
+        type:String,
+        default:''
     }
 })
 const keyunofficalschema = mongoose.model('keyUnOfficalSchema',keyUnOfficalSchema,'keyUnOfficalSchema')

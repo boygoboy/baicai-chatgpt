@@ -4,9 +4,10 @@ const tokenlist=require('../db/models/chatgpt/tokenListSchema')
 const binglist=require('../db/models/chatgpt/bingListSchema')
 const bardlist=require('../db/models/chatgpt/bardListSchema')
 const claudelist=require('../db/models/chatgpt/claudeListSchema')
+const hugginglist=require('../db/models/chatgpt/huggingListSchema')
 const keyoffical=require('../db/models/chatgpt/keyOfficalSchema')
 const keyunoffical=require('../db/models/chatgpt/keyUnOfficalSchema')
-const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive} =require('../controller/chatGpt/utils/gptCommon');
+const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive} =require('../controller/chatGpt/utils/gptCommon');
 let intervalInstance = null;
 let updateGptAccountInstance = null;
 let updateTokenInstance = null;
@@ -17,6 +18,8 @@ let updateBardUsedCountInstance=null;
 let updateBardStatusInstance=null;
 let updateClaudeUsedCountInstance=null;
 let updateClaudeStatusInstance=null;
+let updateHuggingUsedCountInstance=null;
+let updateHuggingStatusInstance=null;
 const intervalTime = 1000 * 60 * 60; // 3 minutes
 async function updateApikeyCount() {
  const apikeyUsedInfo = {};
@@ -173,6 +176,33 @@ async function updateBardTokenUsedCount(token, usedCount) {
     }
 
     const result = await bardlist.findOneAndUpdate(
+      { token: token},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+// 将huggingtoken数量更新到hugginglist表中
+async function updateHuggingTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'huggingListSchema');
+
+    if (!collectionExists) {
+      console.log('huggingListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await hugginglist.findOneAndUpdate(
       { token: token},
       { usedcount: usedCount },
       { new: true }
@@ -613,6 +643,85 @@ const updateClaudeStatus =async ()=>{
 }
 
 
+// 更新bard的使用数量
+const updateHuggingUsedCount =async ()=>{
+  const huggingUsedInfo = {};
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+
+    if (!collectionExists) {
+      console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+      return;
+    }
+   
+    const collectionExists1 = collections.some((collection) => collection.name === 'huggingListSchema');
+
+    if (!collectionExists1) {
+      console.log('huggingListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+
+    await hugginglist.updateMany({}, { $set: { usedcount: 0 } });
+
+    const aggregation = await keyunoffical.aggregate([
+     { $match: { "huggingtoken": { $exists: true, $ne: "" } } },
+     { $group: { _id: "$huggingtoken", count: { $sum: 1 } } },
+ ]);
+ 
+    aggregation.forEach(({ _id, count }) => {
+      huggingUsedInfo[_id] = count;
+    });
+
+
+    // 将统计的token被使用数量更新到huggingList表中
+    for (const [huggingtoken, usedCount] of Object.entries(huggingUsedInfo)) {
+        await updateHuggingTokenUsedCount(huggingtoken, usedCount);
+    }
+
+    console.log('Updated token count:', JSON.stringify(huggingUsedInfo));
+  } catch (error) {
+    console.error('Error fetching API key count:', error);
+  }
+}
+
+// 更新hugging的状态
+const updateHuggingStatus =async ()=>{
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'huggingListSchema');
+
+    if (!collectionExists) {
+      console.log('huggingListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const records = await hugginglist.find({});
+
+    const updatedRecords = records.map(async(record) => {
+      // 根据需要修改字段
+      if(record.token){
+       let tokenstatus= await huggingIsLive(record.token)
+       if(tokenstatus){
+        record.tokenstatus = '在线'
+       }else{
+        record.tokenstatus='离线'
+       }
+      }
+      return record.save();
+    });
+
+    await Promise.all(updatedRecords);
+    console.log('Updated all records in the huggingList collection.');
+  } catch (error) {
+    console.error('Error updating records:', error);
+  }
+}
+
+
 // 定时更新apikey被使用情况
 const  updateAccountStatus= async ()=>{
     if(intervalInstance){
@@ -719,13 +828,32 @@ const loopUpdateClaudeStatus=async ()=>{
     updateClaudeStatus()
   }, intervalTime);
 }
+// 定时更新hugging的使用情况
+const loopUpdateHuggingUsedCount=async ()=>{
+  if(updateHuggingUsedCountInstance){
+      clearInterval(updateHuggingUsedCountInstance);
+  }
+  updateHuggingUsedCountInstance= setInterval(()=>{
+    updateHuggingUsedCount()
+  }, intervalTime);
+}
+// 定时更新hugging的状态
+const loopUpdateHuggingStatus=async ()=>{
+  if(updateHuggingStatusInstance){
+      clearInterval(updateHuggingStatusInstance);
+  }
+  updateHuggingStatusInstance= setInterval(()=>{
+    updateHuggingStatus()
+  }, intervalTime);
+}
 
 module.exports={
     updateAccountStatus,updateAccountStatusOnce,updateGptAccountStatusOnce,loopupdateGptAccountStatus,
     loopUpdateTokenStatus,updateTokenStatus,updateTokenAndSessionStatus,loopUpdateTokenAndSessionStatus,
     updateBingUsedCount,loopUpdateBingUsedCount,updateBingStatus,loopUpdateBingStatus,
     updateBardUsedCount,loopUpdateBardUsedCount,updateBardStatus,loopUpdateBardStatus,
-    updateClaudeUsedCount,loopUpdateClaudeUsedCount,updateClaudeStatus,loopUpdateClaudeStatus
+    updateClaudeUsedCount,loopUpdateClaudeUsedCount,updateClaudeStatus,loopUpdateClaudeStatus,
+    updateHuggingUsedCount,loopUpdateHuggingUsedCount,updateHuggingStatus,loopUpdateHuggingStatus
 }
 
 

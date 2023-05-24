@@ -5,6 +5,7 @@ const {getTokenList,postTokenList,putTokenList,deleteTokenList,getTokenDetail,ch
 const {getBingList,postBingList,putBingList,deleteBingList,getBingDetail,changeBingStatus}=require('../../../controller/chatGpt/binglist.js')
 const {getBardList,postBardList,putBardList,getBardDetail,deleteBardList,changeBardStatus}=require('../../../controller/chatGpt/bardlist.js')
 const {getClaudeList,postClaudeList,putClaudeList,getClaudeDetail,deleteClaudeList,changeClaudeStatus}=require('../../../controller/chatGpt/claudelist.js')
+const {getHuggingList,postHuggingList,putHuggingList,getHuggingDetail,deleteHuggingList,changeHuggingStatus}=require('../../../controller/chatGpt/hugginglist.js')
 router.get("/keylist", (req, res) => {
     getKeyList(req,res)
 })
@@ -141,6 +142,31 @@ router.delete("/claudelist/:ids",(req,res)=>{
 
 router.put("/claudelist/claudestatus",(req,res)=>{
     changeClaudeStatus(req,res)
+})
+
+// huggingchat接口模块
+router.get("/hugginglist",(req,res)=>{
+    getHuggingList(req,res)
+})
+
+router.get("/onehugging/:id",(req,res)=>{
+    getHuggingDetail(req,res)
+})
+
+router.post("/hugginglist",(req,res)=>{
+    postHuggingList(req,res)
+})
+
+router.put("/hugginglist",(req,res)=>{
+    putHuggingList(req,res)
+})
+
+router.delete("/hugginglist/:ids",(req,res)=>{
+    deleteHuggingList(req,res)
+})
+
+router.put("/hugginglist/huggingstatus",(req,res)=>{
+    changeHuggingStatus(req,res)
 })
 
 module.exports = router;

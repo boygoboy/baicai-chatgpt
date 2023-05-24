@@ -10,6 +10,7 @@ const {limitRequestCount}=require('../../controller/chatGpt/utils/limitRequestCo
 const {createChatInfo}=require('../../controller/homeStatistics/createChatInfo')
 const {bardUnofficalChat}=require('../../controller/googleBard/chat.js')
 const {claudeUnofficalChat}=require('../../controller/claude/chat.js')
+const {huggingChat}=require('../../controller/HuggingChat/chat/index.js')
 /**
  * route.ws('/url',(ws, req)=>{  })
  * 建立WebSocket服务，并指定对应接口url，及相应回调
@@ -165,6 +166,10 @@ router.ws('/claudeUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
       ws.send(message)
     },req)
   })
+})
+
+router.get('/test',async (req,res)=>{
+  huggingChat(req,res)
 })
 
 

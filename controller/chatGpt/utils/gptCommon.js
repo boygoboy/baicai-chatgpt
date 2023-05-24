@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const BingAIClient =require('../../newBing/utils/message.js')
+const {huggingchat}=require('../../HuggingChat/utils/message.js')
     const computedMoney=async (apikey,lastday)=>{
         const subscription_url = `${process.env.OPEN_AI_BASE_URL||'https://api.openai.com'}/v1/dashboard/billing/subscription`;
         const headers = {
@@ -224,6 +225,23 @@ const BingAIClient =require('../../newBing/utils/message.js')
         }
     }
 
+    const huggingIsLive=async(cookie)=>{
+         try{
+            let options={
+                cookie:cookie,
+                conversationId:null,
+                message:'你好'
+            }
+           let result= await huggingchat(options,(data)=>{
+            })
+           if(result&&result.conversationId){
+                return true
+           }
+         }catch(error){
+            return false
+         }
+    }
+
     module.exports={
-        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive
+        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive
     }

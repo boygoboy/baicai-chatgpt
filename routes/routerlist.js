@@ -231,6 +231,22 @@ const allRouterObj=[
         menuUrl:' /chatgpt/resource/claude',
         permit:null
     },
+    // hugging
+    {
+        routerUrl:'/api/chatgpt/hugginglist',
+        menuUrl:'/chatgpt/resource/hugging',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/onehugging',
+        menuUrl:'/chatgpt/resource/hugging',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/hugginglist/huggingstatus',
+        menuUrl:'/chatgpt/resource/hugging',
+        permit:null
+    },
 
     // chatgpt管理---对话指标模块
     {
