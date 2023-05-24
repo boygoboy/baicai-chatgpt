@@ -11,10 +11,10 @@
           <div class="title">
             <span class="fa fa-wrench"></span>
             <span>chatgpt模型</span>
-              <el-button type="text" style="float: right" @click="enableSetting" v-if="!enableEdit"
+              <el-button type="text" style="float: right;color:#7944db;" @click="enableSetting" v-if="!enableEdit"
               >配置</el-button
             >
-             <el-button type="text" style="float: right" @click="saveSetting" v-else
+             <el-button type="text" style="float: right;color:#7944db;" @click="saveSetting" v-else
               >保存</el-button
             >
           </div>
@@ -350,5 +350,15 @@ activated() {
 }
 .tab-box /deep/ .el-tabs__nav-wrap{
   margin: 5px 0px;
+}
+/deep/ .el-slider__bar{
+  background-color: #a07eeb !important;
+}
+/deep/ .el-switch.is-checked .el-switch__core{
+    background-color: #a07eeb !important;
+    border-color: #a07eeb !important;
+}
+/deep/ .el-slider__button{
+  border: 2px solid #a07eeb !important;
 }
 </style>

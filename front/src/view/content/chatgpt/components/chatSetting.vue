@@ -53,13 +53,14 @@
               <el-button
                 type="text"
                 class="text-btn"
+                style="color:#7944db !important;"
                 @click="editChatParams(scope.row)"
                 >编辑</el-button
               >
               <el-button
                 type="text"
                 class="text-btn"
-                style="color: red"
+                style="color: #e15050  !important;"
                 @click="deleteChatParam(scope.row)"
                 >删除</el-button
               >

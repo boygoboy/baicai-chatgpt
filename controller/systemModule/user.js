@@ -5,6 +5,7 @@ const pagerFun = require('../../utils/pager')
 const jwt = require('jsonwebtoken');
 const md5 = require('md5');
 const { secret } = require('../../config/config')
+const {initgptParams}=require('../../db/initdb/utils/initgptParams.js')
 
 const login = (req, res) => {
     const { username, password } = req.body
@@ -122,6 +123,7 @@ const createFirstUser = async (params) => {
         userId: 0, ...params
     })
     await user.save();
+    initgptParams()
 }
 
 
@@ -164,6 +166,7 @@ const addlist = async (req, res) => {
             message: '新增用户成功!',
             data: null
         })
+        initgptParams()
     } catch (error) {
         res.json({
             errorCode: '500',
@@ -218,6 +221,7 @@ const registerUser= async(req,res)=>{
             message: '新增用户成功!',
             data: null
         })
+        initgptParams()
     } catch (error) {
         res.json({
             errorCode: '500',

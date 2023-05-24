@@ -189,22 +189,22 @@ const getModelParam = async (req, res) => {
             }
 
 
-            modeldata.forEach(async (item)=> {
-            //处理自增chatparamId
-            const count = await Counter.findOneAndUpdate({
-                id: 'modelparamId'
-            }, {
-                $inc: {
-                    sequence_value: 1
-                }
-            }, {
-                new: true
-            })
+            // modeldata.forEach(async (item)=> {
+            // //处理自增chatparamId
+            // const count = await Counter.findOneAndUpdate({
+            //     id: 'modelparamId'
+            // }, {
+            //     $inc: {
+            //         sequence_value: 1
+            //     }
+            // }, {
+            //     new: true
+            // })
 
-                item.userId=userId
-                item.modelparamId=count.sequence_value
-            })
-            await modelparam.insertMany(modeldata)
+            //     item.userId=userId
+            //     item.modelparamId=count.sequence_value
+            // })
+            // await modelparam.insertMany(modeldata)
             let resultData=modelparam.find({userId}).exec()
 
             if (resultData.length==0) {

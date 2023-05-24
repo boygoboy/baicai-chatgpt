@@ -6,7 +6,7 @@
           <span>官方密钥</span>
         <el-button type="text" 
         v-if="!isEditOffical"
-        style="float: right;line-height:22px;" @click="openOfficalSetting"
+        style="float: right;line-height:22px;color:#ba94bf;margin-right:20px;margin-top:10px;" @click="openOfficalSetting"
           >配置</el-button>
         </div>
         <div class="body">
@@ -85,7 +85,7 @@
           <span>非官方密钥</span>
           <el-button type="text"
           v-if="!isEditUnOffical"
-           style="float: right;line-height:22px;" @click="openUnOfficalSetting"
+           style="float: right;line-height:22px;color:#ba94bf;margin-right:20px;margin-top:10px;" @click="openUnOfficalSetting"
           >配置</el-button>
         </div>
         <div class="body">
@@ -578,6 +578,7 @@ export default {
       flex: 1;
       margin-right: 10px;
       border: 1px solid #e4e7ed;
+      border-radius: 10px;
       .header {
         height: 45px;
         line-height: 45px;
@@ -587,6 +588,8 @@ export default {
         font-size: 16px;
         color: #ffffff;;
         opacity: 0.9;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
       }
       .body {
         padding: 20px;
@@ -595,6 +598,7 @@ export default {
         .block {
           border: 1px solid #e4e7ed;
           margin-bottom: 20px;
+          border-radius: 10px;
           .title {
             font-size: 14px;
             background: #7e55d7;
@@ -602,6 +606,8 @@ export default {
             line-height: 35px;
             padding-left: 10px;
             color: #ffffff;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
           }
           .form-body {
             padding: 5px 20px;
@@ -623,6 +629,7 @@ export default {
       flex: 1;
       margin-left: 10px;
       border: 1px solid #e4e7ed;
+      border-radius: 10px;
       .header {
         height: 45px;
         line-height: 45px;
@@ -632,6 +639,8 @@ export default {
         font-size: 16px;
         color: #ffffff;
         opacity: 0.9;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
       }
       .body {
         padding: 20px;
@@ -640,6 +649,7 @@ export default {
         .block {
           border: 1px solid #e4e7ed;
           margin-bottom: 20px;
+          border-radius: 10px;
           .title {
             font-size: 14px;
             background: #7e55d7;
@@ -647,6 +657,8 @@ export default {
             line-height: 35px;
             padding-left: 10px;
             color: #ffffff;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
           }
           .form-body {
             padding: 5px 20px;
