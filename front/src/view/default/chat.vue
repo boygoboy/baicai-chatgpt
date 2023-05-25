@@ -414,6 +414,7 @@ export default {
       chatmodel: null,
       chatParams: {},
       claudechatObj:{},
+      huggingchatObj:{},
     };
   },
   methods: {
@@ -510,6 +511,9 @@ export default {
         if(this.selectBot=="claude非官方"){
           this.chatParams.token =this.unofficalsettingdata.claudeKey.token
           this.chatParams.appid=this.unofficalsettingdata.claudeKey.appid
+        }
+           if(this.selectBot=="hugging非官方"){
+          this.chatParams.token =this.unofficalsettingdata.huggingtoken
         }
       } else {
         this.$message.warning({
@@ -685,6 +689,23 @@ export default {
             this.claudechatObj.channelId=this.messageData[this.messageData.length-1].claudechatObj.channelId
          }
           newWebSocket.sendMsg(JSON.stringify(this.claudechatObj));
+      }
+           if(this.chatParams.chatchannel == "hugging非官方"){
+       
+          this.huggingchatObj = {
+            url: this.chatParams.url,
+            cookie: this.chatParams.token,
+            enablecontext: this.chatParams.enablecontext,
+            model: this.chatParams.model,
+            message: this.sendMessage,
+          };
+          if(this.messageData.length==0){
+            this.huggingchatObj.conversationId=null
+          }else{
+            console.log(this.messageData)
+            this.huggingchatObj.conversationId=this.messageData[this.messageData.length-1].huggingchatObj.conversationId
+          }
+          newWebSocket.sendMsg(JSON.stringify(this.huggingchatObj));
       }
       this.loading = true;
       let meItem = {
@@ -968,6 +989,59 @@ export default {
         }, 50);
       }
     },
+        // 处理hugging非官方聊天消息
+        handleHuggingUnofficalMessage(data){
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+      if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        let result= data.replace("[DONE]", "");
+        console.log(result)
+        this.huggingchatObj.conversationId=result;
+        console.log(data)
+        return;
+      }
+      if (data != "[START]" && !data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText += newdata;
+          console.log(this.inputText);
+        }, 50);
+      }
+    },
     // 处理ws收到的消息
     handleWSMessage(data) {
       console.log(data);
@@ -1036,6 +1110,9 @@ export default {
       };
       if(this.selectBot=='claude非官方'){
         botItem.claudechatObj = JSON.parse(JSON.stringify(this.claudechatObj));
+      }
+      if(this.selectBot=='hugging非官方'){
+        botItem.huggingchatObj = JSON.parse(JSON.stringify(this.huggingchatObj));
       }
       this.messageData.splice(this.messageData.length - 1, 1, botItem);
       this.inputText = "";
@@ -1136,6 +1213,22 @@ export default {
           },
           onmessage: (data) => {
             this.handleClaudeUnofficalMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
+          if(this.selectBot=="hugging非官方"){
+                newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/huggingUnOfficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleHuggingUnofficalMessage(data);
           },
           onclose: (data) => {
             console.log(data);

@@ -291,6 +291,61 @@
         </el-table>
                 </div>
             </div>
+            <!-- hugging非官方 -->
+                    <div class="block-item">
+                <div class="header">
+                    <span class="block-title">hugging非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openhuggingunofficalSetting" @click="openhuggingunofficalSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveHuggingUnOfficalSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="huggingUnOfficalTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openhuggingunofficalSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openhuggingunofficalSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="次数" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openhuggingunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="cycle" label="周期" min-width="15">
+                 <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.cycle"  v-if="openhuggingunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.cycle}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="单位" min-width="15">
+                            <template slot-scope="scope">
+                     <el-select v-model="scope.row.unit"  style="width:100%;" class="table-select"
+                     v-if="openhuggingunofficalSetting">
+                        <el-option label="分钟" value="分钟"></el-option>
+                        <el-option label="小时" value="小时"></el-option>
+                     </el-select>
+                    <span v-else>{{scope.row.unit}}</span>
+                </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
+
 
          </div>
           <el-divider direction="vertical"></el-divider>
@@ -502,6 +557,47 @@
         </el-table>
                 </div>
             </div>
+            <!-- hugging非官方 -->
+                         <div class="block-item">
+                <div class="header">
+                    <span class="block-title">hugging非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openhuggingunofficalpriceSetting" @click="openhuggingunofficalpriceSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveHuggingUnOfficalPriceSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="huggingunofficalPriceTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openhuggingunofficalpriceSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openhuggingunofficalpriceSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="积分" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openhuggingunofficalpriceSetting" class="select-inputnumber"
+                    size="mini" :min="0"  style="width:100%;"
+                     :step="10"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="计量值" min-width="15">
+            <template slot-scope="scope">
+                <span :style="{paddingLeft:openhuggingunofficalpriceSetting?'6px':'0px'}">{{scope.row.unit}}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
 
           </div>
         </div>
@@ -576,6 +672,10 @@ export default {
             claudeunofficalPriceTableData:[
                 // {model:'slack',count:0,unit:'1 次'},
             ],
+            openhuggingunofficalSetting:false,
+            huggingUnOfficalTableData:[],
+            openhuggingunofficalpriceSetting:false,
+            huggingunofficalPriceTableData:[],
              roleData:[],
              selectRoleItem:null,
         };
@@ -679,6 +779,27 @@ export default {
                     type: "success",
                 });
                 this.getIngerfaceRateList(this.selectRoleItem._id,'claude非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
+         async saveHuggingUnOfficalSetting(){
+            this.openhuggingunofficalSetting=false;
+                     let data={
+            roleId:this.selectRoleItem._id,
+            type:'hugging非官方',
+            rateData:this.huggingUnOfficalTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfaceRate(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getIngerfaceRateList(this.selectRoleItem._id,'hugging非官方');
             }else{
                 this.$message({
                     message: message,
@@ -791,6 +912,27 @@ export default {
                 });
             }
         },
+                  async saveHuggingUnOfficalPriceSetting(){
+            this.openhuggingunofficalpriceSetting=false;
+            let data={
+            roleId:this.selectRoleItem._id,
+            type:'hugging非官方',
+            priceData:this.huggingunofficalPriceTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfacePrice(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getInterfacePriceList(this.selectRoleItem._id,'hugging非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
             //获取角色
     async getRoleList() {
         const query={
@@ -810,11 +952,13 @@ export default {
             this.getIngerfaceRateList(this.roleData[0]._id,'newbing非官方');
             this.getIngerfaceRateList(this.roleData[0]._id,'bard非官方');
             this.getIngerfaceRateList(this.roleData[0]._id,'claude非官方');
+            this.getIngerfaceRateList(this.roleData[0]._id,'hugging非官方');
         this.getInterfacePriceList(this.roleData[0]._id,'chatgpt官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(this.roleData[0]._id,'chatgpt非官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(this.roleData[0]._id,'newbing非官方');
         this.getInterfacePriceList(this.roleData[0]._id,'bard非官方');
         this.getInterfacePriceList(this.roleData[0]._id,'claude非官方');
+        this.getInterfacePriceList(this.roleData[0]._id,'hugging非官方');
         }
     },
     switchRole(item){
@@ -844,6 +988,7 @@ export default {
             this.claudeUnOfficalTableData=[
                 // {model:'slack',count:0,cycle:0,unit:'分钟'},
             ]
+            this.huggingUnOfficalTableData=[]
             this.gptofficalPriceTableData=[
                 // {model:'gpt-4',count:0,unit:'1次'},
                 // {model:'gpt-3.5-turbo-0301',count:0,unit:'1次'},
@@ -870,17 +1015,20 @@ export default {
             this.claudeunofficalPriceTableData=[
                 // {model:'slack',count:0,unit:'1 次'},
             ]
+            this.huggingunofficalPriceTableData=[]
         this.selectRoleItem=item;
         this.getIngerfaceRateList(item._id,'chatgpt官方');//   查询对应角色的对话指标数据
         this.getIngerfaceRateList(item._id,'chatgpt非官方');//   查询对应角色的对话指标数据
         this.getIngerfaceRateList(item._id,'newbing非官方');
         this.getIngerfaceRateList(item._id,'bard非官方');
         this.getIngerfaceRateList(item._id,'claude非官方');
+        this.getIngerfaceRateList(item._id,'hugging非官方');
         this.getInterfacePriceList(item._id,'chatgpt官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(item._id,'chatgpt非官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(item._id,'newbing非官方');
         this.getInterfacePriceList(item._id,'bard非官方');
         this.getInterfacePriceList(item._id,'claude非官方');
+        this.getInterfacePriceList(item._id,'hugging非官方');
     },
     // 获取对应角色的对话指标数据
     async getIngerfaceRateList(roleId,type){
@@ -913,6 +1061,11 @@ export default {
                 if(type=='claude非官方'){
                 if(data.length){
                 this.claudeUnOfficalTableData=data;
+                }
+            }
+                if(type=='hugging非官方'){
+                if(data.length){
+                this.huggingUnOfficalTableData=data;
                 }
             }
         }
@@ -948,6 +1101,11 @@ export default {
             if(type=='claude非官方'){
                 if(data.length){
                 this.claudeunofficalPriceTableData=data;
+                }
+            }
+            if(type=='hugging非官方'){
+                if(data.length){
+                this.huggingunofficalPriceTableData=data;
                 }
             }
         }

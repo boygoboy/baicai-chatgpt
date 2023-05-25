@@ -67,7 +67,7 @@ const postHuggingList=async(req,res)=>{
                 "sequence_value": 0
             })
         }
-       let islive= huggingIsLive(token,appid)
+       let islive= huggingIsLive(token)
        if(!islive){
         return res.json({
             errorCode: '2002',
@@ -149,7 +149,7 @@ const putHuggingList=async (req,res)=>{
             })
          }
 
-         let islive= await huggingIsLive(token,appid)
+         let islive= await huggingIsLive(token)
          if(!islive){
           return res.json({
               errorCode: '2002',

@@ -13,10 +13,13 @@ const huggingchat = async (options, handleMessage) => {
                     'Origin': 'https://huggingface.co',
                     'Referer': 'https://huggingface.co/chat',
                     'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36`,
+                },
+                data:{
+                        "model": "OpenAssistant/oasst-sft-6-llama-30b-xor"
                 }
             }
             let result = await axios(config)
-            return result.conversationId ? result.conversationId : null
+            return result.data.conversationId ? result.data.conversationId : null
         } catch (error) {
             return false
         }
@@ -55,9 +58,9 @@ const huggingchat = async (options, handleMessage) => {
         return
     }
     // 如果没有conversationId,则创建一个  
-    createConversationId()
+    createConversationId(cookie)
     if (!conversationId) {
-        conversationId = createConversationId(cookie)
+        conversationId = await createConversationId(cookie)
         if (!conversationId) {
             handleMessage('[ERROR]')
             return

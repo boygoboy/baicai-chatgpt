@@ -280,6 +280,37 @@
               </div>
             </div>
             
+                 <div class="block">
+              <div class="title">
+                <span>hugging</span>
+              </div>
+              <div class="form-body">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">token</span>
+                    <div>
+                      <el-select :disabled="!isEditUnOffical"
+                        popper-class="popper-class"
+                        :popper-append-to-body="false"
+                        :multiple-limit="1"
+                        multiple
+                        filterable
+                        allow-create
+                        clearable
+                        default-first-option
+                        v-model="unofficalkeyForm.huggingtoken"
+                        placeholder="请选择或输入token"
+                        style="width: 100%"
+                      >
+                     <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in huggingtokenOptions" :key="index">
+                       </el-option>
+                      </el-select>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+            </div>
 
           </el-form>
                   <div class="action-btn" v-if="isEditUnOffical">
@@ -308,6 +339,7 @@ export default {
         bardtoken:[],
         claudetoken:[],
         claudeappid:"",
+        huggingtoken:[],
       },
       isEditOffical:false,
       isEditUnOffical:false,
@@ -318,6 +350,7 @@ export default {
       bingtokenOptions:[],
       bardtokenOptions:[],
       claudetokenOptions:[],
+      huggingtokenOptions:[],
     };
   },
   methods:{
@@ -341,7 +374,8 @@ export default {
           claudeKey:{
             token:this.unofficalkeyForm.claudetoken.length>0?this.unofficalkeyForm.claudetoken[0]:'',
             appid:this.unofficalkeyForm.claudeappid?this.unofficalkeyForm.claudeappid:''
-          }
+          },
+          huggingtoken:this.unofficalkeyForm.huggingtoken.length>0?this.unofficalkeyForm.huggingtoken[0]:''
        }
         if(this.unofficalkeyForm._id){
           data._id=this.unofficalkeyForm._id
@@ -397,6 +431,7 @@ export default {
         bardtoken:[],
         claudetoken:[],
         claudeappid:"",
+        huggingtoken:[]
       }
     },
     getOfficalKeys(){
@@ -439,6 +474,7 @@ export default {
           this.unofficalkeyForm.bardtoken=res.data.bardtoken?[res.data.bardtoken]:[]
           this.unofficalkeyForm.claudetoken=(res.data.claudeKey&&res.data.claudeKey.token)?[res.data.claudeKey.token]:[]
           this.unofficalkeyForm.claudeappid=(res.data.claudeKey&&res.data.claudeKey.appid)?res.data.claudeKey.appid:''
+          this.unofficalkeyForm.huggingtoken=res.data.huggingtoken?[res.data.huggingtoken]:[]
           if(res.data._id){
             this.unofficalkeyForm._id=res.data._id
           }
@@ -464,6 +500,11 @@ export default {
           })
           this.claudetokenOptions.forEach(item=>{
             if(item.token==this.unofficalkeyForm.claudetoken[0]){
+              item.disabled=false
+            }
+          })
+          this.huggingtokenOptions.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.huggingtoken[0]){
               item.disabled=false
             }
           })
@@ -536,6 +577,13 @@ export default {
         this.bardtokenOptions=res.data
       }
     },
+    // 获取hugging token下拉列表
+    async getHuggingTokenList(){
+      let res=await this.$http.getHuggingTokenList()
+      if(res.errorCode=='0000'){
+        this.huggingtokenOptions=res.data
+      }
+    },
     // 初始化chatgpt非官方token下拉列表
     async initunofficaltokenlist(){
       await this.getUnofficaltokenList('免费账号')
@@ -543,6 +591,7 @@ export default {
       await this.getBingTokenList()
       await this.getBardTokenList()
       await this.getClaudeTokenList()
+      await this.getHuggingTokenList()
       this.getUnOfficalKeys()  
     },
     // 选择bingtoken事件

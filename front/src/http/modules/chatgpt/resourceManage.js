@@ -222,7 +222,7 @@ const postClaudeList = (data) => {
         data
     })
 }
-// 获取Bard信息
+// 获取claude信息
 const getClaudeList = (query) => {
     console.log(query)
     return $http({
@@ -231,14 +231,14 @@ const getClaudeList = (query) => {
         data:query
     })
 }
-// 删除Bard信息
+// 删除claude信息
 const deleteClaudeList = (ids) => {
     return $http({
         url:`/api/chatgpt/claudelist/${ids}`,
         method:'delete',
     })
 }
-// 修改Bard信息
+// 修改claude信息
 const putClaudeList= (data) => {
     return $http({
         url:`/api/chatgpt/claudelist`,
@@ -246,17 +246,66 @@ const putClaudeList= (data) => {
         data
     })
 }
-// 获取单个Bard信息
+// 获取单个claude信息
 const getClaudeDetail= (id) => {
     return $http({
         url:`/api/chatgpt/oneclaude/${id}`,
         method:'get',
     })
 }
-// 修改Bard状态
+// 修改claude状态
 const changeClaudeStatus= (data) => {
     return $http({
         url:`/api/chatgpt/claudelist/claudestatus`,
+        method:'put',
+        data
+    })
+}
+
+
+// 提交hugging信息
+const postHuggingList = (data) => {
+    return $http({
+        url:'/api/chatgpt/hugginglist',
+        method:'post',
+        data
+    })
+}
+// 获取claude信息
+const getHuggingList = (query) => {
+    console.log(query)
+    return $http({
+        url:'/api/chatgpt/hugginglist',
+        method:'get',
+        data:query
+    })
+}
+// 删除claude信息
+const deleteHuggingList = (ids) => {
+    return $http({
+        url:`/api/chatgpt/hugginglist/${ids}`,
+        method:'delete',
+    })
+}
+// 修改claude信息
+const putHuggingList= (data) => {
+    return $http({
+        url:`/api/chatgpt/hugginglist`,
+        method:'put',
+        data
+    })
+}
+// 获取单个claude信息
+const getHuggingDetail= (id) => {
+    return $http({
+        url:`/api/chatgpt/onehugging/${id}`,
+        method:'get',
+    })
+}
+// 修改claude状态
+const changeHuggingStatus= (data) => {
+    return $http({
+        url:`/api/chatgpt/hugginglist/huggingstatus`,
         method:'put',
         data
     })
@@ -268,5 +317,6 @@ export default{
     loginToken,loginSession,
     postBingList,getBingList,deleteBingList,putBingList,getBingDetail,changeBingStatus,
     postBardList,getBardList,deleteBardList,putBardList,getBardDetail,changeBardStatus,
-    postClaudeList,getClaudeList,deleteClaudeList,putClaudeList,getClaudeDetail,changeClaudeStatus
+    postClaudeList,getClaudeList,deleteClaudeList,putClaudeList,getClaudeDetail,changeClaudeStatus,
+    postHuggingList,getHuggingList,deleteHuggingList,putHuggingList,getHuggingDetail,changeHuggingStatus
 }

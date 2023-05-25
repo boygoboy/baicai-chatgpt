@@ -61,6 +61,7 @@
                      <el-option label="newbing非官方" value="newbing非官方"></el-option>
                      <el-option label="bard非官方" value="bard非官方"></el-option>
                      <el-option label="claude非官方" value="claude非官方"></el-option>
+                      <el-option label="huggiing非官方" value="hugging非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -97,6 +98,7 @@
                      <el-option label="newbing非官方" value="newbing非官方"></el-option>
                      <el-option label="bard非官方" value="bard非官方"></el-option>
                      <el-option label="claude非官方" value="claude非官方"></el-option>
+                     <el-option label="huggiing非官方" value="hugging非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -234,6 +236,12 @@ export default {
                 type:'claude非官方',  
                 modelOptions:[
                     {label:'slack',value:'slack'},
+                ]
+            },
+               {
+                type:'hugging非官方',  
+                modelOptions:[
+                    {label:'NLP',value:'NLP'},
                 ]
             }
             ],

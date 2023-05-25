@@ -168,9 +168,27 @@ router.ws('/claudeUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
   })
 })
 
-router.get('/test',async (req,res)=>{
-  huggingChat(req,res)
+router.ws('/huggingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
+  ws.on('message', async function (data) {
+    if(data=="heartbeat"){
+      return
+    }
+      let options=JSON.parse(data)
+      console.log(options)
+      let result=await limitRequestCount(req,{type:"hugging非官方",model:options.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
+      let {userId}=req.user.userList
+      options.userId=userId
+      huggingChat(options,(message)=>{
+        if(message.startsWith('[DONE]')){
+          createChatInfo(req,'hugging非官方',options.model)
+        }
+      ws.send(message)
+    })
+  })
 })
-
 
 module.exports = router // 暴露出去方便管理

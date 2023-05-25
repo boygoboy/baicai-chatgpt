@@ -105,10 +105,18 @@ const getClaudeTokenList = (query) => {
         data:query
     })
 }
+// 获取huggingface非官方token下拉列表
+const getHuggingTokenList = (query) => {
+    return $http({
+        url:'/api/chatgpt/huggingtokenlist',
+        method:'get',
+        data:query
+    })
+}
 
 export default{
     postChatParams,getChatParams,deleteChatParams,putChatParams
     ,getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,
     getOfficalKeyList,getUnofficaltokenList,getBingTokenList,getBardTokenList,
-    getClaudeTokenList
+    getClaudeTokenList,getHuggingTokenList
 }

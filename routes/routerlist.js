@@ -155,6 +155,11 @@ const allRouterObj=[
         menuUrl:'/chatgpt/setting',
         permit:null
     },
+    {
+        routerUrl:'/api/chatgpt/huggingtokenlist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
     // chatgpt管理---资源管理模块
     {
         routerUrl:'/api/chatgpt/keylist',
@@ -247,7 +252,6 @@ const allRouterObj=[
         menuUrl:'/chatgpt/resource/hugging',
         permit:null
     },
-
     // chatgpt管理---对话指标模块
     {
         routerUrl:'/api/chatgpt/interfaceratelist',

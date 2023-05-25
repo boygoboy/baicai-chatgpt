@@ -78,4 +78,9 @@
   "type": "claude非官方",
   "count": 0,
   "unit": "1 次"
+},{
+  "model": "NLP",
+  "type": "hugging非官方",
+  "count": 0,
+  "unit": "1 次"
 }]

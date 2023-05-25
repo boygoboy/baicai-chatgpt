@@ -232,8 +232,10 @@ const {huggingchat}=require('../../HuggingChat/utils/message.js')
                 conversationId:null,
                 message:'你好'
             }
+            console.log(options)
            let result= await huggingchat(options,(data)=>{
             })
+            console.log(result)
            if(result&&result.conversationId){
                 return true
            }
