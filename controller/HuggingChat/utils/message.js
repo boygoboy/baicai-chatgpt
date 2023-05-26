@@ -104,8 +104,15 @@ const huggingchat = async (options, handleMessage) => {
     return new Promise((resolve,reject)=>{
         axios(chatconfig).then(res => {
             res.data.on('data', async (chunk) => {
-                let str = JSON.parse(chunk.toString().replace('data:', ''))
-                let message = str.token.text
+                // let str = chunk.toString().trim()!=""? JSON.parse(chunk.toString().replace('data:', '')):''
+                // let message = str.token.text
+                let message=''
+                let str=chunk.toString()
+                console.log(str)
+                var match = str.match(/"text":"(.*?)","logprob"/);
+                if (match) {
+                    message = match[1];
+                }
                 if (message == '</s>') {
                     handleMessage(`[DONE]${conversationId}`)
                     // 执行完生成会话记录
