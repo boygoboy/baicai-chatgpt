@@ -39,6 +39,7 @@
     "nodemailer": "^6.9.1",
     "nodemailer-smtp-transport": "^2.7.4",
     "openapi": "^1.0.1",
+    "qs": "^6.11.2",
     "set-cookie-parser": "^2.5.1",
     "shortid": "^2.2.16",
     "socks-proxy-agent": "^7.0.0",

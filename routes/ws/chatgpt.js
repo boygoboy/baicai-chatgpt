@@ -11,6 +11,7 @@ const {createChatInfo}=require('../../controller/homeStatistics/createChatInfo')
 const {bardUnofficalChat}=require('../../controller/googleBard/chat.js')
 const {claudeUnofficalChat}=require('../../controller/claude/chat.js')
 const {huggingChat}=require('../../controller/HuggingChat/chat/index.js')
+const {xfyunChat}=require('../../controller/xfYun/chat/index.js')
 /**
  * route.ws('/url',(ws, req)=>{  })
  * 建立WebSocket服务，并指定对应接口url，及相应回调
@@ -189,6 +190,9 @@ router.ws('/huggingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
       ws.send(message)
     })
   })
+})
+router.get("/test",async (req,res)=>{
+  xfyunChat(req,res)
 })
 
 module.exports = router // 暴露出去方便管理

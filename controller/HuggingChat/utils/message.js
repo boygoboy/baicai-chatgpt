@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
+let retryCount=0
 const huggingchat = async (options, handleMessage) => {
     // 创建新的会话
     const createConversationId = async (cookie) => {
@@ -58,7 +59,6 @@ const huggingchat = async (options, handleMessage) => {
         return
     }
     // 如果没有conversationId,则创建一个  
-    createConversationId(cookie)
     if (!conversationId) {
         conversationId = await createConversationId(cookie)
         if (!conversationId) {
@@ -66,7 +66,6 @@ const huggingchat = async (options, handleMessage) => {
             return
         }
     }
-
     let chatconfig = {
         method: "POST",
         baseURL: `https://huggingface.co/chat/conversation/${conversationId}`,
@@ -123,6 +122,23 @@ const huggingchat = async (options, handleMessage) => {
                 }
             })
         }).catch(error=>{
+            if(error.response){
+                if(error.response.status === 404){
+                    if(error.response.data.message === "Conversation not found"){
+                        // 会话不存在，重新创建会话
+                        if(retryCount>2){
+                            handleMessage('[ERROR]')
+                            retryCount=0
+                            return
+                        }
+                        retryCount++
+                        options.conversationId=null
+                        setTimeout(()=>{huggingchat(options,handleMessage)},5000)
+                    }
+                }
+            }else{
+                handleMessage('[ERROR]')
+            }
             reject(error)
         })
     })
