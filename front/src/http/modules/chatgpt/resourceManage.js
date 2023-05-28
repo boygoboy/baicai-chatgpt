@@ -360,6 +360,56 @@ const changeXfyunStatus= (data) => {
     })
 }
 
+
+
+// 提交poe信息
+const postPoeList = (data) => {
+    return $http({
+        url:'/api/chatgpt/poelist',
+        method:'post',
+        data
+    })
+}
+// 获取poe信息
+const getPoeList = (query) => {
+    console.log(query)
+    return $http({
+        url:'/api/chatgpt/poelist',
+        method:'get',
+        data:query
+    })
+}
+// 删除poe信息
+const deletePoeList = (ids) => {
+    return $http({
+        url:`/api/chatgpt/poelist/${ids}`,
+        method:'delete',
+    })
+}
+// 修改poe信息
+const putPoeList= (data) => {
+    return $http({
+        url:`/api/chatgpt/poelist`,
+        method:'put',
+        data
+    })
+}
+// 获取单个poe信息
+const getPoeDetail= (id) => {
+    return $http({
+        url:`/api/chatgpt/onepoe/${id}`,
+        method:'get',
+    })
+}
+// 修改poe状态
+const changePoeStatus= (data) => {
+    return $http({
+        url:`/api/chatgpt/poelist/poestatus`,
+        method:'put',
+        data
+    })
+}
+
 export default{
     postKeyList,getKeyList,deleteKeyList,putKeyList,getKeyDetail,changeKeyStatus,
     postTokenList,getTokenList,deleteTokenList,putTokenList,getTokenDetail,changeTokenStatus,
@@ -368,5 +418,6 @@ export default{
     postBardList,getBardList,deleteBardList,putBardList,getBardDetail,changeBardStatus,
     postClaudeList,getClaudeList,deleteClaudeList,putClaudeList,getClaudeDetail,changeClaudeStatus,
     postHuggingList,getHuggingList,deleteHuggingList,putHuggingList,getHuggingDetail,changeHuggingStatus,
-    postXfyunList,getXfyunList,deleteXfyunList,putXfyunList,getXfyunDetail,changeXfyunStatus
+    postXfyunList,getXfyunList,deleteXfyunList,putXfyunList,getXfyunDetail,changeXfyunStatus,
+    postPoeList,getPoeList,deletePoeList,putPoeList,getPoeDetail,changePoeStatus
 }

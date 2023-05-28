@@ -6,10 +6,11 @@ const bardlist=require('../db/models/chatgpt/bardListSchema')
 const claudelist=require('../db/models/chatgpt/claudeListSchema')
 const hugginglist=require('../db/models/chatgpt/huggingListSchema')
 const xfyunlist=require('../db/models/chatgpt/xfyunListSchema')
+const poelist=require('../db/models/chatgpt/poeListSchema')
 const keyoffical=require('../db/models/chatgpt/keyOfficalSchema')
 const keyunoffical=require('../db/models/chatgpt/keyUnOfficalSchema')
 const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive,
-  xfyunIsLive} =require('../controller/chatGpt/utils/gptCommon');
+  xfyunIsLive,poeIsLive} =require('../controller/chatGpt/utils/gptCommon');
 let intervalInstance = null;
 let updateGptAccountInstance = null;
 let updateTokenInstance = null;
@@ -24,6 +25,8 @@ let updateHuggingUsedCountInstance=null;
 let updateHuggingStatusInstance=null;
 let updateXfyunUsedCountInstance=null;
 let updateXfyunStatusInstance=null;
+let updatePoeUsedCountInstance=null;
+let updatePoeStatusInstance=null;
 const intervalTime = 1000 * 60 * 60; // 3 minutes
 const xfyunintervalTime=1000*60*120
 async function updateApikeyCount() {
@@ -235,6 +238,34 @@ async function updateXfyunTokenUsedCount(token, usedCount) {
     }
 
     const result = await xfyunlist.findOneAndUpdate(
+      { token: token},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+
+// 将poetoken数量更新到poelist表中
+async function updatePoeTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'poeListSchema');
+
+    if (!collectionExists) {
+      console.log('poeListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await poelist.findOneAndUpdate(
       { token: token},
       { usedcount: usedCount },
       { new: true }
@@ -798,7 +829,7 @@ const updateXfyunUsedCount =async ()=>{
   }
 }
 
-// 更新hugging的状态
+// 更新xfyun的状态
 const updateXfyunStatus =async ()=>{
   try {
     // 检查集合是否存在
@@ -827,6 +858,85 @@ const updateXfyunStatus =async ()=>{
 
     await Promise.all(updatedRecords);
     console.log('Updated all records in the xfyunList collection.');
+  } catch (error) {
+    console.error('Error updating records:', error);
+  }
+}
+
+
+// 更新poe的使用数量
+const updatePoeUsedCount =async ()=>{
+  const poeUsedInfo = {};
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+
+    if (!collectionExists) {
+      console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+      return;
+    }
+   
+    const collectionExists1 = collections.some((collection) => collection.name === 'poeListSchema');
+
+    if (!collectionExists1) {
+      console.log('poeListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+
+    await poelist.updateMany({}, { $set: { usedcount: 0 } });
+
+    const aggregation = await keyunoffical.aggregate([
+     { $match: { "poetoken": { $exists: true, $ne: "" } } },
+     { $group: { _id: "$poetoken", count: { $sum: 1 } } },
+ ]);
+ 
+    aggregation.forEach(({ _id, count }) => {
+      poeUsedInfo[_id] = count;
+    });
+
+
+    // 将统计的token被使用数量更新到xfyunList表中
+    for (const [poetoken, usedCount] of Object.entries(poeUsedInfo)) {
+        await updatePoeTokenUsedCount(poetoken, usedCount);
+    }
+
+    console.log('Updated token count:', JSON.stringify(poeUsedInfo));
+  } catch (error) {
+    console.error('Error fetching API key count:', error);
+  }
+}
+
+// 更新poe的状态
+const updatePoeStatus =async ()=>{
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'poeListSchema');
+
+    if (!collectionExists) {
+      console.log('poeListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const records = await poelist.find({});
+
+    const updatedRecords = records.map(async(record) => {
+      // 根据需要修改字段
+      if(record.token){
+       let tokenstatus= await poeIsLive(record.token)
+       if(tokenstatus){
+        record.tokenstatus = '在线'
+       }else{
+        record.tokenstatus='离线'
+       }
+      }
+      return record.save();
+    });
+
+    await Promise.all(updatedRecords);
+    console.log('Updated all records in the poeList collection.');
   } catch (error) {
     console.error('Error updating records:', error);
   }
@@ -977,6 +1087,27 @@ const loopUpdateXfyunStatus=async ()=>{
   }, xfyunintervalTime);
 }
 
+// 定时更新poe的使用情况
+const loopUpdatePoeUsedCount=async ()=>{
+  if(updatePoeUsedCountInstance){
+      clearInterval(updatePoeUsedCountInstance);
+  }
+  updatePoeUsedCountInstance= setInterval(()=>{
+    updatePoeUsedCount()
+  }, intervalTime);
+}
+
+// 定时更新poe的状态
+const loopUpdatePoeStatus=async ()=>{
+  if(updatePoeStatusInstance){
+      clearInterval(updatePoeStatusInstance);
+  }
+  updatePoeStatusInstance= setInterval(()=>{
+    updatePoeStatus()
+  }, intervalTime);
+}
+
+
 module.exports={
     updateAccountStatus,updateAccountStatusOnce,updateGptAccountStatusOnce,loopupdateGptAccountStatus,
     loopUpdateTokenStatus,updateTokenStatus,updateTokenAndSessionStatus,loopUpdateTokenAndSessionStatus,
@@ -984,7 +1115,8 @@ module.exports={
     updateBardUsedCount,loopUpdateBardUsedCount,updateBardStatus,loopUpdateBardStatus,
     updateClaudeUsedCount,loopUpdateClaudeUsedCount,updateClaudeStatus,loopUpdateClaudeStatus,
     updateHuggingUsedCount,loopUpdateHuggingUsedCount,updateHuggingStatus,loopUpdateHuggingStatus,
-    updateXfyunStatus,updateXfyunUsedCount,loopUpdateXfyunUsedCount,loopUpdateXfyunStatus
+    updateXfyunStatus,updateXfyunUsedCount,loopUpdateXfyunUsedCount,loopUpdateXfyunStatus,
+    updatePoeUsedCount,loopUpdatePoeUsedCount,updatePoeStatus,loopUpdatePoeStatus
 }
 
 

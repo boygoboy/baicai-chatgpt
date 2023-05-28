@@ -344,6 +344,38 @@
               </div>
             </div>
 
+                 <div class="block">
+              <div class="title">
+                <span>poe</span>
+              </div>
+              <div class="form-body">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">token</span>
+                    <div>
+                      <el-select :disabled="!isEditUnOffical"
+                        popper-class="popper-class"
+                        :popper-append-to-body="false"
+                        :multiple-limit="1"
+                        multiple
+                        filterable
+                        allow-create
+                        clearable
+                        default-first-option
+                        v-model="unofficalkeyForm.poetoken"
+                        placeholder="请选择或输入token"
+                        style="width: 100%"
+                      >
+                     <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in poetokenOptions" :key="index">
+                       </el-option>
+                      </el-select>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+            </div>
+
 
           </el-form>
                   <div class="action-btn" v-if="isEditUnOffical">
@@ -374,6 +406,7 @@ export default {
         claudeappid:"",
         huggingtoken:[],
         xfyuntoken:[],
+        poetoken:[],
       },
       isEditOffical:false,
       isEditUnOffical:false,
@@ -386,6 +419,7 @@ export default {
       claudetokenOptions:[],
       huggingtokenOptions:[],
       xfyuntokenOptions:[],
+      poetokenOptions:[],
     };
   },
   methods:{
@@ -411,8 +445,9 @@ export default {
             appid:this.unofficalkeyForm.claudeappid?this.unofficalkeyForm.claudeappid:''
           },
           huggingtoken:this.unofficalkeyForm.huggingtoken.length>0?this.unofficalkeyForm.huggingtoken[0]:'',
-          xfyuntoken:this.unofficalkeyForm.xfyuntoken.length>0?this.unofficalkeyForm.xfyuntoken[0]:''
-      }
+          xfyuntoken:this.unofficalkeyForm.xfyuntoken.length>0?this.unofficalkeyForm.xfyuntoken[0]:'',
+          poetoken:this.unofficalkeyForm.poetoken.length>0?this.unofficalkeyForm.poetoken[0]:'',
+     }
         if(this.unofficalkeyForm._id){
           data._id=this.unofficalkeyForm._id
         }
@@ -469,7 +504,9 @@ export default {
         claudeappid:"",
         huggingtoken:[],
         xfyuntoken:[],
+        poetoken:[],
       }
+      this.getUnOfficalKeys()
     },
     getOfficalKeys(){
       this.$http.getOfficalKeys().then(res=>{
@@ -513,6 +550,7 @@ export default {
           this.unofficalkeyForm.claudeappid=(res.data.claudeKey&&res.data.claudeKey.appid)?res.data.claudeKey.appid:''
           this.unofficalkeyForm.huggingtoken=res.data.huggingtoken?[res.data.huggingtoken]:[]
           this.unofficalkeyForm.xfyuntoken=res.data.xfyuntoken?[res.data.xfyuntoken]:[]
+          this.unofficalkeyForm.poetoken=res.data.poetoken?[res.data.poetoken]:[]
           if(res.data._id){
             this.unofficalkeyForm._id=res.data._id
           }
@@ -548,6 +586,11 @@ export default {
           })
           this.xfyuntokenOptions.forEach(item=>{
             if(item.token==this.unofficalkeyForm.xfyuntoken[0]){
+              item.disabled=false
+            }
+          })
+          this.poetokenOptions.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.poetoken[0]){
               item.disabled=false
             }
           })
@@ -634,6 +677,13 @@ export default {
         this.xfyuntokenOptions=res.data
       }
     },
+        // 获取poe token下拉列表
+        async getPoeTokenList(){
+      let res=await this.$http.getPoeTokenList()
+      if(res.errorCode=='0000'){
+        this.poetokenOptions=res.data
+      }
+    },
     // 初始化chatgpt非官方token下拉列表
     async initunofficaltokenlist(){
       await this.getUnofficaltokenList('免费账号')
@@ -643,6 +693,7 @@ export default {
       await this.getClaudeTokenList()
       await this.getHuggingTokenList()
       await this.getXfyunTokenList()
+      await this.getPoeTokenList()
       this.getUnOfficalKeys()  
     },
     // 选择bingtoken事件

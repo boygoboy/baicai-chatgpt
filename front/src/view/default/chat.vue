@@ -417,6 +417,7 @@ export default {
       claudechatObj:{},
       huggingchatObj:{},
       xfyunchatObj:{},
+      poechatObj:{},
     };
   },
   methods: {
@@ -519,6 +520,9 @@ export default {
         }
           if(this.selectBot=="xfyun非官方"){
           this.chatParams.token =this.unofficalsettingdata.xfyuntoken
+        }
+          if(this.selectBot=="poe非官方"){
+          this.chatParams.token =this.unofficalsettingdata.poetoken
         }
       } else {
         this.$message.warning({
@@ -743,6 +747,15 @@ export default {
             this.xfyunchatObj.conversationId=this.messageData[this.messageData.length-1].xfyunchatObj.conversationId
           }
           newWebSocket.sendMsg(JSON.stringify(this.xfyunchatObj));
+      }
+
+       if(this.chatParams.chatchannel == "poe非官方"){
+          this.poechatObj = {
+            cookie: this.chatParams.token,
+            model: this.chatParams.model,
+            message: this.sendMessage,
+          };
+          newWebSocket.sendMsg(JSON.stringify(this.poechatObj));
       }
       this.loading = true;
       let meItem = {
@@ -1132,6 +1145,55 @@ export default {
         }, 50);
       }
     },
+    // 处理poe非官方消息
+            handlePoeUnofficalMessage(data){
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+      if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        return;
+      }
+      if (data != "[START]" && !data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText = newdata;
+          console.log(this.inputText);
+        }, 50);
+      }
+    },
     // 处理ws收到的消息
     handleWSMessage(data) {
       console.log(data);
@@ -1344,6 +1406,24 @@ export default {
           },
         });
       }
+
+           if(this.selectBot=="poe非官方"){
+                newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/poeUnOfficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handlePoeUnofficalMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
+
     },
 
     initTyped(input, fn, hooks) {

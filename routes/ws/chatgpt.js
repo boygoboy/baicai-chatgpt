@@ -12,6 +12,7 @@ const {bardUnofficalChat}=require('../../controller/googleBard/chat.js')
 const {claudeUnofficalChat}=require('../../controller/claude/chat.js')
 const {huggingChat}=require('../../controller/HuggingChat/chat/index.js')
 const {xfyunChat}=require('../../controller/xfYun/chat/index.js')
+const {poeChatMessage}=require('../../controller/poeChat/chat/index.js')
 /**
  * route.ws('/url',(ws, req)=>{  })
  * 建立WebSocket服务，并指定对应接口url，及相应回调
@@ -224,6 +225,30 @@ router.ws('/xfyunconnection',checkWsTokenMiddleware, (ws, req) => {
 const getXfyunWs=()=> {
   return xfyunWs;
 }
+
+
+router.ws('/poeUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
+  ws.on('message', async function (data) {
+    if(data=="heartbeat"){
+      return
+    }
+      let options=JSON.parse(data)
+      console.log(options)
+      let result=await limitRequestCount(req,{type:"poe非官方",model:options.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
+      let {userId}=req.user.userList
+      options.userId=userId
+      poeChatMessage(options,(message)=>{
+        if(message.startsWith('[DONE]')){
+          createChatInfo(req,'poe非官方',options.model)
+        }
+      ws.send(message)
+    })
+  })
+})
 
 module.exports = {
   router,getXfyunWs

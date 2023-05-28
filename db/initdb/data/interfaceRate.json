@@ -106,4 +106,55 @@
     "count": 3,
     "cycle": 1,
     "unit": "分钟"
-  }]
+  },
+
+  {
+    "model": "Claude-instant",
+    "type": "poe非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },
+  {
+    "model": "Claude+",
+    "type": "poe非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },
+  {
+    "model": "GPT-4",
+    "type": "poe非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },
+  {
+    "model": "Sage",
+    "type": "poe非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },
+  {
+    "model": "Dragonfly",
+    "type": "poe非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },
+  {
+    "model": "ChatGPT",
+    "type": "poe非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  },
+  {
+    "model": "NeevaAI",
+    "type": "poe非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
+  }
+]

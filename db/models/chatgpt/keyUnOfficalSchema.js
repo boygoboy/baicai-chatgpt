@@ -33,6 +33,10 @@ const keyUnOfficalSchema =mongoose.Schema({
     xfyuntoken:{
         type:String,
         default:''
+    },
+    poetoken:{
+        type:String,
+        default:''
     }
 })
 const keyunofficalschema = mongoose.model('keyUnOfficalSchema',keyUnOfficalSchema,'keyUnOfficalSchema')

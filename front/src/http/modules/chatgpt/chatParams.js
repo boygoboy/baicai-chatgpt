@@ -122,11 +122,19 @@ const getXfyunTokenList = (query) => {
         data:query
     })
 }
+// 获取poe非官方token下拉列表
+const getPoeTokenList = (query) => {
+    return $http({
+        url:'/api/chatgpt/poetokenlist',
+        method:'get',
+        data:query
+    })
+}
 
 
 export default{
     postChatParams,getChatParams,deleteChatParams,putChatParams
     ,getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,
     getOfficalKeyList,getUnofficaltokenList,getBingTokenList,getBardTokenList,
-    getClaudeTokenList,getHuggingTokenList,getXfyunTokenList
+    getClaudeTokenList,getHuggingTokenList,getXfyunTokenList,getPoeTokenList
 }

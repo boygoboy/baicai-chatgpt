@@ -7,6 +7,7 @@ const {getBardList,postBardList,putBardList,getBardDetail,deleteBardList,changeB
 const {getClaudeList,postClaudeList,putClaudeList,getClaudeDetail,deleteClaudeList,changeClaudeStatus}=require('../../../controller/chatGpt/claudelist.js')
 const {getHuggingList,postHuggingList,putHuggingList,getHuggingDetail,deleteHuggingList,changeHuggingStatus}=require('../../../controller/chatGpt/hugginglist.js')
 const {getXfyunList,postXfyunList,putXfyunList,getXfyunDetail,deleteXfyunList,changeXfyunStatus}=require('../../../controller/chatGpt/xfyunlist.js')
+const { getPoeList,postPoeList,putPoeList,getPoeDetail,deletePoeList,changePoeStatus}=require('../../../controller/chatGpt/poelist.js')
 router.get("/keylist", (req, res) => {
     getKeyList(req,res)
 })
@@ -194,5 +195,31 @@ router.delete("/xfyunlist/:ids",(req,res)=>{
 router.put("/xfyunlist/xfyunstatus",(req,res)=>{
     changeXfyunStatus(req,res)
 })
+
+// poe接口模块
+router.get("/poelist",(req,res)=>{
+    getPoeList(req,res)
+})
+
+router.get("/onepoe/:id",(req,res)=>{
+    getPoeDetail(req,res)
+})
+
+router.post("/poelist",(req,res)=>{
+    postPoeList(req,res)
+})
+
+router.put("/poelist",(req,res)=>{
+    putPoeList(req,res)
+})
+
+router.delete("/poelist/:ids",(req,res)=>{
+    deletePoeList(req,res)
+})
+
+router.put("/poelist/poestatus",(req,res)=>{
+    changePoeStatus(req,res)
+})
+
 
 module.exports = router;

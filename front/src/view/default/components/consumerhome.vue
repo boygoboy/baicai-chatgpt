@@ -63,6 +63,7 @@
                      <el-option label="claude非官方" value="claude非官方"></el-option>
                       <el-option label="huggiing非官方" value="hugging非官方"></el-option>
                        <el-option label="xfyun非官方" value="xfyun非官方"></el-option>
+                         <el-option label="poe非官方" value="poe非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -101,6 +102,7 @@
                      <el-option label="claude非官方" value="claude非官方"></el-option>
                      <el-option label="huggiing非官方" value="hugging非官方"></el-option>
                        <el-option label="xfyun非官方" value="xfyun非官方"></el-option>
+                    <el-option label="poe非官方" value="poe非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -250,6 +252,18 @@ export default {
                 type:'xfyun非官方',  
                 modelOptions:[
                     {label:'spark',value:'spark'},
+                ]
+            },
+             {
+                type:'poe非官方',  
+                modelOptions:[
+                    {label:'Claude-instant',value:'Claude-instant'},
+                    {label:'Claude+',value:'Claude+'},
+                    {label:' GPT-4',value:' GPT-4'},
+                    {label:'Sage',value:'Sage'},
+                    {label:'Dragonfly',value:'Dragonfly'},
+                    {label:'ChatGPT',value:'ChatGPT'},
+                    {label:'NeevaAI',value:'NeevaAI'},
                 ]
             },
             ],

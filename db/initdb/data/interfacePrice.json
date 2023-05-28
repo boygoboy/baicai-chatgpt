@@ -88,4 +88,49 @@
   "type": "xfyun非官方",
   "count": 0,
   "unit": "1 次"
-}]
+},
+
+
+{
+  "model": "Claude-instant",
+  "type": "poe非官方",
+  "count": 0,
+  "unit": "1 次"
+},
+{
+  "model": "Claude+",
+  "type": "poe非官方",
+  "count": 0,
+  "unit": "1 次"
+},
+{
+  "model": "GPT-4",
+  "type": "poe非官方",
+  "count": 0,
+  "unit": "1 次"
+},
+{
+  "model": "Sage",
+  "type": "poe非官方",
+  "count": 0,
+  "unit": "1 次"
+},
+{
+  "model": "Dragonfly",
+  "type": "poe非官方",
+  "count": 0,
+  "unit": "1 次"
+},
+{
+  "model": "ChatGPT",
+  "type": "poe非官方",
+  "count": 0,
+  "unit": "1 次"
+},
+{
+  "model": "NeevaAI",
+  "type": "poe非官方",
+  "count": 0,
+  "unit": "1 次"
+}
+]

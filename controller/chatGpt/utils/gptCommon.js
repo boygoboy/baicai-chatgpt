@@ -309,8 +309,52 @@ const xfyunIsLive=async(cookie)=>{
         return false
     }
 }
+// poe测活
+const poeIsLive=async(cookie)=>{
+    try{
+        const resetEnv = () => {
+            process.env['poe-formkey']=''
+            process.env['buildId']=''
+            process.env['capybara_-_Sage_chatId']=''
+            process.env['capybara_-_Sage_id']=''
+            process.env['beaver_-_GPT-4_chatId']=''
+           process.env['beaver_-_GPT-4_id']=''
+              process.env['a2_2_-_Claude_2_chatId']=''
+           process.env['a2_2_-_Claude_2_id']=''
+           process.env['a2_100k_-_Claude-instant-100k_chatId']=''
+           process.env['a2_100k_-_Claude-instant-100k_id']=''
+           process.env['a2_-_Claude-instant_chatId']=''
+           process.env['a2_-_Claude-instant_id']=''
+           process.env['chinchilla_-_ChatGPT_chatId']=''
+           process.env['chinchilla_-_ChatGPT_id']=''
+           process.env['nutria_-_Dragonfly_chatId']=''
+           process.env['nutria_-_Dragonfly_id']=''
+        }
+            const {BotNickNameEnum, PoeClient, sleep} = await import("poe-node-api")
+            const client = new PoeClient({
+                debug: false,
+                cookie
+            })
+            resetEnv()
+            await client.updateAllBotInfo()
+            await client.init()
+            resetEnv()
+           let result=  await client.sendMessage("hello", BotNickNameEnum.capybara, false, (data) => {
+                console.log(`${data}`)
+            })
+            console.log(result)
+            if(result&&result.extensions.is_final){
+                return true
+            }else{
+                return false
+            }
+    }catch(error){
+          return false
+    }
+}
 
 
     module.exports={
-        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive,xfyunIsLive
+        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive,xfyunIsLive,
+        poeIsLive
     }

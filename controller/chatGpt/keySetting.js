@@ -8,9 +8,10 @@ const bardlist=require('../../db/models/chatgpt/bardListSchema')
 const claudelist=require('../../db/models/chatgpt/claudeListSchema')
 const hugginglist=require('../../db/models/chatgpt/huggingListSchema')
 const xfyunlist=require('../../db/models/chatgpt/xfyunListSchema')
+const poelist=require('../../db/models/chatgpt/poeListSchema')
 const {encrypt,decrypt}=require('../../utils/encryption')
 const {updateAccountStatusOnce,updateTokenStatus,updateBingUsedCount,updateBardUsedCount,updateClaudeUsedCount,updateHuggingUsedCount,
-updateXfyunUsedCount}=require('../../utils/timedTask')
+updateXfyunUsedCount,updatePoeUsedCount}=require('../../utils/timedTask')
 const AsyncLock = require('async-lock');
 const lock = new AsyncLock();
 
@@ -204,6 +205,13 @@ const getUnofficalKeys=async (req,res)=>{
                 result.xfyuntoken=''
             }
         }
+        if(result&&result.poetoken){
+            const obj=await poelist.findOne({token:result.poetoken}).exec()
+            if(obj&&obj.enablestatus!='启用'){
+                result.poetoken=''
+            }
+        }
+
         if(result){
             result.accesstoken3=result.accesstoken3?encrypt(result.accesstoken3):result.accesstoken3
             result.accesstoken4=result.accesstoken4?encrypt(result.accesstoken4):result.accesstoken4
@@ -214,6 +222,7 @@ const getUnofficalKeys=async (req,res)=>{
             result.claudeKey.appid=result.claudeKey.appid?encrypt(result.claudeKey.appid):result.claudeKey.appid
             result.huggingtoken=result.huggingtoken?encrypt(result.huggingtoken):result.huggingtoken
             result.xfyuntoken=result.xfyuntoken?encrypt(result.xfyuntoken):result.xfyuntoken
+            result.poetoken=result.poetoken?encrypt(result.poetoken):result.poetoken
         }
         return res.json({
             errorCode:'0000',
@@ -232,7 +241,7 @@ const getUnofficalKeys=async (req,res)=>{
 
 const postUnofficalKeys=async (req,res)=>{
     await lock.acquire("unofficalkeysetting", async (done) => {
-      let {_id,accesstoken3,accesstoken4,newbingKey,bardtoken,claudeKey,huggingtoken,xfyuntoken}=req.body
+      let {_id,accesstoken3,accesstoken4,newbingKey,bardtoken,claudeKey,huggingtoken,xfyuntoken,poetoken}=req.body
         let {userId}=req.user.userList
         try{
              await updateTokenStatus()
@@ -241,6 +250,7 @@ const postUnofficalKeys=async (req,res)=>{
              await updateClaudeUsedCount()
              await updateHuggingUsedCount()
              await updateXfyunUsedCount()
+             await updatePoeUsedCount()
             const countResult= await Counter.findOne({id:'unofficalkeyId'})
             if(!countResult){
               await Counter.create({
@@ -258,6 +268,7 @@ const postUnofficalKeys=async (req,res)=>{
             claudeKey.appid=claudeKey.appid?decrypt(claudeKey.appid):claudeKey.appid
             huggingtoken=huggingtoken?decrypt(huggingtoken):huggingtoken
             xfyuntoken=xfyuntoken?decrypt(xfyuntoken):xfyuntoken
+            poetoken=poetoken?decrypt(poetoken):poetoken
             const count = await Counter.findOneAndUpdate({ id: 'unofficalkeyId' }, { $inc: { sequence_value: 1 } }, { new: true })
         //   判断资源被使用数量校验能够提交
             if(accesstoken3){
@@ -378,6 +389,23 @@ const postUnofficalKeys=async (req,res)=>{
                 }
             }
 
+            if(poetoken){
+                let result4=await poelist.findOne({token:poetoken})
+                // 如果更新的是已经绑定的密钥则跳过校验
+                let obj=await unofficalkeys.findOne({userId})
+                if(!obj||obj.poetoken!=poetoken){
+                    if(result4){
+                        if(result4.usedcount>=result4.sharecount){
+                            return res.json({
+                                errorCode:'2002',
+                                message:'该token已被使用完!',
+                                data:null
+                            })
+                        }
+                    }
+                }
+            }
+
             if(!_id){
               try{
                 const unofficalKeys = await new unofficalkeys({
@@ -390,6 +418,7 @@ const postUnofficalKeys=async (req,res)=>{
                     claudeKey,
                     huggingtoken,
                     xfyuntoken,
+                    poetoken,
                 })
                 await unofficalKeys.save();
                 done()
@@ -415,6 +444,7 @@ const postUnofficalKeys=async (req,res)=>{
                 claudeKey,
                 huggingtoken,
                 xfyuntoken,
+                poetoken,
               })
               if(row){
                 done()
@@ -891,7 +921,68 @@ const filterXfyunTokenList = (results) => {
     return finalResult
 }
 
+// 获取poe token 下拉列表
+const getPoeUnofficalList=async (req,res)=>{
+    let {userId,role,roleNames}=req.user.userList
+    try{
+        await updatePoeUsedCount()
+        const results = await findPoeTokens(roleNames, role);
+        console.log(results);
+       const finalResult= filterPoeTokenList(results)
+        return res.json({
+            errorCode:'0000',
+            message:'查询成功！',
+            data:finalResult
+        })
+    }catch(error){
+        res.json({
+            errorCode: '500',
+            message: '服务器错误!',
+            data: error
+        })
+        throw error
+    }
+}
+
+const findPoeTokens = async (roleNames, role) => {
+    const query = poelist.find({
+        enablestatus: '启用',
+        tokenstatus: '在线',
+        $expr: {
+          $lte: ['$usedcount', '$sharecount']
+        }
+      });
+
+  if (role !== 0) {
+    query.where('shareroles').in(roleNames);
+  }
+  const results = await query.exec();
+  return results;
+};
+
+const filterPoeTokenList = (results) => {
+    let finalResult = [];
+    results.forEach((item,index) => {
+        let obj={
+            id:item._id,
+            token:encrypt(item.token),
+            usedcount:item.usedcount,
+            sharecount:item.sharecount,
+            label:`poe-线路${index+1}`
+        }
+        if(item.usedcount==item.sharecount){
+            obj.disabled=true
+        }else{
+            obj.disabled=false
+        }
+        finalResult.push(obj)
+    })
+    return finalResult
+}
+
+
 module.exports={
     getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,getOfficalKeyList,
-    getUnofficaltokenList,getBingTokenList,getBardUnofficalList,getClaudeTokenList,getHuggingUnofficalList,getXfyunUnofficalList
+    getUnofficaltokenList,getBingTokenList,getBardUnofficalList,getClaudeTokenList,getHuggingUnofficalList,getXfyunUnofficalList,
+    getPoeUnofficalList
 }
