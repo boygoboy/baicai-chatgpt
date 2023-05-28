@@ -6,6 +6,7 @@ const {getBingList,postBingList,putBingList,deleteBingList,getBingDetail,changeB
 const {getBardList,postBardList,putBardList,getBardDetail,deleteBardList,changeBardStatus}=require('../../../controller/chatGpt/bardlist.js')
 const {getClaudeList,postClaudeList,putClaudeList,getClaudeDetail,deleteClaudeList,changeClaudeStatus}=require('../../../controller/chatGpt/claudelist.js')
 const {getHuggingList,postHuggingList,putHuggingList,getHuggingDetail,deleteHuggingList,changeHuggingStatus}=require('../../../controller/chatGpt/hugginglist.js')
+const {getXfyunList,postXfyunList,putXfyunList,getXfyunDetail,deleteXfyunList,changeXfyunStatus}=require('../../../controller/chatGpt/xfyunlist.js')
 router.get("/keylist", (req, res) => {
     getKeyList(req,res)
 })
@@ -167,6 +168,31 @@ router.delete("/hugginglist/:ids",(req,res)=>{
 
 router.put("/hugginglist/huggingstatus",(req,res)=>{
     changeHuggingStatus(req,res)
+})
+
+// xfyun接口模块
+router.get("/xfyunlist",(req,res)=>{
+    getXfyunList(req,res)
+})
+
+router.get("/onexfyun/:id",(req,res)=>{
+    getXfyunDetail(req,res)
+})
+
+router.post("/xfyunlist",(req,res)=>{
+    postXfyunList(req,res)
+})
+
+router.put("/xfyunlist",(req,res)=>{
+    putXfyunList(req,res)
+})
+
+router.delete("/xfyunlist/:ids",(req,res)=>{
+    deleteXfyunList(req,res)
+})
+
+router.put("/xfyunlist/xfyunstatus",(req,res)=>{
+    changeXfyunStatus(req,res)
 })
 
 module.exports = router;

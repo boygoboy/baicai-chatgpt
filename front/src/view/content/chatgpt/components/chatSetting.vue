@@ -99,6 +99,7 @@
             <el-option label="bard非官方" value="bard非官方"></el-option>
              <el-option label="claude非官方" value="claude非官方"></el-option>
               <el-option label="hugging非官方" value="hugging非官方"></el-option>
+               <el-option label="xfyun非官方" value="xfyun非官方"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item
@@ -191,11 +192,21 @@
           >
           <el-option label="NLP" value="NLP"></el-option>
           </el-select>
+            <el-select
+            v-model="chatsettingForm.model"
+            placeholder="请选择聊天模型"
+            :clearable="true"
+            style="width: 100%"
+            @change="changeModel"
+            v-if="chatsettingForm.chatchannel == 'xfyun非官方'"
+          >
+          <el-option label="spark" value="spark"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item
           label="聊天接口："
           prop="url"
-          v-if="chatsettingForm.chatchannel&&chatsettingForm.chatchannel!='claude非官方'&&chatsettingForm.chatchannel!='hugging非官方'"
+          v-if="chatsettingForm.chatchannel&&chatsettingForm.chatchannel!='claude非官方'&&chatsettingForm.chatchannel!='hugging非官方'&&chatsettingForm.chatchannel!='xfyun非官方'"
         >
           <el-select
             popper-class="popper-class"
@@ -423,6 +434,9 @@ export default {
           }
           if(this.chatsettingForm.chatchannel=='hugging非官方'){
             data.url="https://huggingface.co/chat/conversation"
+          }
+          if(this.chatsettingForm.chatchannel=='xfyun非官方'){
+            data.url="https://xinghuo.xfyun.cn/desk"
           }
           if (this.chatsettingForm._id) {
             data._id = this.chatsettingForm._id;

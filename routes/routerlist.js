@@ -160,6 +160,11 @@ const allRouterObj=[
         menuUrl:'/chatgpt/setting',
         permit:null
     },
+    {
+        routerUrl:'/api/chatgpt/xfyuntokenlist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
     // chatgpt管理---资源管理模块
     {
         routerUrl:'/api/chatgpt/keylist',
@@ -252,6 +257,22 @@ const allRouterObj=[
         menuUrl:'/chatgpt/resource/hugging',
         permit:null
     },
+    // xfyun
+    {
+        routerUrl:'/api/chatgpt/xfyunlist',
+        menuUrl:'/chatgpt/resource/xfyun',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/onexfyun',
+        menuUrl:'/chatgpt/resource/xfyun',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/hugginglist/xfyunstatus',
+        menuUrl:'/chatgpt/resource/xfyun',
+        permit:null
+    },
     // chatgpt管理---对话指标模块
     {
         routerUrl:'/api/chatgpt/interfaceratelist',
@@ -272,6 +293,12 @@ const allRouterObj=[
     {
         routerUrl:'/api/homestatistics/chatdetaildata',
         menuUrl:'/',
+        permit:null
+    },
+    // 对话模块
+    {
+        routerUrl:'/api/chatgpt/xunfeigttoken',
+        menuUrl:'/chatgpt/chat',
         permit:null
     }
 ]

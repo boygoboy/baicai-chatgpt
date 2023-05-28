@@ -5,9 +5,11 @@ const binglist=require('../db/models/chatgpt/bingListSchema')
 const bardlist=require('../db/models/chatgpt/bardListSchema')
 const claudelist=require('../db/models/chatgpt/claudeListSchema')
 const hugginglist=require('../db/models/chatgpt/huggingListSchema')
+const xfyunlist=require('../db/models/chatgpt/xfyunListSchema')
 const keyoffical=require('../db/models/chatgpt/keyOfficalSchema')
 const keyunoffical=require('../db/models/chatgpt/keyUnOfficalSchema')
-const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive} =require('../controller/chatGpt/utils/gptCommon');
+const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive,
+  xfyunIsLive} =require('../controller/chatGpt/utils/gptCommon');
 let intervalInstance = null;
 let updateGptAccountInstance = null;
 let updateTokenInstance = null;
@@ -20,7 +22,10 @@ let updateClaudeUsedCountInstance=null;
 let updateClaudeStatusInstance=null;
 let updateHuggingUsedCountInstance=null;
 let updateHuggingStatusInstance=null;
+let updateXfyunUsedCountInstance=null;
+let updateXfyunStatusInstance=null;
 const intervalTime = 1000 * 60 * 60; // 3 minutes
+const xfyunintervalTime=1000*60*120
 async function updateApikeyCount() {
  const apikeyUsedInfo = {};
  const apikey4UsedInfo = {};
@@ -203,6 +208,33 @@ async function updateHuggingTokenUsedCount(token, usedCount) {
     }
 
     const result = await hugginglist.findOneAndUpdate(
+      { token: token},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+// 将xfyuntoken数量更新到xfyunlist表中
+async function updateXfyunTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'xfyunListSchema');
+
+    if (!collectionExists) {
+      console.log('xfyunListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await xfyunlist.findOneAndUpdate(
       { token: token},
       { usedcount: usedCount },
       { new: true }
@@ -643,7 +675,7 @@ const updateClaudeStatus =async ()=>{
 }
 
 
-// 更新bard的使用数量
+// 更新hugging的使用数量
 const updateHuggingUsedCount =async ()=>{
   const huggingUsedInfo = {};
   try {
@@ -716,6 +748,85 @@ const updateHuggingStatus =async ()=>{
 
     await Promise.all(updatedRecords);
     console.log('Updated all records in the huggingList collection.');
+  } catch (error) {
+    console.error('Error updating records:', error);
+  }
+}
+
+
+// 更新xfyun的使用数量
+const updateXfyunUsedCount =async ()=>{
+  const xfyunUsedInfo = {};
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+
+    if (!collectionExists) {
+      console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+      return;
+    }
+   
+    const collectionExists1 = collections.some((collection) => collection.name === 'xfyunListSchema');
+
+    if (!collectionExists1) {
+      console.log('xfyunListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+
+    await xfyunlist.updateMany({}, { $set: { usedcount: 0 } });
+
+    const aggregation = await keyunoffical.aggregate([
+     { $match: { "xfyuntoken": { $exists: true, $ne: "" } } },
+     { $group: { _id: "$xfyuntoken", count: { $sum: 1 } } },
+ ]);
+ 
+    aggregation.forEach(({ _id, count }) => {
+      xfyunUsedInfo[_id] = count;
+    });
+
+
+    // 将统计的token被使用数量更新到xfyunList表中
+    for (const [xfyuntoken, usedCount] of Object.entries(xfyunUsedInfo)) {
+        await updateXfyunTokenUsedCount(xfyuntoken, usedCount);
+    }
+
+    console.log('Updated token count:', JSON.stringify(xfyunUsedInfo));
+  } catch (error) {
+    console.error('Error fetching API key count:', error);
+  }
+}
+
+// 更新hugging的状态
+const updateXfyunStatus =async ()=>{
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'xfyunListSchema');
+
+    if (!collectionExists) {
+      console.log('xfyunListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const records = await xfyunlist.find({});
+
+    const updatedRecords = records.map(async(record) => {
+      // 根据需要修改字段
+      if(record.token){
+       let tokenstatus= await xfyunIsLive(record.token)
+       if(tokenstatus){
+        record.tokenstatus = '在线'
+       }else{
+        record.tokenstatus='离线'
+       }
+      }
+      return record.save();
+    });
+
+    await Promise.all(updatedRecords);
+    console.log('Updated all records in the xfyunList collection.');
   } catch (error) {
     console.error('Error updating records:', error);
   }
@@ -846,6 +957,25 @@ const loopUpdateHuggingStatus=async ()=>{
     updateHuggingStatus()
   }, intervalTime);
 }
+// 定时更新xfyun的使用情况
+const loopUpdateXfyunUsedCount=async ()=>{
+  if(updateXfyunUsedCountInstance){
+      clearInterval(updateXfyunUsedCountInstance);
+  }
+  updateXfyunUsedCountInstance= setInterval(()=>{
+    updateXfyunUsedCount()
+  }, xfyunintervalTime);
+}
+
+// 定时更新xfyun的状态
+const loopUpdateXfyunStatus=async ()=>{
+  if(updateXfyunStatusInstance){
+      clearInterval(updateXfyunStatusInstance);
+  }
+  updateXfyunStatusInstance= setInterval(()=>{
+    updateXfyunStatus()
+  }, xfyunintervalTime);
+}
 
 module.exports={
     updateAccountStatus,updateAccountStatusOnce,updateGptAccountStatusOnce,loopupdateGptAccountStatus,
@@ -853,7 +983,8 @@ module.exports={
     updateBingUsedCount,loopUpdateBingUsedCount,updateBingStatus,loopUpdateBingStatus,
     updateBardUsedCount,loopUpdateBardUsedCount,updateBardStatus,loopUpdateBardStatus,
     updateClaudeUsedCount,loopUpdateClaudeUsedCount,updateClaudeStatus,loopUpdateClaudeStatus,
-    updateHuggingUsedCount,loopUpdateHuggingUsedCount,updateHuggingStatus,loopUpdateHuggingStatus
+    updateHuggingUsedCount,loopUpdateHuggingUsedCount,updateHuggingStatus,loopUpdateHuggingStatus,
+    updateXfyunStatus,updateXfyunUsedCount,loopUpdateXfyunUsedCount,loopUpdateXfyunStatus
 }
 
 

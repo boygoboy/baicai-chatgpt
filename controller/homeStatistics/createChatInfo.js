@@ -1,7 +1,7 @@
 const conversationStatistics=require('../../db/models/chatgpt/conversationStatisticsSchema');
 const interfacePrice=require('../../db/models/chatgpt/interfacePriceSchema');
 const Counter = require('../../db/models/counterSchema')
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 const createChatInfo=async (req,type,model)=>{
 let {roleNames,userId}=req.user.userList
@@ -26,7 +26,7 @@ try{
         type,
         model,
         count:result.count,
-        date:new Date()
+        date:moment().tz('Asia/Shanghai')
     })
     await conversation.save()
    }

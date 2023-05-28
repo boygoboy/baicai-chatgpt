@@ -6,7 +6,6 @@ const statisticsChatInfo=async (req,res)=>{
     let {type,model }=req.query
     let {userId}=req.user.userList
     let oneMonthAgo = moment().subtract(1, 'months').toDate();
-
     try {
          // 构建$match查询条件
     let matchQuery = {
@@ -103,6 +102,7 @@ const getChatDetail=async (req,res)=>{
         const total = await conversationStatistics.countDocuments(params)
         pager.total = total
         pager.pageNum = parseInt(pageNum)
+        console.log(chatlist)
         if (chatlist) { 
             chatlist.map(item=>{
                 item._doc.date=moment(item._doc.date).format('YYYY-MM-DD HH:mm:ss')

@@ -32,7 +32,8 @@ createFirstUser({
 // '/api/user'
 var app = express();
 // 这里是websocket的路由要放在  之后
-const chatgptWs=require('./routes/ws/chatgpt')
+const {router}=require('./routes/ws/chatgpt')
+chatgptWs=router
 
 app.use(cors())
 app.use(logger('dev'));

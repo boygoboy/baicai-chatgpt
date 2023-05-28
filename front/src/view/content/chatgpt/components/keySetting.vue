@@ -312,6 +312,39 @@
               </div>
             </div>
 
+              <div class="block">
+              <div class="title">
+                <span>xfyun</span>
+              </div>
+              <div class="form-body">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">token</span>
+                    <div>
+                      <el-select :disabled="!isEditUnOffical"
+                        popper-class="popper-class"
+                        :popper-append-to-body="false"
+                        :multiple-limit="1"
+                        multiple
+                        filterable
+                        allow-create
+                        clearable
+                        default-first-option
+                        v-model="unofficalkeyForm.xfyuntoken"
+                        placeholder="请选择或输入token"
+                        style="width: 100%"
+                      >
+                     <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in xfyuntokenOptions" :key="index">
+                       </el-option>
+                      </el-select>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+            </div>
+
+
           </el-form>
                   <div class="action-btn" v-if="isEditUnOffical">
              <el-button @click="cancelUnOfficalEdit">取 消</el-button>
@@ -340,6 +373,7 @@ export default {
         claudetoken:[],
         claudeappid:"",
         huggingtoken:[],
+        xfyuntoken:[],
       },
       isEditOffical:false,
       isEditUnOffical:false,
@@ -351,6 +385,7 @@ export default {
       bardtokenOptions:[],
       claudetokenOptions:[],
       huggingtokenOptions:[],
+      xfyuntokenOptions:[],
     };
   },
   methods:{
@@ -375,8 +410,9 @@ export default {
             token:this.unofficalkeyForm.claudetoken.length>0?this.unofficalkeyForm.claudetoken[0]:'',
             appid:this.unofficalkeyForm.claudeappid?this.unofficalkeyForm.claudeappid:''
           },
-          huggingtoken:this.unofficalkeyForm.huggingtoken.length>0?this.unofficalkeyForm.huggingtoken[0]:''
-       }
+          huggingtoken:this.unofficalkeyForm.huggingtoken.length>0?this.unofficalkeyForm.huggingtoken[0]:'',
+          xfyuntoken:this.unofficalkeyForm.xfyuntoken.length>0?this.unofficalkeyForm.xfyuntoken[0]:''
+      }
         if(this.unofficalkeyForm._id){
           data._id=this.unofficalkeyForm._id
         }
@@ -431,7 +467,8 @@ export default {
         bardtoken:[],
         claudetoken:[],
         claudeappid:"",
-        huggingtoken:[]
+        huggingtoken:[],
+        xfyuntoken:[],
       }
     },
     getOfficalKeys(){
@@ -475,6 +512,7 @@ export default {
           this.unofficalkeyForm.claudetoken=(res.data.claudeKey&&res.data.claudeKey.token)?[res.data.claudeKey.token]:[]
           this.unofficalkeyForm.claudeappid=(res.data.claudeKey&&res.data.claudeKey.appid)?res.data.claudeKey.appid:''
           this.unofficalkeyForm.huggingtoken=res.data.huggingtoken?[res.data.huggingtoken]:[]
+          this.unofficalkeyForm.xfyuntoken=res.data.xfyuntoken?[res.data.xfyuntoken]:[]
           if(res.data._id){
             this.unofficalkeyForm._id=res.data._id
           }
@@ -505,6 +543,11 @@ export default {
           })
           this.huggingtokenOptions.forEach(item=>{
             if(item.token==this.unofficalkeyForm.huggingtoken[0]){
+              item.disabled=false
+            }
+          })
+          this.xfyuntokenOptions.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.xfyuntoken[0]){
               item.disabled=false
             }
           })
@@ -584,6 +627,13 @@ export default {
         this.huggingtokenOptions=res.data
       }
     },
+    // 获取讯飞token下拉列表
+        async getXfyunTokenList(){
+      let res=await this.$http.getXfyunTokenList()
+      if(res.errorCode=='0000'){
+        this.xfyuntokenOptions=res.data
+      }
+    },
     // 初始化chatgpt非官方token下拉列表
     async initunofficaltokenlist(){
       await this.getUnofficaltokenList('免费账号')
@@ -592,6 +642,7 @@ export default {
       await this.getBardTokenList()
       await this.getClaudeTokenList()
       await this.getHuggingTokenList()
+      await this.getXfyunTokenList()
       this.getUnOfficalKeys()  
     },
     // 选择bingtoken事件

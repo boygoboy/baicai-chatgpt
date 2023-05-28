@@ -114,9 +114,19 @@ const getHuggingTokenList = (query) => {
     })
 }
 
+// 获取xfyun非官方token下拉列表
+const getXfyunTokenList = (query) => {
+    return $http({
+        url:'/api/chatgpt/xfyuntokenlist',
+        method:'get',
+        data:query
+    })
+}
+
+
 export default{
     postChatParams,getChatParams,deleteChatParams,putChatParams
     ,getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,
     getOfficalKeyList,getUnofficaltokenList,getBingTokenList,getBardTokenList,
-    getClaudeTokenList,getHuggingTokenList
+    getClaudeTokenList,getHuggingTokenList,getXfyunTokenList
 }

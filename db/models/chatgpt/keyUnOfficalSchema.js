@@ -29,6 +29,10 @@ const keyUnOfficalSchema =mongoose.Schema({
     huggingtoken:{
         type:String,
         default:''
+    },
+    xfyuntoken:{
+        type:String,
+        default:''
     }
 })
 const keyunofficalschema = mongoose.model('keyUnOfficalSchema',keyUnOfficalSchema,'keyUnOfficalSchema')

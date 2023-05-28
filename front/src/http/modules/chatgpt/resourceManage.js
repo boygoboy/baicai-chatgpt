@@ -271,7 +271,7 @@ const postHuggingList = (data) => {
         data
     })
 }
-// 获取claude信息
+// 获取hugging信息
 const getHuggingList = (query) => {
     console.log(query)
     return $http({
@@ -280,14 +280,14 @@ const getHuggingList = (query) => {
         data:query
     })
 }
-// 删除claude信息
+// 删除hugging信息
 const deleteHuggingList = (ids) => {
     return $http({
         url:`/api/chatgpt/hugginglist/${ids}`,
         method:'delete',
     })
 }
-// 修改claude信息
+// 修改hugging信息
 const putHuggingList= (data) => {
     return $http({
         url:`/api/chatgpt/hugginglist`,
@@ -295,17 +295,66 @@ const putHuggingList= (data) => {
         data
     })
 }
-// 获取单个claude信息
+// 获取单个hugging信息
 const getHuggingDetail= (id) => {
     return $http({
         url:`/api/chatgpt/onehugging/${id}`,
         method:'get',
     })
 }
-// 修改claude状态
+// 修改hugging状态
 const changeHuggingStatus= (data) => {
     return $http({
         url:`/api/chatgpt/hugginglist/huggingstatus`,
+        method:'put',
+        data
+    })
+}
+
+
+// 提交xfyun信息
+const postXfyunList = (data) => {
+    return $http({
+        url:'/api/chatgpt/xfyunlist',
+        method:'post',
+        data
+    })
+}
+// 获取xfyun信息
+const getXfyunList = (query) => {
+    console.log(query)
+    return $http({
+        url:'/api/chatgpt/xfyunlist',
+        method:'get',
+        data:query
+    })
+}
+// 删除xfyun信息
+const deleteXfyunList = (ids) => {
+    return $http({
+        url:`/api/chatgpt/xfyunlist/${ids}`,
+        method:'delete',
+    })
+}
+// 修改xfyun信息
+const putXfyunList= (data) => {
+    return $http({
+        url:`/api/chatgpt/xfyunlist`,
+        method:'put',
+        data
+    })
+}
+// 获取单个xfyun信息
+const getXfyunDetail= (id) => {
+    return $http({
+        url:`/api/chatgpt/onexfyun/${id}`,
+        method:'get',
+    })
+}
+// 修改xfyun状态
+const changeXfyunStatus= (data) => {
+    return $http({
+        url:`/api/chatgpt/xfyunlist/xfyunstatus`,
         method:'put',
         data
     })
@@ -318,5 +367,6 @@ export default{
     postBingList,getBingList,deleteBingList,putBingList,getBingDetail,changeBingStatus,
     postBardList,getBardList,deleteBardList,putBardList,getBardDetail,changeBardStatus,
     postClaudeList,getClaudeList,deleteClaudeList,putClaudeList,getClaudeDetail,changeClaudeStatus,
-    postHuggingList,getHuggingList,deleteHuggingList,putHuggingList,getHuggingDetail,changeHuggingStatus
+    postHuggingList,getHuggingList,deleteHuggingList,putHuggingList,getHuggingDetail,changeHuggingStatus,
+    postXfyunList,getXfyunList,deleteXfyunList,putXfyunList,getXfyunDetail,changeXfyunStatus
 }

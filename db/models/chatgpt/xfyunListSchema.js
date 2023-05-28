@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
-const huggingListSchema = mongoose.Schema({
-    huggingListId: Number,
+const xfyunListSchema = mongoose.Schema({
+    xfyunListId: Number,
     email:String,
     password:String,
     token:String,
@@ -26,4 +26,4 @@ const huggingListSchema = mongoose.Schema({
     },
 })
 
-module.exports = mongoose.model("huggingListSchema", huggingListSchema, "huggingListSchema")
+module.exports = mongoose.model("xfyunListSchema", xfyunListSchema, "xfyunListSchema")

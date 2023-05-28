@@ -7,10 +7,11 @@ const binglist=require('../../db/models/chatgpt/bingListSchema')
 const bardlist=require('../../db/models/chatgpt/bardListSchema')
 const claudelist=require('../../db/models/chatgpt/claudeListSchema')
 const hugginglist=require('../../db/models/chatgpt/huggingListSchema')
+const xfyunlist=require('../../db/models/chatgpt/xfyunListSchema')
 const {encrypt,decrypt}=require('../../utils/encryption')
-const {updateAccountStatusOnce,updateTokenStatus,updateBingUsedCount,updateBardUsedCount,updateClaudeUsedCount,updateHuggingUsedCount}=require('../../utils/timedTask')
+const {updateAccountStatusOnce,updateTokenStatus,updateBingUsedCount,updateBardUsedCount,updateClaudeUsedCount,updateHuggingUsedCount,
+updateXfyunUsedCount}=require('../../utils/timedTask')
 const AsyncLock = require('async-lock');
-const { type } = require('fetch-undici')
 const lock = new AsyncLock();
 
 const getOfficalKeys=async (req,res)=>{
@@ -197,6 +198,12 @@ const getUnofficalKeys=async (req,res)=>{
                 result.huggingtoken=''
             }
         }
+        if(result&&result.xfyuntoken){
+            const obj=await xfyunlist.findOne({token:result.xfyuntoken}).exec()
+            if(obj&&obj.enablestatus!='启用'){
+                result.xfyuntoken=''
+            }
+        }
         if(result){
             result.accesstoken3=result.accesstoken3?encrypt(result.accesstoken3):result.accesstoken3
             result.accesstoken4=result.accesstoken4?encrypt(result.accesstoken4):result.accesstoken4
@@ -206,6 +213,7 @@ const getUnofficalKeys=async (req,res)=>{
             result.claudeKey.token=result.claudeKey.token?encrypt(result.claudeKey.token):result.claudeKey.token
             result.claudeKey.appid=result.claudeKey.appid?encrypt(result.claudeKey.appid):result.claudeKey.appid
             result.huggingtoken=result.huggingtoken?encrypt(result.huggingtoken):result.huggingtoken
+            result.xfyuntoken=result.xfyuntoken?encrypt(result.xfyuntoken):result.xfyuntoken
         }
         return res.json({
             errorCode:'0000',
@@ -224,7 +232,7 @@ const getUnofficalKeys=async (req,res)=>{
 
 const postUnofficalKeys=async (req,res)=>{
     await lock.acquire("unofficalkeysetting", async (done) => {
-      let {_id,accesstoken3,accesstoken4,newbingKey,bardtoken,claudeKey,huggingtoken}=req.body
+      let {_id,accesstoken3,accesstoken4,newbingKey,bardtoken,claudeKey,huggingtoken,xfyuntoken}=req.body
         let {userId}=req.user.userList
         try{
              await updateTokenStatus()
@@ -232,6 +240,7 @@ const postUnofficalKeys=async (req,res)=>{
              await updateBardUsedCount()
              await updateClaudeUsedCount()
              await updateHuggingUsedCount()
+             await updateXfyunUsedCount()
             const countResult= await Counter.findOne({id:'unofficalkeyId'})
             if(!countResult){
               await Counter.create({
@@ -248,6 +257,7 @@ const postUnofficalKeys=async (req,res)=>{
             claudeKey.token=claudeKey.token?decrypt(claudeKey.token):claudeKey.token
             claudeKey.appid=claudeKey.appid?decrypt(claudeKey.appid):claudeKey.appid
             huggingtoken=huggingtoken?decrypt(huggingtoken):huggingtoken
+            xfyuntoken=xfyuntoken?decrypt(xfyuntoken):xfyuntoken
             const count = await Counter.findOneAndUpdate({ id: 'unofficalkeyId' }, { $inc: { sequence_value: 1 } }, { new: true })
         //   判断资源被使用数量校验能够提交
             if(accesstoken3){
@@ -351,6 +361,23 @@ const postUnofficalKeys=async (req,res)=>{
                 }
             }
 
+            if(xfyuntoken){
+                let result4=await xfyunlist.findOne({token:xfyuntoken})
+                // 如果更新的是已经绑定的密钥则跳过校验
+                let obj=await unofficalkeys.findOne({userId})
+                if(!obj||obj.xfyuntoken!=xfyuntoken){
+                    if(result4){
+                        if(result4.usedcount>=result4.sharecount){
+                            return res.json({
+                                errorCode:'2002',
+                                message:'该token已被使用完!',
+                                data:null
+                            })
+                        }
+                    }
+                }
+            }
+
             if(!_id){
               try{
                 const unofficalKeys = await new unofficalkeys({
@@ -361,7 +388,8 @@ const postUnofficalKeys=async (req,res)=>{
                     newbingKey,
                     bardtoken,
                     claudeKey,
-                    huggingtoken
+                    huggingtoken,
+                    xfyuntoken,
                 })
                 await unofficalKeys.save();
                 done()
@@ -385,7 +413,8 @@ const postUnofficalKeys=async (req,res)=>{
                 newbingKey,
                 bardtoken,
                 claudeKey,
-                huggingtoken
+                huggingtoken,
+                xfyuntoken,
               })
               if(row){
                 done()
@@ -802,7 +831,67 @@ const filterHuggingTokenList = (results) => {
     return finalResult
 }
 
+
+// 获取xfyun token 下拉列表
+const getXfyunUnofficalList=async (req,res)=>{
+    let {userId,role,roleNames}=req.user.userList
+    try{
+        await updateXfyunUsedCount()
+        const results = await findXfyunTokens(roleNames, role);
+        console.log(results);
+       const finalResult= filterXfyunTokenList(results)
+        return res.json({
+            errorCode:'0000',
+            message:'查询成功！',
+            data:finalResult
+        })
+    }catch(error){
+        res.json({
+            errorCode: '500',
+            message: '服务器错误!',
+            data: error
+        })
+        throw error
+    }
+}
+
+const findXfyunTokens = async (roleNames, role) => {
+    const query = xfyunlist.find({
+        enablestatus: '启用',
+        tokenstatus: '在线',
+        $expr: {
+          $lte: ['$usedcount', '$sharecount']
+        }
+      });
+
+  if (role !== 0) {
+    query.where('shareroles').in(roleNames);
+  }
+  const results = await query.exec();
+  return results;
+};
+
+const filterXfyunTokenList = (results) => {
+    let finalResult = [];
+    results.forEach((item,index) => {
+        let obj={
+            id:item._id,
+            token:encrypt(item.token),
+            usedcount:item.usedcount,
+            sharecount:item.sharecount,
+            label:`xfyun-线路${index+1}`
+        }
+        if(item.usedcount==item.sharecount){
+            obj.disabled=true
+        }else{
+            obj.disabled=false
+        }
+        finalResult.push(obj)
+    })
+    return finalResult
+}
+
 module.exports={
     getOfficalKeys,postOfficalKeys,getUnofficalKeys,postUnofficalKeys,getOfficalKeyList,
-    getUnofficaltokenList,getBingTokenList,getBardUnofficalList,getClaudeTokenList,getHuggingUnofficalList
+    getUnofficaltokenList,getBingTokenList,getBardUnofficalList,getClaudeTokenList,getHuggingUnofficalList,getXfyunUnofficalList
 }

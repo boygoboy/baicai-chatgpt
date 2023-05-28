@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const ChatGpt3=require('../../controller/chatgptClass/chatgptClass')
 const {bingUnOfficalChat} =require('../../controller/newBing/chat/index')
+const {getGtToken}=require('../../controller/xfYun/utils/message.js')
 
 router.post('/ask', (req,res)=>{
 //     if(!req.body.message){
@@ -29,4 +30,7 @@ router.post('/ask', (req,res)=>{
 bingUnOfficalChat()
 })
 
+router.get("/xunfeigttoken",(req,res)=>{
+    getGtToken(req,res)
+})
 module.exports = router;

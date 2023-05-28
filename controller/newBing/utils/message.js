@@ -57,8 +57,8 @@ module.exports= class BingAIClient {
                 'sec-ch-ua': '"Chromium";v="112", "Microsoft Edge";v="112", "Not:A-Brand";v="99"',
                 'sec-ch-ua-arch': '"x86"',
                 'sec-ch-ua-bitness': '"64"',
-                'sec-ch-ua-full-version': '"112.0.1722.7"',
-                'sec-ch-ua-full-version-list': '"Chromium";v="112.0.5615.20", "Microsoft Edge";v="112.0.1722.7", "Not:A-Brand";v="99.0.0.0"',
+                'sec-ch-ua-full-version': '"115.0.1866.1"',
+                'sec-ch-ua-full-version-list': '"Not/A)Brand";v="99.0.0.0", "Microsoft Edge";v="115.0.1866.1", "Chromium";v="115.0.5767.0"',
                 'sec-ch-ua-mobile': '?0',
                 'sec-ch-ua-model': '""',
                 'sec-ch-ua-platform': '"Windows"',
@@ -67,9 +67,11 @@ module.exports= class BingAIClient {
                 'sec-fetch-mode': 'cors',
                 'sec-fetch-site': 'same-origin',
                 'x-ms-client-request-id': crypto.randomUUID(),
+                'sec-ms-gec-version': '1-115.0.1866.1',
+                'sec-ms-gec': genRanHex(64).toUpperCase(),
                 'x-ms-useragent': 'azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.10.0 OS/Win32',
                 cookie: this.options.cookies || `_U=${this.options.userToken}`,
-                Referer: 'https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx',
+                Referer: 'https://www.bing.com/search?q=Bing+AI&showconv=1',
                 'Referrer-Policy': 'origin-when-cross-origin',
                 // Workaround for request being blocked due to geolocation
                 'x-forwarded-for': '1.1.1.1',
@@ -239,6 +241,7 @@ module.exports= class BingAIClient {
             parentMessageId = jailbreakConversationId === true ? crypto.randomUUID() : null,
             abortController = new AbortController(),
         } = opts;
+
         if (typeof onProgress !== 'function') {
             onProgress = () => { };
         }
@@ -299,18 +302,12 @@ module.exports= class BingAIClient {
                     author: 'system',
                 },
                 ...previousCachedMessages,
+                // We still need this to avoid repeating introduction in some cases
                 {
                     text: message,
                     author: 'user',
                 },
             ] : undefined;
-
-            if (context) {
-                previousMessages.push({
-                    text: context,
-                    author: 'context', // not a real/valid author, we're just piggybacking on the existing logic
-                });
-            }
 
             // prepare messages for prompt injection
             previousMessagesFormatted = previousMessages?.map((previousMessage) => {
@@ -320,13 +317,15 @@ module.exports= class BingAIClient {
                     case 'bot':
                         return `[assistant](#message)\n${previousMessage.text}`;
                     case 'system':
-                        return `N/A\n\n[system](#additional_instructions)\n- ${previousMessage.text}`;
-                    case 'context':
-                        return `[user](#context)\n${previousMessage.text}`;
+                        return `[system](#additional_instructions)\n${previousMessage.text}`;
                     default:
                         throw new Error(`Unknown message author: ${previousMessage.author}`);
                 }
             }).join('\n\n');
+
+            if (context) {
+                previousMessagesFormatted = `${context}\n\n${previousMessagesFormatted}`;
+            }
         }
 
         const userMessage = {
@@ -375,6 +374,7 @@ module.exports= class BingAIClient {
                         'cricinfo',
                         'cricinfov2',
                         'dv3sugg',
+                        'nojbfedge',
                     ],
                     sliceIds: [
                         '222dtappid',
@@ -385,7 +385,7 @@ module.exports= class BingAIClient {
                     isStartOfSession: invocationId === 0,
                     message: {
                         author: 'user',
-                        text: jailbreakConversationId ? '' : message,
+                        text: message,
                         messageType: jailbreakConversationId ? 'SearchQuery' : 'Chat',
                     },
                     conversationSignature,
@@ -426,6 +426,7 @@ module.exports= class BingAIClient {
         if (obj.arguments[0].previousMessages.length === 0) {
             delete obj.arguments[0].previousMessages;
         }
+
         const messagePromise = new Promise((resolve, reject) => {
             let replySoFar = '';
             let stopTokenFound = false;
@@ -433,7 +434,7 @@ module.exports= class BingAIClient {
             const messageTimeout = setTimeout(() => {
                 this.constructor.cleanupWebSocketConnection(ws);
                 reject(new Error('Timed out waiting for response. Try enabling debug mode to see more information.'));
-            }, 120 * 1000);
+            }, 180 * 1000);
 
             // abort the request if the abort controller is aborted
             abortController.signal.addEventListener('abort', () => {
@@ -441,6 +442,7 @@ module.exports= class BingAIClient {
                 this.constructor.cleanupWebSocketConnection(ws);
                 reject(new Error('Request aborted'));
             });
+
             ws.on('message', (data) => {
                 const objects = data.toString().split('');
                 const events = objects.map((object) => {
@@ -521,6 +523,7 @@ module.exports= class BingAIClient {
                                 stopTokenFound
                                 || event.item.messages[0].topicChangerText
                                 || event.item.messages[0].offense === 'OffenseTrigger'
+                                || (event.item.messages.length > 1 && event.item.messages[1].contentOrigin === 'Apology')
                             )
                         ) {
                             if (!replySoFar) {
@@ -586,7 +589,7 @@ module.exports= class BingAIClient {
             response: reply.text,
             details: reply,
         };
-        console.log('jailbreakConversationId',jailbreakConversationId)
+
         if (jailbreakConversationId) {
             returnData.jailbreakConversationId = jailbreakConversationId;
             returnData.parentMessageId = replyMessage.parentMessageId;

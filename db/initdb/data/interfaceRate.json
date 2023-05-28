@@ -100,4 +100,10 @@
     "count": 3,
     "cycle": 1,
     "unit": "分钟"
+  },{
+    "model": "spark",
+    "type": "xfyun非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
   }]

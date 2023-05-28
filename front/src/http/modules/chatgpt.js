@@ -46,6 +46,13 @@ const getUserChatParam = () => {
         method:'get'
     })
 }
+// 获取xyyun发送聊天消息的gttoken
+const getXyyunGtToken = (query) => {
+    return $http({
+        url:'/api/chatgpt/xunfeigttoken',
+        method:'get'
+    })
+}
 export default{
-    getChatGptMessage,getChatParam,putChatParam,getModelParam,putModelParam,getUserChatParam
+    getChatGptMessage,getChatParam,putChatParam,getModelParam,putModelParam,getUserChatParam,getXyyunGtToken
 }

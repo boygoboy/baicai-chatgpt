@@ -191,7 +191,7 @@ const sendMessage = async (options,handleMessage) => {
             if(isOver){
                 return
             }
-            let encoded_data = chunk.toString().replace("data:","");
+            let encoded_data = chunk.toString().replace(/data:/g,"");
             console.log(encoded_data)
             // 如果聊天id失效或者错误则新建聊天窗口
             if(encoded_data.startsWith('[belongerr]')){
@@ -230,13 +230,130 @@ const sendMessage = async (options,handleMessage) => {
                 chatcontent+=answer
                 handleMessage(answer)
         });
-
+        return res
     }catch(error){
         handleMessage('[ERROR]')
-        throw error
+        return false
     }
 }
 
+// 生成gtToken
+const getGtToken = async (req,res) => {
+    try{
+        let config = {
+            method: "GET",
+            baseURL: "https://riskct.geetest.com/g2/api/v1/pre_load?client_type=web",
+            headers: {
+                'Host': 'riskct.geetest.com',
+                'Connection': 'keep-alive',
+                'sec-ch-ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+                'sec-ch-ua-mobile': '?0',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+                'sec-ch-ua-platform': "Windows",
+                'Sec-Fetch-Site': 'cross-site',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Dest': 'script',
+                'Referer': 'https://xinghuo.xfyun.cn/',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            }
+        }
+        let result = await axios(config)
+        console.log(result.data)
+        const configData = JSON.parse(result.data.slice(1, -1));
+        return res.json({
+            errorCode:'0000',
+            message:'success',
+            data:configData
+        })
+    }catch(error){
+        console.log(error)
+        return res.json({
+            errorCode:'500',
+            message:'系统异常',
+            data:null
+        })
+    }
+}
+
+// 获取聊天列表
+const getChatList = async (cookie) => {
+    try {
+        let config = {
+            method: "GET",
+            baseURL: "https://xinghuo.xfyun.cn/iflygpt/u/chat-list/v1/chat-list?isBot=false",
+            headers: {
+                'Host': 'xinghuo.xfyun.cn',
+                'Connection': 'keep-alive',
+                'sec-ch-ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'sec-ch-ua-mobile': '?0',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+                'sec-ch-ua-platform': "Windows",
+                'Origin': 'https://xinghuo.xfyun.cn',
+                'Sec-Fetch-Site': 'same-origin',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Dest': 'empty',
+                'Referer': 'https://xinghuo.xfyun.cn/desk',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                'Cookie': cookie,
+            },
+        }
+        let result = await axios(config)
+        if (result.status == 200) {
+            return result.data.data
+        } else {
+            return []
+        }
+    } catch (error) {
+        return false
+    }
+}
+
+
+//删除聊天列表
+const deleteChatList = async (cookie,chatId) => {
+    try {
+        let config = {
+            method: "POST",
+            baseURL: "https://xinghuo.xfyun.cn/iflygpt/u/chat-list/v1/del-chat-list",
+            headers: {
+                'Host': 'xinghuo.xfyun.cn',
+                'Connection': 'keep-alive',
+                'sec-ch-ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'sec-ch-ua-mobile': '?0',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+                'sec-ch-ua-platform': "Windows",
+                'Origin': 'https://xinghuo.xfyun.cn',
+                'Sec-Fetch-Site': 'same-origin',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Dest': 'empty',
+                'Referer': 'https://xinghuo.xfyun.cn/desk',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                'Cookie': cookie,
+            },
+            data:{
+                "chatListId": chatId
+            }
+        }
+        let result = await axios(config)
+        if (result.status == 200) {
+            return true
+        } else {
+            return false
+        }
+    } catch (error) {
+        return false
+    }
+} 
+
 module.exports = {
-    sendMessage
+    sendMessage,getGtToken,getChatList,deleteChatList
 }

@@ -280,6 +280,7 @@ import VueTypewriter from "./components/VueTypewriter.vue";
 import tm from "markdown-it-texmath";
 import "markdown-it-texmath/css/texmath.css"; // 引入样式表
 import "katex/dist/katex.min.css";
+import './components/js/geeguard.js'
 
 export default {
   components: {
@@ -415,6 +416,7 @@ export default {
       chatParams: {},
       claudechatObj:{},
       huggingchatObj:{},
+      xfyunchatObj:{},
     };
   },
   methods: {
@@ -515,6 +517,9 @@ export default {
            if(this.selectBot=="hugging非官方"){
           this.chatParams.token =this.unofficalsettingdata.huggingtoken
         }
+          if(this.selectBot=="xfyun非官方"){
+          this.chatParams.token =this.unofficalsettingdata.xfyuntoken
+        }
       } else {
         this.$message.warning({
           message: "请选择聊天机器人和模型！",
@@ -524,7 +529,21 @@ export default {
         return;
       }
     },
-    sendMsg() {
+    // 获取讯飞星或聊天gttoken
+    async getXyyunGtToken(){
+      let res= await this.$http.getXyyunGtToken()
+        const config = res.data.data
+  console.log('GeeGuard config:', config);
+  const token = await window.GeeGuard.load({
+    appId: 'ihuqg3dmuzcr2kmghumvivsk7c3l4joe',
+    js: config.js,
+    staticPath: config.static_path,
+    gToken: config.g_token,
+    type: 'gt',
+  });
+  return token.gee_token;
+    },
+   async sendMsg() {
       if (!this.sendMessage) {
         this.$message.warning({
           message: "请输入聊天消息！",
@@ -706,6 +725,24 @@ export default {
             this.huggingchatObj.conversationId=this.messageData[this.messageData.length-1].huggingchatObj.conversationId
           }
           newWebSocket.sendMsg(JSON.stringify(this.huggingchatObj));
+      }
+      if(this.chatParams.chatchannel == "xfyun非官方"){
+          let resultgtToken= await this.getXyyunGtToken()
+            console.log(resultgtToken)
+          this.xfyunchatObj = {
+            url: this.chatParams.url,
+            cookie: this.chatParams.token,
+            enablecontext: this.chatParams.enablecontext,
+            model: this.chatParams.model,
+            message: this.sendMessage,
+            GtToken:resultgtToken
+          };
+          if(this.messageData.length==0){
+            this.xfyunchatObj.conversationId=null
+          }else{
+            this.xfyunchatObj.conversationId=this.messageData[this.messageData.length-1].xfyunchatObj.conversationId
+          }
+          newWebSocket.sendMsg(JSON.stringify(this.xfyunchatObj));
       }
       this.loading = true;
       let meItem = {
@@ -1042,6 +1079,59 @@ export default {
         }, 50);
       }
     },
+    // 处理xfyun非官方聊天消息
+            handleXfyunUnofficalMessage(data){
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+      if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        let result= data.replace("[DONE]", "");
+        console.log(result)
+        this.xfyunchatObj.conversationId=result;
+        console.log(data)
+        return;
+      }
+      if (data != "[START]" && !data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText += newdata;
+          console.log(this.inputText);
+        }, 50);
+      }
+    },
     // 处理ws收到的消息
     handleWSMessage(data) {
       console.log(data);
@@ -1113,6 +1203,9 @@ export default {
       }
       if(this.selectBot=='hugging非官方'){
         botItem.huggingchatObj = JSON.parse(JSON.stringify(this.huggingchatObj));
+      }
+      if(this.selectBot=='xfyun非官方'){
+        botItem.xfyunchatObj = JSON.parse(JSON.stringify(this.xfyunchatObj));
       }
       this.messageData.splice(this.messageData.length - 1, 1, botItem);
       this.inputText = "";
@@ -1229,6 +1322,22 @@ export default {
           },
           onmessage: (data) => {
             this.handleHuggingUnofficalMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
+             if(this.selectBot=="xfyun非官方"){
+                newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/xfyunUnOfficalChat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleXfyunUnofficalMessage(data);
           },
           onclose: (data) => {
             console.log(data);
@@ -1547,9 +1656,9 @@ export default {
     this.md.use(tm, { engine: "katex", delimiters: "dollars" });
   },
   beforeDestroy() {
-    if (newWebSocket.websocket) {
-      newWebSocket.close();
-    }
+    // if (newWebSocket.websocket) {
+    //   newWebSocket.close();
+    // }
     this.$refs.messageBox.removeEventListener("scroll", () => {
       this.scrolling();
     });

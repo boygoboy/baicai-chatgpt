@@ -191,8 +191,40 @@ router.ws('/huggingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
     })
   })
 })
-router.get("/test",async (req,res)=>{
-  xfyunChat(req,res)
+
+
+router.ws('/xfyunUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
+  ws.on('message', async function (data) {
+    if(data=="heartbeat"){
+      return
+    }
+      let options=JSON.parse(data)
+      console.log(options)
+      let result=await limitRequestCount(req,{type:"xfyun非官方",model:options.model})
+      if(!result){
+        ws.send('该模型接口请求次数超过限制！')
+        return
+      }
+      let {userId}=req.user.userList
+      options.userId=userId
+      xfyunChat(options,(message)=>{
+        if(message.startsWith('[DONE]')){
+          createChatInfo(req,'xfyun非官方',options.model)
+        }
+      ws.send(message)
+    })
+  })
 })
 
-module.exports = router // 暴露出去方便管理
+let xfyunWs=null
+router.ws('/xfyunconnection',checkWsTokenMiddleware, (ws, req) => {
+  xfyunWs=ws
+})
+
+const getXfyunWs=()=> {
+  return xfyunWs;
+}
+
+module.exports = {
+  router,getXfyunWs
+} // 暴露出去方便管理

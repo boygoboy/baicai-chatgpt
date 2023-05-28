@@ -5,7 +5,8 @@ const {decrypt}=require('../../../utils/encryption.js')
 let {userId}=req.user.userList
 let { url, token,cookie,  proxyObj, model,enablecontext, message,conversationSignature, conversationId,
     clientId,invocationId,jailbreakConversationId,parentMessageId} = bingoptions
-    console.log(jailbreakConversationId,parentMessageId)
+
+   console.log(bingoptions)
     if(token){
         token=decrypt(token)
     }
@@ -27,7 +28,7 @@ let { url, token,cookie,  proxyObj, model,enablecontext, message,conversationSig
     };
     const cacheOptions = {
         namespace: model|| process.env.TONE_STYLE||'balanced',
-        store: new KeyvFile({ filename: `cache${userId}.json` })
+        store: new KeyvFile({ filename: `/chatjson/cache${userId}.json` })
       }
       let bingAIClient = null
       if(model=='Sydney'&&enablecontext){

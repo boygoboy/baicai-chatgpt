@@ -62,6 +62,7 @@
                      <el-option label="bard非官方" value="bard非官方"></el-option>
                      <el-option label="claude非官方" value="claude非官方"></el-option>
                       <el-option label="huggiing非官方" value="hugging非官方"></el-option>
+                       <el-option label="xfyun非官方" value="xfyun非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -99,6 +100,7 @@
                      <el-option label="bard非官方" value="bard非官方"></el-option>
                      <el-option label="claude非官方" value="claude非官方"></el-option>
                      <el-option label="huggiing非官方" value="hugging非官方"></el-option>
+                       <el-option label="xfyun非官方" value="xfyun非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -243,7 +245,13 @@ export default {
                 modelOptions:[
                     {label:'NLP',value:'NLP'},
                 ]
-            }
+            },
+             {
+                type:'xfyun非官方',  
+                modelOptions:[
+                    {label:'spark',value:'spark'},
+                ]
+            },
             ],
             countOption,
             moneyOption,

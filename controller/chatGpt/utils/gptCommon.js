@@ -2,6 +2,9 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const BingAIClient =require('../../newBing/utils/message.js')
 const {huggingchat}=require('../../HuggingChat/utils/message.js')
+const {getXfyunWs}=require('../../../routes/ws/chatgpt.js')
+const {sendMessage,getChatList,deleteChatList}=require('../../xfYun/utils/message.js')
+
     const computedMoney=async (apikey,lastday)=>{
         const subscription_url = `${process.env.OPEN_AI_BASE_URL||'https://api.openai.com'}/v1/dashboard/billing/subscription`;
         const headers = {
@@ -244,6 +247,70 @@ const {huggingchat}=require('../../HuggingChat/utils/message.js')
          }
     }
 
+// xfyun测活
+const xfyunIsLive=async(cookie)=>{
+    try{
+     const ws=getXfyunWs()
+    //  发送xfyun预加载接口获取加密文件
+    let config = {
+        method: "GET",
+        baseURL: "https://riskct.geetest.com/g2/api/v1/pre_load?client_type=web",
+        headers: {
+            'Host': 'riskct.geetest.com',
+            'Connection': 'keep-alive',
+            'sec-ch-ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+            'sec-ch-ua-mobile': '?0',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+            'sec-ch-ua-platform': "Windows",
+            'Sec-Fetch-Site': 'cross-site',
+            'Sec-Fetch-Mode': 'no-cors',
+            'Sec-Fetch-Dest': 'script',
+            'Referer': 'https://xinghuo.xfyun.cn/',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        }
+    }
+    let result = await axios(config)
+    const configData = JSON.parse(result.data.slice(1, -1));
+    console.log(configData)
+    ws.send(JSON.stringify(configData))
+    return new Promise((resolve,reject)=>{
+
+        ws.on('message', async function (data) {
+            if(data=="heartbeat"){
+              return
+            }
+            // 执行发送消息测活
+            const generateFD=()=> {
+                const ms = String(+new Date())
+                return ms.substring(ms.length - 6)
+              }
+                const options = {
+                    fd:generateFD(),
+                    chatId:null,
+                    message:'你好',
+                    GtToken:data,
+                    cookie:cookie,
+                }
+           let result=await sendMessage(options,(data)=>{console.log(data)})
+           if(result&&result.status==200){
+            let chatlist=await getChatList(cookie)
+            if(chatlist&&chatlist.length>0){
+                let chatId=chatlist[0].id
+                await deleteChatList(cookie,chatId)
+            }
+            resolve(true)
+           }else{
+            resolve(false)
+           }
+          })
+    })
+    }catch(error){
+        return false
+    }
+}
+
+
     module.exports={
-        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive
+        computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive,xfyunIsLive
     }
