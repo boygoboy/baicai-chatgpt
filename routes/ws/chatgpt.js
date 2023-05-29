@@ -13,6 +13,7 @@ const {claudeUnofficalChat}=require('../../controller/claude/chat.js')
 const {huggingChat}=require('../../controller/HuggingChat/chat/index.js')
 const {xfyunChat}=require('../../controller/xfYun/chat/index.js')
 const {poeChatMessage}=require('../../controller/poeChat/chat/index.js')
+const {chatGlmMessage}=require('../../controller/chatGlm/chat/index.js')
 /**
  * route.ws('/url',(ws, req)=>{  })
  * 建立WebSocket服务，并指定对应接口url，及相应回调
@@ -248,6 +249,10 @@ router.ws('/poeUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
       ws.send(message)
     })
   })
+})
+
+router.get('/test', (req, res) => {
+  chatGlmMessage(req,res)
 })
 
 module.exports = {
