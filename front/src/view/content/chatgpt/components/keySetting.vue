@@ -375,7 +375,54 @@
                 </el-form-item>
               </div>
             </div>
-
+           
+              <div class="block">
+              <div class="title">
+                <span>chatglm</span>
+              </div>
+              <div class="form-body">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">token</span>
+                    <div>
+                      <el-select :disabled="!isEditUnOffical"
+                        popper-class="popper-class"
+                        :popper-append-to-body="false"
+                        :multiple-limit="1"
+                        multiple
+                        filterable
+                        allow-create
+                        clearable
+                        default-first-option
+                        v-model="unofficalkeyForm.chatglmtoken"
+                        placeholder="请选择或输入token"
+                        style="width: 100%"
+                        @change="selectGlmToken"
+                      >
+                     <el-option :label="`${item.label} (${item.usedcount}/${item.sharecount})`"
+                       :value="item.token" :disabled="item.disabled" v-for="(item,index) in chatglmtokenOptions" :key="index">
+                       </el-option>
+                      </el-select>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+               <div class="form-body" style="padding-top:0px;">
+                <el-form-item>
+                  <div class="form-item">
+                    <span slot="label">cookie</span>
+                    <div>
+                    <el-input :disabled="!isEditUnOffical||unofficalkeyForm.chatglmtoken==''"
+                      type="textarea"
+                      :rows="3"
+                      placeholder="请输入cookie"
+                      v-model="unofficalkeyForm.chatglmcookie">
+                      </el-input>
+                    </div>
+                  </div>
+                </el-form-item>
+              </div>
+            </div>
 
           </el-form>
                   <div class="action-btn" v-if="isEditUnOffical">
@@ -401,6 +448,8 @@ export default {
         accesstoken4: [],
         newbingtoken: [],
         newbingcookie: "",
+        chatglmtoken: [],
+        chatglmcookie: "",
         bardtoken:[],
         claudetoken:[],
         claudeappid:"",
@@ -420,6 +469,7 @@ export default {
       huggingtokenOptions:[],
       xfyuntokenOptions:[],
       poetokenOptions:[],
+      chatglmtokenOptions:[],
     };
   },
   methods:{
@@ -438,6 +488,10 @@ export default {
           newbingKey:{
             newbingtoken:this.unofficalkeyForm.newbingtoken.length>0?this.unofficalkeyForm.newbingtoken[0]:'',
             newbingcookie:this.unofficalkeyForm.newbingcookie?this.unofficalkeyForm.newbingcookie:''
+          },
+           chatglmKey:{
+            chatglmtoken:this.unofficalkeyForm.chatglmtoken.length>0?this.unofficalkeyForm.chatglmtoken[0]:'',
+            chatglmcookie:this.unofficalkeyForm.chatglmcookie?this.unofficalkeyForm.chatglmcookie:''
           },
           bardtoken:this.unofficalkeyForm.bardtoken.length>0?this.unofficalkeyForm.bardtoken[0]:'',
           claudeKey:{
@@ -499,6 +553,8 @@ export default {
         accesstoken4: [],
         newbingtoken: [],
         newbingcookie: "",
+        chatglmtoken: [],
+        chatglmcookie: "",
         bardtoken:[],
         claudetoken:[],
         claudeappid:"",
@@ -545,6 +601,8 @@ export default {
           this.unofficalkeyForm.accesstoken4=res.data.accesstoken4?[res.data.accesstoken4]:[]
           this.unofficalkeyForm.newbingtoken=(res.data.newbingKey&&res.data.newbingKey.newbingtoken)?[res.data.newbingKey.newbingtoken]:[]
           this.unofficalkeyForm.newbingcookie=(res.data.newbingKey&&res.data.newbingKey.newbingcookie)?res.data.newbingKey.newbingcookie:''
+          this.unofficalkeyForm.chatglmtoken=(res.data.chatglmKey&&res.data.chatglmKey.chatglmtoken)?[res.data.chatglmKey.chatglmtoken]:[]
+          this.unofficalkeyForm.chatglmcookie=(res.data.chatglmKey&&res.data.chatglmKey.chatglmcookie)?res.data.chatglmKey.chatglmcookie:''
           this.unofficalkeyForm.bardtoken=res.data.bardtoken?[res.data.bardtoken]:[]
           this.unofficalkeyForm.claudetoken=(res.data.claudeKey&&res.data.claudeKey.token)?[res.data.claudeKey.token]:[]
           this.unofficalkeyForm.claudeappid=(res.data.claudeKey&&res.data.claudeKey.appid)?res.data.claudeKey.appid:''
@@ -591,6 +649,11 @@ export default {
           })
           this.poetokenOptions.forEach(item=>{
             if(item.token==this.unofficalkeyForm.poetoken[0]){
+              item.disabled=false
+            }
+          })
+           this.chatglmtokenOptions.forEach(item=>{
+            if(item.token==this.unofficalkeyForm.chatglmtoken[0]){
               item.disabled=false
             }
           })
@@ -684,6 +747,13 @@ export default {
         this.poetokenOptions=res.data
       }
     },
+    // 获取chatglm token下拉列表
+        async getChatGlmTokenList(){
+      let res=await this.$http.getChatGlmTokenList()
+      if(res.errorCode=='0000'){
+        this.chatglmtokenOptions=res.data
+      }
+    },
     // 初始化chatgpt非官方token下拉列表
     async initunofficaltokenlist(){
       await this.getUnofficaltokenList('免费账号')
@@ -694,6 +764,7 @@ export default {
       await this.getHuggingTokenList()
       await this.getXfyunTokenList()
       await this.getPoeTokenList()
+      await this.getChatGlmTokenList()
       this.getUnOfficalKeys()  
     },
     // 选择bingtoken事件
@@ -702,6 +773,13 @@ export default {
       let result=this.bingtokenOptions.find(item=>item.token==val)
       if(result){
         this.unofficalkeyForm.newbingcookie=result.cookie
+      }
+    },
+        selectGlmToken(val){
+      this.unofficalkeyForm.chatglmcookie=''
+      let result=this.chatglmtokenOptions.find(item=>item.token==val)
+      if(result){
+        this.unofficalkeyForm.chatglmcookie=result.cookie
       }
     },
     // 选择claudetoken事件

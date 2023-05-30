@@ -7,10 +7,11 @@ const claudelist=require('../db/models/chatgpt/claudeListSchema')
 const hugginglist=require('../db/models/chatgpt/huggingListSchema')
 const xfyunlist=require('../db/models/chatgpt/xfyunListSchema')
 const poelist=require('../db/models/chatgpt/poeListSchema')
+const chatglmlist=require('../db/models/chatgpt/chatGlmListSchema')
 const keyoffical=require('../db/models/chatgpt/keyOfficalSchema')
 const keyunoffical=require('../db/models/chatgpt/keyUnOfficalSchema')
 const {computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive,
-  xfyunIsLive,poeIsLive} =require('../controller/chatGpt/utils/gptCommon');
+  xfyunIsLive,poeIsLive,chatglmIsLive} =require('../controller/chatGpt/utils/gptCommon');
 let intervalInstance = null;
 let updateGptAccountInstance = null;
 let updateTokenInstance = null;
@@ -27,6 +28,8 @@ let updateXfyunUsedCountInstance=null;
 let updateXfyunStatusInstance=null;
 let updatePoeUsedCountInstance=null;
 let updatePoeStatusInstance=null;
+let updateChatGlmUsedCountInstance=null;
+let updateChatGlmStatusInstance=null;
 const intervalTime = 1000 * 60 * 60; // 3 minutes
 const xfyunintervalTime=1000*60*120
 async function updateApikeyCount() {
@@ -156,6 +159,33 @@ async function updateBingTokenUsedCount(token, usedCount) {
     }
 
     const result = await binglist.findOneAndUpdate(
+      { token: token},
+      { usedcount: usedCount },
+      { new: true }
+    );
+
+    if (result) {
+      console.log('Updated usedcount:', result);
+    } else {
+      console.log('No matching document found.');
+    }
+  } catch (error) {
+    console.error('Error updating usedcount:', error);
+  }
+}
+// 将chatglm token数量更新到chatglm表中
+async function updateChatGlmTokenUsedCount(token, usedCount) {
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'chatGlmListSchema');
+
+    if (!collectionExists) {
+      console.log('chatGlmListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const result = await chatglmlist.findOneAndUpdate(
       { token: token},
       { usedcount: usedCount },
       { new: true }
@@ -943,6 +973,87 @@ const updatePoeStatus =async ()=>{
 }
 
 
+
+// 更新chatglm的使用情况
+const updateChatGlmUsedCount =async ()=>{
+  const chatGlmUsedInfo = {};
+   try {
+     // 检查集合是否存在
+     const collections = await mongoose.connection.db.listCollections().toArray();
+     const collectionExists = collections.some((collection) => collection.name === 'keyUnOfficalSchema');
+ 
+     if (!collectionExists) {
+       console.log('keyUnOfficalSchema collection does not exist. Skipping count update.');
+       return;
+     }
+    
+     const collectionExists1 = collections.some((collection) => collection.name === 'chatGlmListSchema');
+ 
+     if (!collectionExists1) {
+       console.log('chatGlmListSchema collection does not exist. Skipping update.');
+       return;
+     }
+ 
+ 
+     await chatglmlist.updateMany({}, { $set: { usedcount: 0 } });
+ 
+     const aggregation = await keyunoffical.aggregate([
+      { $match: { "chatglmKey.chatglmtoken": { $exists: true, $ne: "" } } },
+      { $group: { _id: "$chatglmKey.chatglmtoken", count: { $sum: 1 } } },
+  ]);
+  
+     aggregation.forEach(({ _id, count }) => {
+      chatGlmUsedInfo[_id] = count;
+     });
+ 
+ 
+     // 将统计的token被使用数量更新到chatGlmList表中
+     for (const [chatglmtoken, usedCount] of Object.entries(chatGlmUsedInfo)) {
+         await updateChatGlmTokenUsedCount(chatglmtoken, usedCount);
+     }
+ 
+     console.log('Updated token count:', JSON.stringify(chatGlmUsedInfo));
+   } catch (error) {
+     console.error('Error fetching API key count:', error);
+   }
+}
+
+// 更新chatglm的状态
+const updateChatGlmStatus =async ()=>{
+  try {
+    // 检查集合是否存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionExists = collections.some((collection) => collection.name === 'chatGlmListSchema');
+
+    if (!collectionExists) {
+      console.log('chatGlmListSchema collection does not exist. Skipping update.');
+      return;
+    }
+
+    const records = await chatglmlist.find({});
+
+    const updatedRecords = records.map(async(record) => {
+      // 根据需要修改字段
+      if(record.token&&record.cookie){
+       let tokenstatus= await chatglmIsLive(record.token,record.cookie)
+       if(tokenstatus){
+        record.tokenstatus = '在线'
+       }else{
+        record.tokenstatus='离线'
+       }
+      }
+    //   根据上面计算结果，判断账号的状态
+      return record.save();
+    });
+
+    await Promise.all(updatedRecords);
+    console.log('Updated all records in the chatGlmList collection.');
+  } catch (error) {
+    console.error('Error updating records:', error);
+  }
+}
+
+
 // 定时更新apikey被使用情况
 const  updateAccountStatus= async ()=>{
     if(intervalInstance){
@@ -1106,6 +1217,24 @@ const loopUpdatePoeStatus=async ()=>{
     updatePoeStatus()
   }, intervalTime);
 }
+// 定时更新chatglm的使用情况
+const loopUpdateChatGlmUsedCount=async ()=>{
+  if(updateChatGlmUsedCountInstance){
+      clearInterval(updateChatGlmUsedCountInstance);
+  }
+  updateChatGlmUsedCountInstance= setInterval(()=>{
+    updateChatGlmUsedCount()
+  }, intervalTime);
+}
+// 定时更新chatglm的状态
+const loopUpdateChatGlmStatus=async ()=>{
+  if(updateChatGlmStatusInstance){
+      clearInterval(updateChatGlmStatusInstance);
+  }
+  updateChatGlmStatusInstance= setInterval(()=>{
+    updateChatGlmStatus()
+  }, intervalTime);
+}
 
 
 module.exports={
@@ -1116,7 +1245,9 @@ module.exports={
     updateClaudeUsedCount,loopUpdateClaudeUsedCount,updateClaudeStatus,loopUpdateClaudeStatus,
     updateHuggingUsedCount,loopUpdateHuggingUsedCount,updateHuggingStatus,loopUpdateHuggingStatus,
     updateXfyunStatus,updateXfyunUsedCount,loopUpdateXfyunUsedCount,loopUpdateXfyunStatus,
-    updatePoeUsedCount,loopUpdatePoeUsedCount,updatePoeStatus,loopUpdatePoeStatus
+    updatePoeUsedCount,loopUpdatePoeUsedCount,updatePoeStatus,loopUpdatePoeStatus,
+    updateChatGlmUsedCount,loopUpdateChatGlmUsedCount,updateChatGlmStatus,loopUpdateChatGlmStatus
+
 }
 
 

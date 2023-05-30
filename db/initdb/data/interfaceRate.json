@@ -156,5 +156,12 @@
     "count": 3,
     "cycle": 1,
     "unit": "分钟"
+  },
+  {
+    "model": "glm",
+    "type": "chatglm非官方",
+    "count": 3,
+    "cycle": 1,
+    "unit": "分钟"
   }
 ]

@@ -170,6 +170,11 @@ const allRouterObj=[
         menuUrl:'/chatgpt/setting',
         permit:null
     },
+    {
+        routerUrl:'/api/chatgpt/chatglmtokenlist',
+        menuUrl:'/chatgpt/setting',
+        permit:null
+    },
     // chatgpt管理---资源管理模块
     {
         routerUrl:'/api/chatgpt/keylist',
@@ -292,6 +297,22 @@ const allRouterObj=[
     {
         routerUrl:'/api/chatgpt/poelist/poestatus',
         menuUrl:'/chatgpt/resource/poe',
+        permit:null
+    },
+    // chatglm
+    {
+        routerUrl:'/api/chatgpt/chatglmlist',
+        menuUrl:'/chatgpt/resource/chatglm',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/onechatglm',
+        menuUrl:'/chatgpt/resource/chatglm',
+        permit:null
+    },
+    {
+        routerUrl:'/api/chatgpt/chatglmlist/chatglmstatus',
+        menuUrl:'/chatgpt/resource/chatglm',
         permit:null
     },
     // chatgpt管理---对话指标模块

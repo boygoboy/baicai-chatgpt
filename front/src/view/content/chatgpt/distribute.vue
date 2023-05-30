@@ -444,7 +444,7 @@
          <el-table-column prop="unit" label="单位" min-width="15">
                             <template slot-scope="scope">
                      <el-select v-model="scope.row.unit"  style="width:100%;" class="table-select"
-                     v-if="openxfyununofficalSetting">
+                     v-if="openpoeunofficalSetting">
                         <el-option label="分钟" value="分钟"></el-option>
                         <el-option label="小时" value="小时"></el-option>
                      </el-select>
@@ -454,7 +454,60 @@
         </el-table>
                 </div>
             </div>
-
+              <!-- chatglm非官方 -->
+                   <div class="block-item">
+                <div class="header">
+                    <span class="block-title">chatglm非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openchatglmunofficalSetting" @click="openchatglmunofficalSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveChatGlmUnOfficalSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="chatGlmUnOfficalTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openchatglmunofficalSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openchatglmunofficalSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="次数" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openchatglmunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="cycle" label="周期" min-width="15">
+                 <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.cycle"  v-if="openchatglmunofficalSetting" class="select-inputnumber"
+                    size="mini" :min="1"  style="width:100%;"
+                     :step="1"></el-input-number>
+                    <span v-else>{{scope.row.cycle}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="单位" min-width="15">
+                            <template slot-scope="scope">
+                     <el-select v-model="scope.row.unit"  style="width:100%;" class="table-select"
+                     v-if="openchatglmunofficalSetting">
+                        <el-option label="分钟" value="分钟"></el-option>
+                        <el-option label="小时" value="小时"></el-option>
+                     </el-select>
+                    <span v-else>{{scope.row.unit}}</span>
+                </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
 
          </div>
           <el-divider direction="vertical"></el-divider>
@@ -790,6 +843,47 @@
         </el-table>
                 </div>
             </div>
+           <!-- chatglm非官方 -->
+                <div class="block-item">
+                <div class="header">
+                    <span class="block-title">chatglm非官方</span>
+                    <span style="float:right;">
+                        <el-button type="text"  size="mini" v-if="!openchatglmunofficalpriceSetting" @click="openchatglmunofficalpriceSetting=true" class="text-btn">配置</el-button>
+                        <el-button type="text"  size="mini" v-else @click="saveChatGlmUnOfficalPriceSetting" class="text-btn">保存</el-button>
+                    </span>
+                </div>
+                <div class="body">
+            <el-table
+          height="calc(25vh - 20px)"
+          :data="chatglmunofficalPriceTableData"
+          stripe
+          border
+          style="width: 100%"
+         :header-row-style="{height:'30px'}"
+        :header-cell-style="{padding:'0px 6px'}"
+        :cell-style="{padding:openchatglmunofficalpriceSetting?'0':'6px'}"
+        >
+        <el-table-column prop="model" label="模型" min-width="25">
+            <template slot-scope="scope">
+            <span :style="{paddingLeft:openchatglmunofficalpriceSetting?'6px':'0px'}">{{scope.row.model}}</span>
+            </template>
+          </el-table-column>
+            <el-table-column prop="count" label="积分" min-width="15">
+                <template slot-scope="scope">
+                    <el-input-number v-model="scope.row.count"  v-if="openchatglmunofficalpriceSetting" class="select-inputnumber"
+                    size="mini" :min="0"  style="width:100%;"
+                     :step="10"></el-input-number>
+                    <span v-else>{{scope.row.count}}</span>
+                </template>
+          </el-table-column>
+         <el-table-column prop="unit" label="计量值" min-width="15">
+            <template slot-scope="scope">
+                <span :style="{paddingLeft:openchatglmunofficalpriceSetting?'6px':'0px'}">{{scope.row.unit}}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+                </div>
+            </div>
 
           </div>
         </div>
@@ -854,6 +948,10 @@ export default {
             poeUnOfficalTableData:[],
             openpoeunofficalpriceSetting:false,
             poeunofficalPriceTableData:[],
+            openchatglmunofficalSetting:false,
+            chatGlmUnOfficalTableData:[],
+            openchatglmunofficalpriceSetting:false,
+            chatglmunofficalPriceTableData:[],
              roleData:[],
              selectRoleItem:null,
         };
@@ -1020,6 +1118,27 @@ export default {
                     type: "success",
                 });
                 this.getIngerfaceRateList(this.selectRoleItem._id,'poe非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
+                async saveChatGlmUnOfficalSetting(){
+            this.openchatglmunofficalSetting=false;
+                     let data={
+            roleId:this.selectRoleItem._id,
+            type:'chatglm非官方',
+            rateData:this.chatGlmUnOfficalTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfaceRate(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getIngerfaceRateList(this.selectRoleItem._id,'chatglm非官方');
             }else{
                 this.$message({
                     message: message,
@@ -1196,6 +1315,27 @@ export default {
                 });
             }
         },
+        async saveChatGlmUnOfficalPriceSetting(){
+            this.openchatglmunofficalpriceSetting=false;
+            let data={
+            roleId:this.selectRoleItem._id,
+            type:'chatglm非官方',
+            priceData:this.chatglmunofficalPriceTableData
+         }
+            const { errorCode ,message} = await this.$http.postInterfacePrice(data);
+            if (errorCode === "0000") {
+                this.$message({
+                    message: message,
+                    type: "success",
+                });
+                this.getInterfacePriceList(this.selectRoleItem._id,'chatglm非官方');
+            }else{
+                this.$message({
+                    message: message,
+                    type: "error",
+                });
+            }
+        },
             //获取角色
     async getRoleList() {
         const query={
@@ -1218,6 +1358,7 @@ export default {
             this.getIngerfaceRateList(this.roleData[0]._id,'hugging非官方');
             this.getIngerfaceRateList(this.roleData[0]._id,'xfyun非官方');
             this.getIngerfaceRateList(this.roleData[0]._id,'poe非官方');
+            this.getIngerfaceRateList(this.roleData[0]._id,'chatglm非官方');
         this.getInterfacePriceList(this.roleData[0]._id,'chatgpt官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(this.roleData[0]._id,'chatgpt非官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(this.roleData[0]._id,'newbing非官方');
@@ -1226,6 +1367,7 @@ export default {
         this.getInterfacePriceList(this.roleData[0]._id,'hugging非官方');
         this.getInterfacePriceList(this.roleData[0]._id,'xfyun非官方');
         this.getInterfacePriceList(this.roleData[0]._id,'poe非官方');
+        this.getInterfacePriceList(this.roleData[0]._id,'chatglm非官方');
         }
     },
     switchRole(item){
@@ -1237,6 +1379,7 @@ export default {
             this.huggingUnOfficalTableData=[]
             this.xfyunUnOfficalTableData=[]
             this.poeUnOfficalTableData=[]
+            this.chatglmUnOfficalTableData=[]
 
             this.gptofficalPriceTableData=[],
             this.gptunofficalPriceTableData=[]
@@ -1246,6 +1389,7 @@ export default {
             this.huggingunofficalPriceTableData=[]
             this.xfyununofficalPriceTableData=[]
             this.poeunofficalPriceTableData=[]
+            this.chatglmunofficalPriceTableData=[]
         this.selectRoleItem=item;
         this.getIngerfaceRateList(item._id,'chatgpt官方');//   查询对应角色的对话指标数据
         this.getIngerfaceRateList(item._id,'chatgpt非官方');//   查询对应角色的对话指标数据
@@ -1255,6 +1399,7 @@ export default {
         this.getIngerfaceRateList(item._id,'hugging非官方');
         this.getIngerfaceRateList(item._id,'xfyun非官方');
         this.getIngerfaceRateList(item._id,'poe非官方');
+        this.getIngerfaceRateList(item._id,'chatglm非官方');
 
         this.getInterfacePriceList(item._id,'chatgpt官方');//   查询对应角色的价格数据
         this.getInterfacePriceList(item._id,'chatgpt非官方');//   查询对应角色的价格数据
@@ -1264,6 +1409,7 @@ export default {
         this.getInterfacePriceList(item._id,'hugging非官方');
         this.getInterfacePriceList(item._id,'xfyun非官方');
         this.getInterfacePriceList(item._id,'poe非官方');
+        this.getInterfacePriceList(item._id,'chatglm非官方');
     },
     // 获取对应角色的对话指标数据
     async getIngerfaceRateList(roleId,type){
@@ -1311,6 +1457,11 @@ export default {
                 if(type=='poe非官方'){
                 if(data.length){
                 this.poeUnOfficalTableData=data;
+                }
+            }
+                if(type=='chatglm非官方'){
+                if(data.length){
+                this.chatGlmUnOfficalTableData=data;
                 }
             }
         }
@@ -1361,6 +1512,11 @@ export default {
             if(type=='poe非官方'){
                 if(data.length){
                 this.poeunofficalPriceTableData=data;
+                }
+            }
+            if(type=='chatglm非官方'){
+                if(data.length){
+                this.chatglmunofficalPriceTableData=data;
                 }
             }
         }

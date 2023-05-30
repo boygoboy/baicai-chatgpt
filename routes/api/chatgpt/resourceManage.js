@@ -8,6 +8,7 @@ const {getClaudeList,postClaudeList,putClaudeList,getClaudeDetail,deleteClaudeLi
 const {getHuggingList,postHuggingList,putHuggingList,getHuggingDetail,deleteHuggingList,changeHuggingStatus}=require('../../../controller/chatGpt/hugginglist.js')
 const {getXfyunList,postXfyunList,putXfyunList,getXfyunDetail,deleteXfyunList,changeXfyunStatus}=require('../../../controller/chatGpt/xfyunlist.js')
 const { getPoeList,postPoeList,putPoeList,getPoeDetail,deletePoeList,changePoeStatus}=require('../../../controller/chatGpt/poelist.js')
+const { getChatGlmList,postChatGlmList,putChatGlmList,getChatGlmDetail,deleteChatGlmList,changeChatGlmStatus}=require('../../../controller/chatGpt/chatglmlist.js')
 router.get("/keylist", (req, res) => {
     getKeyList(req,res)
 })
@@ -219,6 +220,31 @@ router.delete("/poelist/:ids",(req,res)=>{
 
 router.put("/poelist/poestatus",(req,res)=>{
     changePoeStatus(req,res)
+})
+
+// chatglm接口模块
+router.get("/chatglmlist",(req,res)=>{
+    getChatGlmList(req,res)
+})
+
+router.get("/onechatglm/:id",(req,res)=>{
+    getChatGlmDetail(req,res)
+})
+
+router.post("/chatglmlist",(req,res)=>{
+    postChatGlmList(req,res)
+})
+
+router.put("/chatglmlist",(req,res)=>{
+    putChatGlmList(req,res)
+})
+
+router.delete("/chatglmlist/:ids",(req,res)=>{
+    deleteChatGlmList(req,res)
+})
+
+router.put("/chatglmlist/chatglmstatus",(req,res)=>{
+    changeChatGlmStatus(req,res)
 })
 
 

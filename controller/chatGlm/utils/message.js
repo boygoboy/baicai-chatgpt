@@ -47,7 +47,7 @@ const createChat=async (token,cookie,message)=>{
 }
 
 // 获取聊天列表
-const getChatList=async (token,cookie)=>{
+const getGlmChatList=async (token,cookie)=>{
     try{
         let config = {
             method: "GET",
@@ -175,7 +175,7 @@ const getChatMessage=async (token,cookie,contextId,handleMessage)=>{
     }
 }
 // 删除聊天窗口
-const deleteChat=async (token,cookie,taskId)=>{
+const deleteGLmChat=async (token,cookie,taskId)=>{
     try{
         let config = {
             method: "GET",
@@ -207,7 +207,7 @@ const deleteChat=async (token,cookie,taskId)=>{
     }
 }
 
-const sendMessage=async (options,handleMessage)=>{
+const sendGlmMessage=async (options,handleMessage)=>{
      // cookie为chatglm_refresh_token
     // token为chatglm_token
       let {token,cookie,taskId,message}=options
@@ -240,5 +240,5 @@ const sendMessage=async (options,handleMessage)=>{
 }
 
 module.exports={
-    createChat,getChatList,sendMessage
+    createChat,getGlmChatList,sendGlmMessage,deleteGLmChat
 }

@@ -418,6 +418,7 @@ export default {
       huggingchatObj:{},
       xfyunchatObj:{},
       poechatObj:{},
+      chatglmchatObj:{},
     };
   },
   methods: {
@@ -523,6 +524,12 @@ export default {
         }
           if(this.selectBot=="poe非官方"){
           this.chatParams.token =this.unofficalsettingdata.poetoken
+        }
+         if (this.selectBot == "chatglm非官方") {
+          this.chatParams.token =
+            this.unofficalsettingdata.chatglmKey.chatglmtoken;
+          this.chatParams.cookie =
+            this.unofficalsettingdata.chatglmKey.chatglmcookie;
         }
       } else {
         this.$message.warning({
@@ -755,6 +762,21 @@ export default {
             model: this.chatParams.model,
             message: this.sendMessage,
           };
+          newWebSocket.sendMsg(JSON.stringify(this.poechatObj));
+      }
+             if(this.chatParams.chatchannel == "chatglm非官方"){
+          this.chatglmchatObj = {
+            token: this.chatParams.token,
+            cookie: this.chatParams.cookie,
+            model: this.chatParams.model,
+            message: this.sendMessage,
+          };
+            if(this.messageData.length==0){
+            this.chatglmchatObj.taskId=null
+          }else{
+            console.log(this.messageData)
+            this.chatglmchatObj.taskId=this.messageData[this.messageData.length-1].chatglmchatObj.taskId
+          }
           newWebSocket.sendMsg(JSON.stringify(this.poechatObj));
       }
       this.loading = true;
@@ -1194,6 +1216,57 @@ export default {
         }, 50);
       }
     },
+    // 处理chatglm非官方聊天消息
+            handleChatGlmUnofficalMessage(data){
+      console.log(data);
+      if (data == "token校验失败!" || data == "缺少token!") {
+        this.notifyInstance = this.$notify({
+          title: "警告",
+          message: "您还未登录，登录后可聊天！",
+          type: "warning",
+          duration: 10000,
+          customClass: "notiyfy",
+        });
+      }
+
+      if (data == "[START]") {
+        // 开始打字
+        this.$set(
+          this.messageData[this.messageData.length - 1],
+          "time",
+          moment().format("YYYY-MM-DD HH:mm:ss")
+        );
+        this.intervalInstance = setInterval(() => {
+          this.scrollToBottom();
+          if (this.scrollFlag) {
+            this.scrollToBottom();
+          }
+        }, 800);
+
+        // 处理开始打字流程
+        let tempIntervalInstance = setInterval(() => {
+          if (this.inputText) {
+            this.typeEnable = true;
+            clearInterval(tempIntervalInstance);
+          }
+        }, 200);
+      }
+      if (data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          this.handleMessageOutputEnd();
+        }, 300);
+        let taskId= data.replace("[DONE]", "");
+        this.chatglmchatObj.taskId=taskId;
+        return;
+      }
+      if (data != "[START]" && !data.startsWith("[DONE]")) {
+        setTimeout(() => {
+          let newdata = data.replace(/\\n/g, "\r\n");
+          this.inputText = newdata;
+          console.log(this.inputText);
+        }, 50);
+      }
+    },
     // 处理ws收到的消息
     handleWSMessage(data) {
       console.log(data);
@@ -1268,6 +1341,9 @@ export default {
       }
       if(this.selectBot=='xfyun非官方'){
         botItem.xfyunchatObj = JSON.parse(JSON.stringify(this.xfyunchatObj));
+      }
+      if(this.selectBot=='chatglm非官方'){
+        botItem.chatglmchatObj = JSON.parse(JSON.stringify(this.chatglmchatObj));
       }
       this.messageData.splice(this.messageData.length - 1, 1, botItem);
       this.inputText = "";
@@ -1417,6 +1493,23 @@ export default {
           },
           onmessage: (data) => {
             this.handlePoeUnofficalMessage(data);
+          },
+          onclose: (data) => {
+            console.log(data);
+          },
+        });
+      }
+
+          if(this.selectBot=="chatglm非官方"){
+                newWebSocket.init({
+          url: `${
+            process.env.VUE_APP_WS_API
+          }/api/ws/chatgpt/chatglmunofficalchat?token=${Cookie.get("token")}`, // 自己的ws 地址
+          onopen: (msg, data) => {
+            console.log(msg, data);
+          },
+          onmessage: (data) => {
+            this.handleChatGlmUnofficalMessage(data);
           },
           onclose: (data) => {
             console.log(data);

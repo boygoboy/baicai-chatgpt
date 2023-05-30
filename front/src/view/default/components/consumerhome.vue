@@ -64,6 +64,7 @@
                       <el-option label="huggiing非官方" value="hugging非官方"></el-option>
                        <el-option label="xfyun非官方" value="xfyun非官方"></el-option>
                          <el-option label="poe非官方" value="poe非官方"></el-option>
+                     <el-option label="chatglm非官方" value="chatglm非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -103,6 +104,7 @@
                      <el-option label="huggiing非官方" value="hugging非官方"></el-option>
                        <el-option label="xfyun非官方" value="xfyun非官方"></el-option>
                     <el-option label="poe非官方" value="poe非官方"></el-option>
+                     <el-option label="chatglm非官方" value="chatglm非官方"></el-option>
                </el-select>
                 </el-form-item>
                  <el-form-item label="对话模型：" style="margin-left: 10px;">
@@ -264,6 +266,12 @@ export default {
                     {label:'Dragonfly',value:'Dragonfly'},
                     {label:'ChatGPT',value:'ChatGPT'},
                     {label:'NeevaAI',value:'NeevaAI'},
+                ]
+            },
+               {
+                type:'chatglm非官方',  
+                modelOptions:[
+                    {label:'glm',value:'glm'},
                 ]
             },
             ],

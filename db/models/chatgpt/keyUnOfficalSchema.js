@@ -37,7 +37,11 @@ const keyUnOfficalSchema =mongoose.Schema({
     poetoken:{
         type:String,
         default:''
-    }
+    },
+    chatglmKey:{
+        chatglmtoken:String,
+        chatglmcookie:String
+    },
 })
 const keyunofficalschema = mongoose.model('keyUnOfficalSchema',keyUnOfficalSchema,'keyUnOfficalSchema')
 module.exports = keyunofficalschema

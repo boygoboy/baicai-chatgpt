@@ -132,5 +132,11 @@
   "type": "poe非官方",
   "count": 0,
   "unit": "1 次"
+},
+{
+  "model": "glm",
+  "type": "chatglm非官方",
+  "count": 0,
+  "unit": "1 次"
 }
 ]

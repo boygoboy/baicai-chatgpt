@@ -4,7 +4,7 @@ const BingAIClient =require('../../newBing/utils/message.js')
 const {huggingchat}=require('../../HuggingChat/utils/message.js')
 const {getXfyunWs}=require('../../../routes/ws/chatgpt.js')
 const {sendMessage,getChatList,deleteChatList}=require('../../xfYun/utils/message.js')
-
+const {sendGlmMessage,deleteGLmChat}=require('../../chatGlm/utils/message.js')
     const computedMoney=async (apikey,lastday)=>{
         const subscription_url = `${process.env.OPEN_AI_BASE_URL||'https://api.openai.com'}/v1/dashboard/billing/subscription`;
         const headers = {
@@ -353,8 +353,35 @@ const poeIsLive=async(cookie)=>{
     }
 }
 
+// chatglm测活
+const chatglmIsLive=async(token,cookie)=>{
+        //  发送聊天消息测活
+    try{
+        let options={
+            token,
+            cookie,
+            taskId:'',
+            message:'hello',
+        }
+        return new Promise(async(resolve,reject)=>{
+            sendGlmMessage(options,(message)=>{
+                console.log(message)
+                if(message.startsWith('[DONE]')){
+                 const taskId=Number(message.replace('[DONE]','')) 
+                  deleteGLmChat(token,cookie,taskId)
+                 resolve(true)
+                }
+                if(message.startsWith('[ERROR]')){
+                    resolve(false)
+                }
+            })
+        })
+    }catch(error){
+        return false
+    }
+}
 
     module.exports={
         computedMoney,unfficalChatApiLive,sessionIsLive,newBingIsLive,bardIsLive,claudeceIsLive,huggingIsLive,xfyunIsLive,
-        poeIsLive
+        poeIsLive,chatglmIsLive
     }
