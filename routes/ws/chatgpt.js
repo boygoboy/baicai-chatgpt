@@ -196,26 +196,33 @@ router.ws('/huggingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
 
 
 router.ws('/xfyunUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
-  ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-      let options=JSON.parse(data)
-      console.log(options)
-      let result=await limitRequestCount(req,{type:"xfyun非官方",model:options.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+  try{
+    ws.on('message', async function (data) {
+      if(data=="heartbeat"){
         return
       }
-      let {userId}=req.user.userList
-      options.userId=userId
-      xfyunChat(options,(message)=>{
-        if(message.startsWith('[DONE]')){
-          createChatInfo(req,'xfyun非官方',options.model)
+      if(!data){
+        return
+      }
+        let options=JSON.parse(data)
+        console.log(options)
+        let result=await limitRequestCount(req,{type:"xfyun非官方",model:options.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
         }
-      ws.send(message)
+        let {userId}=req.user.userList
+        options.userId=userId
+        xfyunChat(options,(message)=>{
+          if(message.startsWith('[DONE]')){
+            createChatInfo(req,'xfyun非官方',options.model)
+          }
+        ws.send(message)
+      })
     })
-  })
+  }catch(error){
+    ws.send('[ERROR]')
+  }
 })
 
 let xfyunWs=null

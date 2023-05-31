@@ -770,6 +770,7 @@ export default {
             cookie: this.chatParams.cookie,
             model: this.chatParams.model,
             message: this.sendMessage,
+            enablecontext: this.chatParams.enablecontext,
           };
             if(this.messageData.length==0){
             this.chatglmchatObj.taskId=null
@@ -777,7 +778,7 @@ export default {
             console.log(this.messageData)
             this.chatglmchatObj.taskId=this.messageData[this.messageData.length-1].chatglmchatObj.taskId
           }
-          newWebSocket.sendMsg(JSON.stringify(this.poechatObj));
+          newWebSocket.sendMsg(JSON.stringify(this.chatglmchatObj));
       }
       this.loading = true;
       let meItem = {

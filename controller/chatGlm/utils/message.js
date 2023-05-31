@@ -130,50 +130,7 @@ const createChatId=async (token,cookie,taskId,message)=>{
     }
 }
 
-// 发送聊天消息获取回复
-const getChatMessage=async (token,cookie,contextId,handleMessage)=>{
-    try{
-        let config = {
-            method: "GET",
-            baseURL: "https://chatglm.cn/chatglm/backend-api/v1/stream",
-            headers: {
-                'Accept-Encoding':'gzip, deflate, br',
-                'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
-                'Cache-Control':'no-cache',
-                'Referer':'https://chatglm.cn/detail',
-                'Sec-Ch-Ua':'"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
-                'Sec-Ch-Ua-Mobile':'?0',
-                'Sec-Ch-Ua-Platform':"Windows",
-                'Sec-Fetch-Dest':'empty',
-                'Sec-Fetch-Mode':'cors',
-                'Sec-Fetch-Site':'same-origin',
-                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
-                "Authorization":`Bearer ${token}`,
-                'Cookie': `chatglm_token=${token};chatglm_token_expires=${getNextMonthDateTime()};chatglm_refresh_token=${cookie}`,
-            },
-            params: {
-                context_id: contextId,
-            },
-            responseType: "stream"
-        }
-        let res=await axios(config);
-        res.data.on('data',async(chunk)=>{
-            let str=chunk.toString();
-            if(str.indexOf('event:id')!=-1){
-             return
-            }
-            if(str.indexOf('event:finish')!=-1){
-                handleMessage(`[DONE]`)
-                return
-            }
-            str=str.replace(/data:/g,'').replace(/event:add/g,'')
-            handleMessage(str) 
-        })
-    }catch(error){
-        handleMessage('[ERROR]')
-        throw error
-    }
-}
+
 // 删除聊天窗口
 const deleteGLmChat=async (token,cookie,taskId)=>{
     try{
@@ -207,36 +164,82 @@ const deleteGLmChat=async (token,cookie,taskId)=>{
     }
 }
 
+const sleep=(ms)=>{
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const sendGlmMessage=async (options,handleMessage)=>{
+    try{
      // cookie为chatglm_refresh_token
     // token为chatglm_token
-      let {token,cookie,taskId,message}=options
-      if(!token||!cookie||!message){
-        handleMessage('[ERROR]')
-        return false
+    let {token,cookie,taskId,message}=options
+    if(!token||!cookie||!message){
+      handleMessage('[ERROR]')
+      return false
+    }
+    if(!taskId){
+      // 创建聊天窗口
+     taskId =await createChat(token,cookie,message)
+       if(!taskId){
+          handleMessage('[ERROR]')
+          return false
+       }
+    }
+      // 生成本次对话的聊天id
+      let contextId=await createChatId(token,cookie,taskId,message)
+      if(!contextId){
+          handleMessage('[ERROR]')
+          return false
       }
-      if(!taskId){
-        // 创建聊天窗口
-       taskId =await createChat(token,cookie,message)
-         if(!taskId){
-            handleMessage('[ERROR]')
-            return false
-         }
+      // 发送聊天消息获取回复
+      let config = {
+          method: "GET",
+          baseURL: "https://chatglm.cn/chatglm/backend-api/v1/stream",
+          headers: {
+              'Accept-Encoding':'gzip, deflate, br',
+              'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
+              'Cache-Control':'no-cache',
+              'Referer':'https://chatglm.cn/detail',
+              'Sec-Ch-Ua':'"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+              'Sec-Ch-Ua-Mobile':'?0',
+              'Sec-Ch-Ua-Platform':"Windows",
+              'Sec-Fetch-Dest':'empty',
+              'Sec-Fetch-Mode':'cors',
+              'Sec-Fetch-Site':'same-origin',
+              'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+              "Authorization":`Bearer ${token}`,
+              'Cookie': `chatglm_token=${token};chatglm_token_expires=${getNextMonthDateTime()};chatglm_refresh_token=${cookie}`,
+          },
+          params: {
+              context_id: contextId,
+          },
+          responseType: "stream"
       }
-        // 生成本次对话的聊天id
-        let contextId=await createChatId(token,cookie,taskId,message)
-        if(!contextId){
-            handleMessage('[ERROR]')
-            return false
-        }
-        // 发送聊天消息获取回复
-        await getChatMessage(token,cookie,contextId,(data)=>{
-            if(data=='[DONE]'){
-                data=`[DONE]${taskId}`
+      let res=await axios(config);
+      res.data.on('data',async(chunk)=>{
+          let allstr=chunk.toString();
+          console.log(allstr)
+          console.log('------------------')
+          allstr=allstr.split('\n\n')
+          console.log(allstr)
+          allstr.forEach(str=>{
+            if(str=='')return
+            if(str.indexOf('event:id')!=-1){
+             return
             }
-            handleMessage(data)
-            console.log(data)
-        })
+            if(str.indexOf('event:finish')!=-1){
+                handleMessage(`[DONE]${taskId}`)
+                return
+            }
+            str=str.replace(/data:/g,'').replace(/event:add/g,'')
+           handleMessage(str)
+          })
+      })
+
+    }catch(error){
+        handleMessage('[ERROR]')
+        throw error
+    }
 }
 
 module.exports={
