@@ -40,6 +40,8 @@
     "nodemailer": "^6.9.1",
     "nodemailer-smtp-transport": "^2.7.4",
     "openapi": "^1.0.1",
+    "pino": "^8.14.1",
+    "pino-pretty": "^10.0.0",
     "poe-node-api": "^0.0.5",
     "qs": "^6.11.2",
     "set-cookie-parser": "^2.5.1",

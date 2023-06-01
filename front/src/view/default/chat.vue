@@ -762,6 +762,11 @@ export default {
             model: this.chatParams.model,
             message: this.sendMessage,
           };
+          if(this.messageData.length==0){
+            this.poechatObj.envConfig={}
+          }else{
+            this.poechatObj.envConfig=this.messageData[this.messageData.length-1].poechatObj.envConfig
+          }
           newWebSocket.sendMsg(JSON.stringify(this.poechatObj));
       }
              if(this.chatParams.chatchannel == "chatglm非官方"){
@@ -776,7 +781,7 @@ export default {
             this.chatglmchatObj.taskId=null
           }else{
             console.log(this.messageData)
-            this.chatglmchatObj.taskId=this.messageData[this.messageData.length-1].chatglmchatObj.taskId
+            this.chatglmchatObj.taskId=this.messageData[this.messageData.length-1].chatglmchatObj?this.messageData[this.messageData.length-1].chatglmchatObj.taskId:null
           }
           newWebSocket.sendMsg(JSON.stringify(this.chatglmchatObj));
       }
@@ -868,6 +873,9 @@ export default {
           customClass: "notiyfy",
         });
       }
+      if(data.startsWith('[ERROR]')){
+        this.loading=false
+      }
 
       if (data == "[START]") {
         // 开始打字
@@ -919,6 +927,10 @@ export default {
           customClass: "notiyfy",
         });
       }
+            if(data.startsWith('[ERROR]')){
+        this.loading=false
+      }
+
 
       if (data == "[START]") {
         // 开始打字
@@ -971,6 +983,9 @@ export default {
           customClass: "notiyfy",
         });
       }
+      if(data.startsWith('[ERROR]')){
+        this.loading=false
+      }
 
       if (data == "[START]") {
         // 开始打字
@@ -1020,6 +1035,9 @@ export default {
           duration: 10000,
           customClass: "notiyfy",
         });
+      }
+      if(data.startsWith('[ERROR]')){
+        this.loading=false
       }
 
       if (data == "[START]") {
@@ -1074,6 +1092,9 @@ export default {
           customClass: "notiyfy",
         });
       }
+      if(data.startsWith('[ERROR]')){
+        this.loading=false
+      }
 
       if (data == "[START]") {
         // 开始打字
@@ -1126,6 +1147,9 @@ export default {
           duration: 10000,
           customClass: "notiyfy",
         });
+      }
+      if(data.startsWith('[ERROR]')){
+        this.loading=false
       }
 
       if (data == "[START]") {
@@ -1180,6 +1204,9 @@ export default {
           customClass: "notiyfy",
         });
       }
+      if(data.startsWith('[ERROR]')){
+        this.loading=false
+      }
 
       if (data == "[START]") {
         // 开始打字
@@ -1207,6 +1234,8 @@ export default {
         setTimeout(() => {
           this.handleMessageOutputEnd();
         }, 300);
+        let result= data.replace("[DONE]", "");
+        this.poechatObj.envConfig=JSON.parse(result);
         return;
       }
       if (data != "[START]" && !data.startsWith("[DONE]")) {
@@ -1228,6 +1257,9 @@ export default {
           duration: 10000,
           customClass: "notiyfy",
         });
+      }
+      if(data.startsWith('[ERROR]')){
+        this.loading=false
       }
 
       if (data == "[START]") {
@@ -1280,6 +1312,10 @@ export default {
           customClass: "notiyfy",
         });
       }
+            if(data.startsWith('[ERROR]')){
+        this.loading=false
+      }
+
       if (data == "[START]") {
         // 开始打字
         this.$set(
@@ -1342,6 +1378,9 @@ export default {
       }
       if(this.selectBot=='xfyun非官方'){
         botItem.xfyunchatObj = JSON.parse(JSON.stringify(this.xfyunchatObj));
+      }
+      if(this.selectBot=='poe非官方'){
+        botItem.poechatObj = JSON.parse(JSON.stringify(this.poechatObj));
       }
       if(this.selectBot=='chatglm非官方'){
         botItem.chatglmchatObj = JSON.parse(JSON.stringify(this.chatglmchatObj));
