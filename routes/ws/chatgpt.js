@@ -204,7 +204,14 @@ router.ws('/xfyunUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
       if(!data){
         return
       }
-        let options=JSON.parse(data)
+      let options={}
+      try{
+         options=JSON.parse(data)
+      }catch(error){
+        console.log(error)
+        ws.send('[ERROR]')
+        return
+      }
         console.log(options)
         let result=await limitRequestCount(req,{type:"xfyun非官方",model:options.model})
         if(!result){

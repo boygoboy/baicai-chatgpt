@@ -1288,8 +1288,18 @@ export default {
         setTimeout(() => {
           this.handleMessageOutputEnd();
         }, 300);
-        let taskId= data.replace("[DONE]", "");
-        this.chatglmchatObj.taskId=taskId;
+        let result= data.replace("[DONE]", "");
+        result=JSON.parse(result);
+        this.chatglmchatObj.taskId=result.taskId;
+        if(result.isRefresh){
+          // 重新更新聊天参数配置项
+         this.$http.getUnofficalKeys().then(res=>{
+          if(res.errorCode=='0000'){
+            this.unofficalsettingdata = res.data;
+            console.log(this.unofficalsettingdata)
+          }
+         });
+        }
         return;
       }
       if (data != "[START]" && !data.startsWith("[DONE]")) {

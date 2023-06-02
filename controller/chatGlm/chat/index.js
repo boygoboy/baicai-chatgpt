@@ -3,7 +3,7 @@ const {decrypt}=require('../../../utils/encryption.js')
 
 
 const chatGlmMessage=async (option,handleMessage)=>{
-    let {token,cookie,taskId,message,enablecontext}=option
+    let {token,cookie,taskId,message,enablecontext,userId}=option
     if(!token||!cookie||!message){
         handleMessage('[ERROR]')
         return
@@ -13,11 +13,13 @@ const chatGlmMessage=async (option,handleMessage)=>{
      }
     token=decrypt(token)
     cookie=decrypt(cookie)
+    token=token
     let opt={
         token,
         cookie,
         taskId,
-        message
+        message,
+        userId
     }
     let isstart=false
     sendGlmMessage(opt,(data)=>{

@@ -5,7 +5,11 @@ const {huggingchat}=require('../../HuggingChat/utils/message.js')
 const {getXfyunWs}=require('../../../routes/ws/chatgpt.js')
 const {sendMessage,getChatList,deleteChatList}=require('../../xfYun/utils/message.js')
 const {sendGlmMessage,deleteGLmChat}=require('../../chatGlm/utils/message.js')
-    const computedMoney=async (apikey,lastday)=>{
+const {
+    PoeClient,
+    BotNickNameEnum
+} = require('../../poeChat/utils/poeClient.js')
+const computedMoney=async (apikey,lastday)=>{
         const subscription_url = `${process.env.OPEN_AI_BASE_URL||'https://api.openai.com'}/v1/dashboard/billing/subscription`;
         const headers = {
             "Authorization": `Bearer ${apikey}`,
@@ -310,51 +314,37 @@ const xfyunIsLive=async(cookie)=>{
     }
 }
 // poe测活
+let poeCookies=new Map()
 const poeIsLive=async(cookie)=>{
     try{
-        const resetEnv = () => {
-            process.env['poe-formkey']=''
-            process.env['buildId']=''
-            process.env['capybara_-_Sage_chatId']=''
-            process.env['capybara_-_Sage_id']=''
-            process.env['beaver_-_GPT-4_chatId']=''
-           process.env['beaver_-_GPT-4_id']=''
-              process.env['a2_2_-_Claude_2_chatId']=''
-           process.env['a2_2_-_Claude_2_id']=''
-           process.env['a2_100k_-_Claude-instant-100k_chatId']=''
-           process.env['a2_100k_-_Claude-instant-100k_id']=''
-           process.env['a2_-_Claude-instant_chatId']=''
-           process.env['a2_-_Claude-instant_id']=''
-           process.env['chinchilla_-_ChatGPT_chatId']=''
-           process.env['chinchilla_-_ChatGPT_id']=''
-           process.env['nutria_-_Dragonfly_chatId']=''
-           process.env['nutria_-_Dragonfly_id']=''
+        let envConfig=poeCookies.get(cookie)
+        const client = new PoeClient({
+            cookie: cookie,
+            env: envConfig?envConfig:{}, // pass {"poe-formkey": "xxx", "buildId": "xxx" ......} after fetch them first from client1.init()
+            logLevel: 'debug'
+        });
+        let env = await client.init(false)
+        env=JSON.parse(JSON.stringify(env, null, 2))
+        if(envConfig&&envConfig.poe-formkey){
+            poeCookies.set(cookie,env)
         }
-            const {BotNickNameEnum, PoeClient, sleep} = await import("poe-node-api")
-            const client = new PoeClient({
-                debug: false,
-                cookie
-            })
-            resetEnv()
-            await client.updateAllBotInfo()
-            await client.init()
-            resetEnv()
-           let result=  await client.sendMessage("hello", BotNickNameEnum.capybara, false, (data) => {
-                console.log(`${data}`)
-            })
-            console.log(result)
-            if(result&&result.extensions.is_final){
+        console.log(`env:`, JSON.stringify(env, null, 2))
+        let result = await client.sendMessage('hello', BotNickNameEnum.capybara, false, (data) => {
+            console.log(`${data}`)
+        })
+        console.log(result)
+          if(result&&result.extensions.is_final){
                 return true
             }else{
                 return false
             }
     }catch(error){
-          return false
+      return false
     }
 }
 
 // chatglm测活
-const chatglmIsLive=async(token,cookie)=>{
+const chatglmIsLive=async(token,cookie,userId)=>{
         //  发送聊天消息测活
     try{
         let options={
@@ -362,6 +352,7 @@ const chatglmIsLive=async(token,cookie)=>{
             cookie,
             taskId:'',
             message:'hello',
+            userId
         }
         return new Promise(async(resolve,reject)=>{
             sendGlmMessage(options,(message)=>{
