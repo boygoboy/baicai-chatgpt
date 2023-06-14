@@ -24,10 +24,8 @@ const {chatGlmMessage}=require('../../controller/chatGlm/chat/index.js')
  * */
 router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-    console.log(data)
+    try{
+      console.log(data)
       data=JSON.parse(data)
      const msg=data.message
      const modelParams=data.chatParams.modelParams
@@ -57,6 +55,12 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
     aWss.clients.forEach((client)=> {
       client.send(data);
   });
+    }catch(error){
+      ws.send('[ERROR]')
+    }
+    if(data=="heartbeat"){
+      return
+    }
   })
 
 
@@ -70,26 +74,30 @@ router.ws('/send',checkWsTokenMiddleware, (ws, req) => {
 
 router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-    console.log(data)
-      let reqData=JSON.parse(data)
-      let {options,params}=reqData
-      let result=await limitRequestCount(req,{type:"chatgpt非官方",model:params.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+    try{
+      if(data=="heartbeat"){
         return
       }
-    unOfficalChat(options,params,(message)=>{
-      if(message.startsWith('[DONE]')){
-        createChatInfo(req,'chatgpt非官方',params.model)
-      }
-      ws.send(message)
-    })
-    aWss.clients.forEach((client)=> {
-      client.send(data);
-  });
+      console.log(data)
+        let reqData=JSON.parse(data)
+        let {options,params}=reqData
+        let result=await limitRequestCount(req,{type:"chatgpt非官方",model:params.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
+        }
+      unOfficalChat(options,params,(message)=>{
+        if(message.startsWith('[DONE]')){
+          createChatInfo(req,'chatgpt非官方',params.model)
+        }
+        ws.send(message)
+      })
+      aWss.clients.forEach((client)=> {
+        client.send(data);
+    });
+    }catch(error){
+      ws.send('[ERROR]')
+    }
   })
 
 
@@ -102,21 +110,25 @@ router.ws('/unofficalChat',checkWsTokenMiddleware, (ws, req) => {
 // new bing非官方聊天
 router.ws('/bingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-      let options=JSON.parse(data)
-      let result=await limitRequestCount(req,{type:"newbing非官方",model:options.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+    try{
+      if(data=="heartbeat"){
         return
       }
-      bingUnOfficalChat(options,(message)=>{
-        if(message.startsWith('[DONE]')){
-          createChatInfo(req,'newbing非官方',options.model)
+        let options=JSON.parse(data)
+        let result=await limitRequestCount(req,{type:"newbing非官方",model:options.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
         }
-      ws.send(message)
-    },req)
+        bingUnOfficalChat(options,(message)=>{
+          if(message.startsWith('[DONE]')){
+            createChatInfo(req,'newbing非官方',options.model)
+          }
+        ws.send(message)
+      },req)
+    }catch(error){
+      ws.send('[ERROR]')
+    }
   })
 
 
@@ -128,69 +140,81 @@ router.ws('/bingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
 
 router.ws('/bardUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-      let options=JSON.parse(data)
-      let result=await limitRequestCount(req,{type:"bard非官方",model:options.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+    try{
+      if(data=="heartbeat"){
         return
       }
-      let {userId}=req.user.userList
-      options.userId=userId
-      bardUnofficalChat(options,(message)=>{
-        if(message.startsWith('[DONE]')){
-          createChatInfo(req,'bard非官方',options.model)
+        let options=JSON.parse(data)
+        let result=await limitRequestCount(req,{type:"bard非官方",model:options.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
         }
-      ws.send(message)
-    },req)
+        let {userId}=req.user.userList
+        options.userId=userId
+        bardUnofficalChat(options,(message)=>{
+          if(message.startsWith('[DONE]')){
+            createChatInfo(req,'bard非官方',options.model)
+          }
+        ws.send(message)
+      },req)
+    }catch(error){
+      ws.send('[ERROR]')
+    }
   })
 })
 
 router.ws('/claudeUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-      let options=JSON.parse(data)
-      console.log(options)
-      let result=await limitRequestCount(req,{type:"claude非官方",model:options.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+    try{
+      if(data=="heartbeat"){
         return
       }
-      let {userId}=req.user.userList
-      options.userId=userId
-      claudeUnofficalChat(options,(message)=>{
-        if(message.startsWith('[DONE]')){
-          createChatInfo(req,'claude非官方',options.model)
+        let options=JSON.parse(data)
+        console.log(options)
+        let result=await limitRequestCount(req,{type:"claude非官方",model:options.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
         }
-      ws.send(message)
-    },req)
+        let {userId}=req.user.userList
+        options.userId=userId
+        claudeUnofficalChat(options,(message)=>{
+          if(message.startsWith('[DONE]')){
+            createChatInfo(req,'claude非官方',options.model)
+          }
+        ws.send(message)
+      },req)
+    }catch(error){
+      ws.send('[ERROR]')
+    }
   })
 })
 
 router.ws('/huggingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-      let options=JSON.parse(data)
-      console.log(options)
-      let result=await limitRequestCount(req,{type:"hugging非官方",model:options.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+    try{
+      if(data=="heartbeat"){
         return
       }
-      let {userId}=req.user.userList
-      options.userId=userId
-      huggingChat(options,(message)=>{
-        if(message.startsWith('[DONE]')){
-          createChatInfo(req,'hugging非官方',options.model)
+        let options=JSON.parse(data)
+        console.log(options)
+        let result=await limitRequestCount(req,{type:"hugging非官方",model:options.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
         }
-      ws.send(message)
-    })
+        let {userId}=req.user.userList
+        options.userId=userId
+        huggingChat(options,(message)=>{
+          if(message.startsWith('[DONE]')){
+            createChatInfo(req,'hugging非官方',options.model)
+          }
+        ws.send(message)
+      })
+    }catch(error){
+      ws.send('[ERROR]')
+    }
   })
 })
 
@@ -198,6 +222,8 @@ router.ws('/huggingUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
 router.ws('/xfyunUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
   try{
     ws.on('message', async function (data) {
+      console.log('dddddddddddddddd')
+      console.log(data)
       if(data=="heartbeat"){
         return
       }
@@ -244,47 +270,55 @@ const getXfyunWs=()=> {
 
 router.ws('/poeUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-      let options=JSON.parse(data)
-      console.log(options)
-      let result=await limitRequestCount(req,{type:"poe非官方",model:options.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+    try{
+      if(data=="heartbeat"){
         return
       }
-      let {userId}=req.user.userList
-      options.userId=userId
-      poeChatMessage(options,(message)=>{
-        if(message.startsWith('[DONE]')){
-          createChatInfo(req,'poe非官方',options.model)
+        let options=JSON.parse(data)
+        console.log(options)
+        let result=await limitRequestCount(req,{type:"poe非官方",model:options.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
         }
-      ws.send(message)
-    })
+        let {userId}=req.user.userList
+        options.userId=userId
+        poeChatMessage(options,(message)=>{
+          if(message.startsWith('[DONE]')){
+            createChatInfo(req,'poe非官方',options.model)
+          }
+        ws.send(message)
+      })
+    }catch(error){
+      ws.send('[ERROR]')
+    }
   })
 })
 
 router.ws('/chatglmunofficalchat',checkWsTokenMiddleware, (ws, req) => {
   ws.on('message', async function (data) {
-    if(data=="heartbeat"){
-      return
-    }
-      let options=JSON.parse(data)
-      console.log(options)
-      let result=await limitRequestCount(req,{type:"chatglm非官方",model:options.model})
-      if(!result){
-        ws.send('该模型接口请求次数超过限制！')
+    try{
+      if(data=="heartbeat"){
         return
       }
-      let {userId}=req.user.userList
-      options.userId=userId
-      chatGlmMessage(options,(message)=>{
-        if(message.startsWith('[DONE]')){
-          createChatInfo(req,'chatglm非官方',options.model)
+        let options=JSON.parse(data)
+        console.log(options)
+        let result=await limitRequestCount(req,{type:"chatglm非官方",model:options.model})
+        if(!result){
+          ws.send('该模型接口请求次数超过限制！')
+          return
         }
-      ws.send(message)
-    })
+        let {userId}=req.user.userList
+        options.userId=userId
+        chatGlmMessage(options,(message)=>{
+          if(message.startsWith('[DONE]')){
+            createChatInfo(req,'chatglm非官方',options.model)
+          }
+        ws.send(message)
+      })
+    }catch(error){
+      ws.send('[ERROR]')
+    }
   })
 })
 

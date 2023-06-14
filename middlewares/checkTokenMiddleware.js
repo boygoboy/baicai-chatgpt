@@ -5,11 +5,15 @@ const { ConnectionStates } = require('mongoose');
 const {secret} = require('../config/config');
 const excludeRoutes = ['/api/user/login','/api/chatgpt/ask',
 '/api/auth/emailcode','/api/user/register','/api/auth/hasuser',
-'/api/chatgpt/login/token','/api/chatgpt/login/session'
+'/api/chatgpt/login/token','/api/chatgpt/login/session',
+'/api/jiyan/getgtchallenge','/api/jiyan/gettype','/api/jiyan/getphp',
+'/api/jiyan/ajax1php'
 ];
 const {checkWhiteListRouter}=require('../utils/checkWhiteListRouter')
 //声明中间件
 module.exports = (req, res, next) => {
+  console.log(req.path)
+  console.log(excludeRoutes.includes(req.path))
   if (excludeRoutes.includes(req.path)) {
     return next(); // 如果请求路径在排除列表中，直接传递给下一个中间件
   }

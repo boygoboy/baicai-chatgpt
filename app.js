@@ -21,6 +21,7 @@ const keySetting=require('./routes/api/chatgpt/keySetting')
 const KeyList=require('./routes/api/chatgpt/resourceManage')
 const interfaceRate=require('./routes/api/chatgpt/interfaceRate')
 const homeStatistics=require('./routes/api/homeStatistics/statistics')
+const jiyanreverse=require('./routes/api/extremereverseengineering/index')
 
 //导入配置项
 const {createFirstUser} = require("./controller/systemModule/user")
@@ -58,6 +59,7 @@ app.use('/api/chatgpt',keySetting)
 app.use('/api/chatgpt',KeyList)
 app.use('/api/chatgpt',interfaceRate)
 app.use('/api/homestatistics',homeStatistics)
+app.use('/api/jiyan',jiyanreverse)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   //响应 404 

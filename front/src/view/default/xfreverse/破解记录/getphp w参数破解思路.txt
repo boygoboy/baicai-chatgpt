@@ -1,0 +1,184 @@
+核心代码1
+            "\u0024\u005f\u0042\u0047\u0047\u0048": function() {
+                var $_CEIHW = VIPVz.$_CG
+                  , $_CEIGG = ['$_CEJAD'].concat($_CEIHW)
+                  , $_CEIIU = $_CEIGG[1];
+                $_CEIGG.shift();
+                var $_CEIJJ = $_CEIGG[0];
+                var t = this
+                  , n = t[$_CEIHW(336)];
+                if (!n[$_CEIHW(300)] || !n[$_CEIIU(377)])
+                    return U(j($_CEIIU(1338), t));
+                var e = t[$_CEIIU(1313)][$_CEIIU(1357)]();
+                t[$_CEIHW(1396)] = e,
+                t[$_CEIIU(321)][$_CEIIU(1347)] = n[$_CEIIU(1347)],
+                t[$_CEIHW(321)][$_CEIIU(1398)] = n[$_CEIHW(846)],
+                t[$_CEIIU(321)][$_CEIHW(416)] = e;
+                var r = t[$_CEIIU(1300)]()
+                  , o = $_BFZ()[$_CEIHW(1372)](ge[$_CEIHW(417)](t[$_CEIIU(321)]), t[$_CEIHW(1361)]())
+                  , i = p[$_CEIIU(1303)](o)
+                  , s = {
+                    "\u0067\u0074": t[$_CEIHW(321)][$_CEIHW(300)],
+                    "\u0063\u0068\u0061\u006c\u006c\u0065\u006e\u0067\u0065": t[$_CEIIU(321)][$_CEIIU(377)],
+                    "\u006c\u0061\u006e\u0067": n[$_CEIHW(250)],
+                    "\u0070\u0074": t[$_CEIHW(1391)],
+                    "\u0063\u006c\u0069\u0065\u006e\u0074\u005f\u0074\u0079\u0070\u0065": t[$_CEIIU(1352)],
+                    "\u0077": i + r
+                };
+                return N(n, p[$_CEIIU(474)]($_CEIIU(1327)), s)[$_CEIIU(373)](function(e) {
+                    var $_CEJCr = VIPVz.$_CG
+                      , $_CEJBh = ['$_CEJFD'].concat($_CEJCr)
+                      , $_CEJDW = $_CEJBh[1];
+                    $_CEJBh.shift();
+                    var $_CEJEL = $_CEJBh[0];
+                    return e[$_CEJDW(495)] === qe ? U(H(e, t, $_CEJCr(1359))) : (n[$_CEJDW(1310)](e[$_CEJCr(871)]),
+                    n[$_CEJDW(375)] && (n[$_CEJDW(306)] = n[$_CEJCr(375)]),
+                    n[$_CEJCr(1383)] && (n[$_CEJDW(852)] = n[$_CEJCr(1383)]),
+                    n[$_CEJDW(824)] && n[$_CEJDW(1310)](n[$_CEJCr(824)]),
+                    t[$_CEJDW(1317)] = new rt(t),
+                    t[$_CEJDW(1332)](),
+                    t[$_CEJDW(1317)][$_CEJDW(1382)]);
+                }, function() {
+                    var $_CEJHY = VIPVz.$_CG
+                      , $_CEJGa = ['$_CFAAC'].concat($_CEJHY)
+                      , $_CEJIX = $_CEJGa[1];
+                    $_CEJGa.shift();
+                    var $_CEJJk = $_CEJGa[0];
+                    return U(j($_CEJIX(1469), t));
+                });
+            },
+
+
+
+
+1. 请求get.php 接口
++ 解密w参数
+w=i + r
+
+
+解密i参数
+（1）得到加密i参数总的方法
+//导出w的i参数 ，使用：window.getI["\u0024\u005f\u0048\u0045\u0066"](o)
+
+（2）解密window.getI["\u0024\u005f\u0048\u0045\u0066"](o)中o值
+getO(a,b)
+getO方法为： 
+window.getO=$_BFZ(); 调用该方法可以加密参数o  o = $_BFZ()[$_CEIHW(1372)](JSON.stringify(t[$_CEIIU(321)]), t[$_CEIHW(1361)]())
+getO 有encrypt1 和encrypt两个方法,这里使用：
+o=window.getO['encrypt1'](a,b)
+
+-------------------------
+a参数破解
+a参数的值大致如下：
+{
+    "gt":"019924a82c70bb123aae90d483087f94",
+    "challenge":"16ec968f4317b615673bf66d3f526571",
+    "offline":false,
+    "new_captcha":true,
+    "product":"float",
+    "width":"300px",
+    "https":true,
+    "api_server":"apiv6.geetest.com",
+    "protocol":"https://",
+    "type":"fullpage",
+    "static_servers":[
+        "static.geetest.com/",
+        "dn-staticdown.qbox.me/"
+    ],
+    "beeline":"/static/js/beeline.1.0.1.js",
+    "voice":"/static/js/voice.1.2.3.js",
+    "click":"/static/js/click.3.0.9.js",
+    "fullpage":"/static/js/fullpage.9.1.4.js",
+    "slide":"/static/js/slide.7.9.0.js",
+    "geetest":"/static/js/geetest.6.0.9.js",
+    "aspect_radio":{
+        "slide":103,
+        "click":128,
+        "voice":128,
+        "beeline":50
+    },
+    "cc":8,
+    "ww":true,
+    "i":"7285!!11376!!CSS1Compat!!1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!2!!3!!1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!3!!-1!!-1!!-1!!0!!0!!0!!0!!1920!!929!!1920!!1032!!zh-CN!!zh-CN,zh!!-1!!1!!24!!Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36!!1!!1!!1920!!1080!!1920!!1032!!1!!1!!1!!-1!!Windows!!1!!-8!!8ec1b6326b1ce95da3c79317a3ffdf60!!0!!internal-pdf-viewer,mhjfbmdgcfjbbpaeojofohoefgiehjai,internal-nacl-plugin!!10!!-1!!0!!8!!Arial,ArialBlack,ArialNarrow,BookAntiqua,BookmanOldStyle,Calibri,Cambria,CambriaMath,Century,CenturyGothic,ComicSansMS,Consolas,Courier,CourierNew,Garamond,Georgia,Helvetica,Impact,LucidaConsole,LucidaSansUnicode,MicrosoftSansSerif,MonotypeCorsiva,MSGothic,MSPGothic,MSReferenceSansSerif,MSSansSerif,MSSerif,PalatinoLinotype,SegoePrint,SegoeScript,SegoeUI,SegoeUILight,SegoeUISemibold,SegoeUISymbol,Tahoma,Times,TimesNewRoman,TrebuchetMS,Verdana,Wingdings,Wingdings2,Wingdings3!!1686444945241!!-1!!-1!!-1!!14!!-1!!-1!!-1!!6!!-1"
+}
+其中i需要解密,其余可从https://apiv6.geetest.com/gettype.php接口拿到
+https://apiv6.geetest.com/gettype.php 接口返回值
+geetest_1686444954526({
+    "status": "success",
+    "data": {
+        "type": "fullpage",
+        "static_servers": ["static.geetest.com/", "dn-staticdown.qbox.me/"],
+        "beeline": "/static/js/beeline.1.0.1.js",
+        "voice": "/static/js/voice.1.2.3.js",
+        "click": "/static/js/click.3.0.9.js",
+        "fullpage": "/static/js/fullpage.9.1.4.js",
+        "slide": "/static/js/slide.7.9.0.js",
+        "geetest": "/static/js/geetest.6.0.9.js",
+        "aspect_radio": {
+            "slide": 103,
+            "click": 128,
+            "voice": 128,
+            "beeline": 50
+        }
+    }
+})
+
+i参数破解
+执行getgwindowInfo.js文件可获取i的加密值
+
+
+---------------------------------
+b参数破解
+getO_b()  //执行该方法得到b参数
+
+-------------------------------------------------------
+执行i参数破解：
+1. 调用相关接口获取gt challenge
+2. 调用https://apiv6.geetest.com/gettype.php接口获取后续需要的信息
+3. 调用getgwindowInfo.js文件中的方法获取o=window.getO['encrypt1'](a,b)中的a参数中的i值
+4. 组装a参数的值，大致如下：
+{
+    "gt":"019924a82c70bb123aae90d483087f94",
+    "challenge":"16ec968f4317b615673bf66d3f526571",
+    "offline":false,
+    "new_captcha":true,
+    "product":"float",
+    "width":"300px",
+    "https":true,
+    "api_server":"apiv6.geetest.com",
+    "protocol":"https://",
+    "type":"fullpage",
+    "static_servers":[
+        "static.geetest.com/",
+        "dn-staticdown.qbox.me/"
+    ],
+    "beeline":"/static/js/beeline.1.0.1.js",
+    "voice":"/static/js/voice.1.2.3.js",
+    "click":"/static/js/click.3.0.9.js",
+    "fullpage":"/static/js/fullpage.9.1.4.js",
+    "slide":"/static/js/slide.7.9.0.js",
+    "geetest":"/static/js/geetest.6.0.9.js",
+    "aspect_radio":{
+        "slide":103,
+        "click":128,
+        "voice":128,
+        "beeline":50
+    },
+    "cc":8,
+    "ww":true,
+    "i":"7285!!11376!!CSS1Compat!!1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!2!!3!!1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!3!!-1!!-1!!-1!!0!!0!!0!!0!!1920!!929!!1920!!1032!!zh-CN!!zh-CN,zh!!-1!!1!!24!!Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36!!1!!1!!1920!!1080!!1920!!1032!!1!!1!!1!!-1!!Windows!!1!!-8!!8ec1b6326b1ce95da3c79317a3ffdf60!!0!!internal-pdf-viewer,mhjfbmdgcfjbbpaeojofohoefgiehjai,internal-nacl-plugin!!10!!-1!!0!!8!!Arial,ArialBlack,ArialNarrow,BookAntiqua,BookmanOldStyle,Calibri,Cambria,CambriaMath,Century,CenturyGothic,ComicSansMS,Consolas,Courier,CourierNew,Garamond,Georgia,Helvetica,Impact,LucidaConsole,LucidaSansUnicode,MicrosoftSansSerif,MonotypeCorsiva,MSGothic,MSPGothic,MSReferenceSansSerif,MSSansSerif,MSSerif,PalatinoLinotype,SegoePrint,SegoeScript,SegoeUI,SegoeUILight,SegoeUISemibold,SegoeUISymbol,Tahoma,Times,TimesNewRoman,TrebuchetMS,Verdana,Wingdings,Wingdings2,Wingdings3!!1686444945241!!-1!!-1!!-1!!14!!-1!!-1!!-1!!6!!-1"
+}
+5. 调用getO_b()方法获取b参数值
+6. 调用o=window.getO['encrypt1'](a,b)获取o值，值应为数组
+7. 调用window.getI["\u0024\u005f\u0048\u0045\u0066"](o)方法获取i的加密值
+
+
+
+=====================================================================================================
+r参数加密获取
+	//获取r值 调用方式window.get_r['getr']('0293cdaee689520c')  这里注意0293cdaee689520c这个要和i加密传入的16位随机加密字符串要一样
+	window.get_r=Qe[$_DAHg(26)]
+
+
+
+

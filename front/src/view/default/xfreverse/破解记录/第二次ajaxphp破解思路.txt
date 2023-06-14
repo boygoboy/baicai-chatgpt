@@ -1,0 +1,42 @@
+破解第二次ajax请求
+主要破解w参数
+w=h+u
+
+1. u的破解
+调用方式new window.getu()["encrypt"]("ce5a5591164be554")
+
+2. u的破解
+
+加密u的方法
+window.geth["\u0024\u005f\u0046\u0045\u0045"](I) I为数组也是加密得到
+
+I的加密
+//此处导出构造l的函数  l = V['encrypt'](JSON.stringify(o),'4810e07182750e51')
+window.export_l=V.encrypt(JSON.stringify(o),'4810e07182750e51')
+加密参数o 为一个对象里面的属性由前面请求接口返回 或者加密而来，第二个参数为16位随机字符串
+
+o参数的破解
+userresponse 属性破解：
+window.export_userresponse(t,e)
+其中t为滑块滑动距离从轨迹数据中获取  e为接口返回的challenge
+window.export_userresponse(25,"3935c8cf34e278290eac6827f923939el8")
+
+passtime 属性破解：
+滑动花费时间戳 从轨迹构造数据中获取
+
+aa 属性破解：
+  //加密o中aa变量方法 ,调用window.getO_aa["\u0024\u005f\u0042\u0042\u0045\u0049"](t,e,n)
+//t为加密参数带破解 e为接口返回的c n为接口返回的s
+
+aa中 t属性破解：
+本质为轨迹的加密
+调用方法 window.getO_aa[aa_t](track) track为轨迹数据， track 可以用函数模拟出
+
+ "h9s9": 属性为固定值 "1816378497"
+ 
+ rp属性破解
+ window.geto_rp(t)
+ t=gt+challenge.slice(0,32)+ o['passtime']
+ window.geto_rp("019924a82c70bb123aae90d483087f94a5085efdd8c72566e76cef86281619fb373")
+ 
+
