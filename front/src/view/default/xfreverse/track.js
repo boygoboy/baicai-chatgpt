@@ -1,11 +1,10 @@
-const { transcode } = require("buffer");
-const { get } = require("http");
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 async function calculateOffset(bg, fullbg) {
   return Promise.resolve().then(() =>
     (async function () {
       const { stdout } = await exec(`python python/img.py ${bg} ${fullbg}`);
+      console.log(stdout)
       const offset = parseInt(stdout.toString());
       return offset;
     })()

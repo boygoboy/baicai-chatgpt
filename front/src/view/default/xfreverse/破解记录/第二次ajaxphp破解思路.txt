@@ -5,7 +5,7 @@ w=h+u
 1. u的破解
 调用方式new window.getu()["encrypt"]("ce5a5591164be554")
 
-2. u的破解
+2. h的破解
 
 加密u的方法
 window.geth["\u0024\u005f\u0046\u0045\u0045"](I) I为数组也是加密得到

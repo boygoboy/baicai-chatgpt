@@ -1,4 +1,5 @@
 const axios = require('axios')
+const {getOffset}=require('./track.js')
 // 请求https://www.geetest.com/demo/gt/register-slide接口获取get challenge
 const get_gt_challenge = async (req,res) => {
     try{
@@ -224,7 +225,157 @@ const sendajax1=async (req,res)=>{
     }
 }
 
+const get_lastphp=async (req,res)=>{
+    try{
+        let {gt,challenge}=req.query
+        const callback=`geetest_${Date.now()}`
+        let config = {
+            method: "GET",
+            baseURL: `https://api.geetest.com/get.php`,
+            headers:{
+                'Accept':'*/*',
+                'Accept-Encoding':'gzip, deflate, br',
+                'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
+                'Connection': 'keep-alive',
+                'Cookie':'GeeTestAjaxUser=ccc241e8ed96eb795ed528364e9648c3; GeeTestUser=63efe0d48128ebc4a0eb45e3b7a077f5; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%7D',
+                'Host': 'api.geetest.com',
+                'Referer':'https://www.geetest.com/',
+                'Sec-Ch-Ua':'"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+                'Sec-Ch-Ua-Mobile':'?0',
+                'Sec-Ch-Ua-Platform':'"Windows"',
+                'Sec-Fetch-Dest':'script',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Site':'same-site',
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+            },
+            params:{
+                gt,
+                challenge,
+                is_next: true,
+                type: 'slide3',
+                lang: 'zh-cn',
+                https: true,
+                protocol: 'https://',
+                offline: false,
+                product: 'embed',
+                api_server: 'api.geetest.com',
+                isPC: true,
+                autoReset: true,
+                width: '100%',
+                callback:callback
+            }
+        }
+        let result = await axios(config)
+        if(result.status==200){
+            console.log(result)
+            result.data=result.data.replace(callback,'')
+            result.data=result.data.slice(1, -1)
+            result.data=JSON.parse(result.data)
+            console.log(result.data)
+            return res.json({
+                errorcode:200,
+                message:'获取getphp成功',
+                data:result.data
+            })
+        }else{
+            return res.json({
+                errorcode:2002,
+                message:'获取getphp失败',
+                data:null
+            })
+        }
+    }catch(error){
+        console.log(error)
+         return res.json({
+          errorcode:500,
+          message:'系统错误',
+          data:null
+         })
+    }
+}
+
+const gettrackdata=async (req,res)=>{
+    let {bg,fullbg}=req.query
+    try{
+       let trackdata=await getOffset(bg,fullbg)
+       return res.json({
+              errorcode:200,
+              message:'获取轨迹成功',
+                data:trackdata
+       })
+    }catch(error){
+        console.log(error)
+         return res.json({
+          errorcode:500,
+          message:'系统错误',
+          data:null
+         })
+    }
+}
+
+// 发送最后一次滑块校验请求
+const sendlastajax=async (req,res)=>{
+    let {gt,challenge,w}=req.query
+    try{
+        const callback=`geetest_${Date.now()}`
+        let config = {
+            method: "GET",
+            baseURL: `https://api.geetest.com/ajax.php`,
+            headers:{
+                'Accept':'*/*',
+                'Accept-Encoding':'gzip, deflate, br',
+                'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
+                'Connection': 'keep-alive',
+                'Cookie':'GeeTestAjaxUser=ccc241e8ed96eb795ed528364e9648c3; GeeTestUser=63efe0d48128ebc4a0eb45e3b7a077f5; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%7D',
+                'Host': 'api.geetest.com',
+                'Referer':'https://www.geetest.com/',
+                'Sec-Ch-Ua':'"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+                'Sec-Ch-Ua-Mobile':'?0',
+                'Sec-Ch-Ua-Platform':'"Windows"',
+                'Sec-Fetch-Dest':'script',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Site':'same-site',
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+            },
+            params:{
+                gt,
+                challenge,
+                lang: 'zh-cn',
+                $_BCX: 0,
+                client_type: web,
+                w,
+                callback:callback
+            }
+        }
+        let result = await axios(config)
+        if(result.status==200){
+            console.log(result)
+            result.data=result.data.replace(callback,'')
+            result.data=result.data.slice(1, -1)
+            result.data=JSON.parse(result.data)
+            console.log(result.data)
+            return res.json({
+                errorcode:200,
+                message:'滑块验证成功',
+                data:result.data
+            })
+        }else{
+            return res.json({
+                errorcode:2002,
+                message:'滑块验证失败',
+                data:null
+            })
+        }
+    }catch(error){
+        res.json({
+            errorcode:500,
+            message:'系统错误',
+            data:null
+        })
+    }
+}
+
 module.exports = {
     get_gt_challenge,
-    gettype,get_php,sendajax1
+    gettype,get_php,sendajax1,get_lastphp,gettrackdata,sendlastajax
 }

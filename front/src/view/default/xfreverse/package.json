@@ -2,9 +2,9 @@
   "name": "xfreverse",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "track.js",
   "scripts": {
-    "start": "nodemon  ./index.js"
+    "start": "nodemon  ./track.js"
   },
   "keywords": [],
   "author": "",

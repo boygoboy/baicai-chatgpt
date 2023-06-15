@@ -1,7 +1,6 @@
 import {loadCryptoJS,get_i_arrstring,getCanvasFingerprint,info} from './environment/getwindowInfo.js'
 import  './fullpage.js'
 import axios from 'axios'
-
 let str16=''
 let windowsinfo_i=null
 //生成16位随机字符串
@@ -178,6 +177,86 @@ const sendajax1=async(gt,challenge,w)=>{
     }
 }
 
+// 发送第二次getphp接口
+const getlastphp=async(gt,challenge)=>{
+    try{
+        let config = {
+            method: "GET",
+            baseURL: '/api/api/jiyan/getlastphp',
+            params:{
+                gt,
+                challenge
+            }
+        }
+        const res=await axios(config)
+        if(res.status==200){
+            return res.data.data
+        }else{
+            return false
+        }
+    }catch(error){
+        return false
+    }
+}
+// 获取滑块轨迹
+const gettrackdata=async(bg,fullbg)=>{
+    try{
+        let config = {
+            method: "GET",
+            baseURL: '/api/api/jiyan/slidetrack',
+            params:{
+                bg,
+                fullbg
+            }
+        }
+        const res=await axios(config)
+        if(res.status==200){
+            return res.data.data
+        }else{
+            return false
+        }
+    }catch(error){
+        return false
+    }
+}
+// 加密滑块校验的w值
+const generate_w=async(result_getlastphp,trackData)=>{
+    const h= generte_w_h(result_getlastphp,trackData)
+    const u= generate_w_u()
+    return h+u
+}
+// 生成u值
+const generate_w_u=()=>{
+    return new window.getu()["encrypt"](str16)
+}
+// 生成h值
+const generte_w_h=(result_getlastphp,trackData)=>{
+    // I参数的加密变量o对象破解：
+    //userresponse 属性破解：
+    let {offset,trackdata}=trackData
+    let {gt,challenge,c,s}=result_getlastphp
+  let userresponse= window.export_userresponse(offset,challenge)
+    let passtime=trackdata.at(-1)[2] //滑动时间
+    // rp属性加密破解
+    let rp= window.geto_rp(gt+challenge.slice(0,32)+ passtime)
+//  aa 属性破解：
+//aa 中t的破解
+  //加密o中aa变量方法 ,调用window.getO_aa["\u0024\u005f\u0042\u0042\u0045\u0049"](t,e,n)
+//t为加密参数带破解 e为接口返回的c n为接口返回的s
+// 本质为轨迹的加密 调用方法 window.getO_aa[aa_t](track) track为轨迹数据， track 可以用函数模拟出
+  let aa_t=window.getO_aa[aa_t](trackdata)
+  let aa=window.getO_aa["\u0024\u005f\u0042\u0042\u0045\u0049"](aa_t,c,s)
+//   组装o对象
+let o={
+
+}
+//   I属性加密破解
+ let I=window.export_l(JSON.stringify(o),str16)
+//  加密u
+  let u=  window.geth["\u0024\u005f\u0046\u0045\u0045"](I) //I为数组也是加密得到
+  return u
+}
+
  export async function startpass(){
     //获取gt 和challenge
       const result_gt_challenge=await get_gt_challenge()
@@ -202,5 +281,15 @@ const sendajax1=async(gt,challenge,w)=>{
     //发送第一次ajax.php接口请求
     let result_ajax1=await sendajax1(gt,challenge,w)
     console.log(result_ajax1)
+    // 发送第二次getphp接口
+    let result_getlastphp=await getlastphp(gt,challenge)
+    console.log(result_getlastphp)
+    let {bg,fullbg}=result_getlastphp
+    let trackData=await gettrackdata(bg,fullbg)
+    let {offset,trackdata}=trackData
+    console.log(offset)
+    console.log(trackdata)
+    // 加密滑块校验的w值
+    w=await generate_w(result_getlastphp,trackData)
  }
 

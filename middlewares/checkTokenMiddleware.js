@@ -7,7 +7,7 @@ const excludeRoutes = ['/api/user/login','/api/chatgpt/ask',
 '/api/auth/emailcode','/api/user/register','/api/auth/hasuser',
 '/api/chatgpt/login/token','/api/chatgpt/login/session',
 '/api/jiyan/getgtchallenge','/api/jiyan/gettype','/api/jiyan/getphp',
-'/api/jiyan/ajax1php'
+'/api/jiyan/ajax1php','/api/jiyan/getlastphp','/api/jiyan/slidetrack','/api/jiyan/checkslide'
 ];
 const {checkWhiteListRouter}=require('../utils/checkWhiteListRouter')
 //声明中间件
