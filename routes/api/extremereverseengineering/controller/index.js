@@ -1,36 +1,46 @@
 const axios = require('axios')
 const {getOffset}=require('./track.js')
+const unofficalkeys = require('../../../../db/models/chatgpt/keyUnOfficalSchema')
 // 请求https://www.geetest.com/demo/gt/register-slide接口获取get challenge
 const get_gt_challenge = async (req,res) => {
     try{
+        let {userId}=req.user.userList
+        // 查询对应用户的key
+        let Cookie=''
+        const resultkey=await unofficalkeys.findOne({userId}).exec()
+        if(resultkey&&resultkey.xfyuntoken){
+            Cookie=resultkey.xfyuntoken
+        }
         let config = {
             method: "GET",
             headers:{
-                'Accept':'application/json, text/javascript, */*; q=0.01',
+                'Accept': 'application/json, text/plain, */*',
                 'Accept-Encoding':'gzip, deflate, br',
                 'Accept-Language':'zh-CN,zh;q=0.9',
                 'Cache-Control':'no-cache',
-                'Cookie':'sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%7D; PPA_CI=475d2146005a0d0e108c8dd61ebae0ef',
+                'Connection': 'keep-alive',
+                'Cookie':Cookie,
                 'Dnt':1,
-                'Pragma':'no-cache',
-                'Referer':'https://www.geetest.com/demo/slide-float.html',
-               ' Sec-Ch-Ua':'"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
-                'Sec-Ch-Ua-Mobile':'?0',
+                'Host':'xinghuo.xfyun.cn',
+                'Pragma': 'no-cache',
+                'Referer':'https://xinghuo.xfyun.cn/desk',
+                'Sec-Ch-Ua': '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+                'Sec-Ch-Ua-Mobile': '?0',
                 'Sec-Ch-Ua-Platform':"Windows",
                 'Sec-Fetch-Dest':'empty',
                 'Sec-Fetch-Mode':'cors',
                 'Sec-Fetch-Site':'same-origin',
-                'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
                 'X-Requested-With':'XMLHttpRequest'
             },
-            baseURL: `https://www.geetest.com/demo/gt/register-slide?t=${Date.now()}`,
+            baseURL: `https://xinghuo.xfyun.cn/iflygpt/chat/gee-captcha`,
         }
         let result = await axios(config)
         if(result.status==200){
             return res.json({
                 errorcode:200,
                 message:'获取gt_challenge成功',
-                data:result.data
+                data:result.data.data
             })
         }else{
             return res.json({
@@ -61,10 +71,9 @@ const gettype=async (req,res)=>{
                 'Accept-Encoding':'gzip, deflate, br',
                ' Accept-Language':'zh-CN,zh;q=0.9',
                ' Cache-Control':'no-cache',
-                'Cookie':'sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%7D; PPA_CI=475d2146005a0d0e108c8dd61ebae0ef',
                 'Dnt':1,
                 'Pragma':'no-cache',
-                'Referer':'https://www.geetest.com/demo/slide-float.html',
+                'Referer':'https://xinghuo.xfyun.cn/',
                 'Sec-Ch-Ua':'"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
                'Sec-Ch-Ua-Mobile':'?0',
                 'Sec-Ch-Ua-Platform':"Windows",
@@ -112,10 +121,9 @@ const get_php=async (req,res)=>{
                 'Accept-Encoding':'gzip, deflate, br',
                 'Accept-Language':'zh-CN,zh;q=0.9',
                 'Cache-Control':'no-cache',
-                'Cookie':'sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%7D; PPA_CI=475d2146005a0d0e108c8dd61ebae0ef',
                 'Dnt':1,
                 'Pragma':'no-cache',
-                'Referer':'https://www.geetest.com/',
+                'Referer':'https://xinghuo.xfyun.cn/',
                 'Sec-Ch-Ua':'"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
                 'Sec-Ch-Ua-Mobile':'?0',
                 'Sec-Ch-Ua-Platform':"Windows",
@@ -175,11 +183,10 @@ const sendajax1=async (req,res)=>{
                 'Accept-Language':'zh-CN,zh;q=0.9',
                 'Cache-Control':'no-cache',
                'Connection':'keep-alive',
-                'Cookie':'GeeTestUser=059f6295e03ddd650d1bfca368c4cdd9; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221889058b8795f5-0ee6b74f0329158-6f7c2b1b-2073600-1889058b87a455%22%7D; GeeTestAjaxUser=a1d46b1101a027de070deacb7900149a',
                 'Dnt':1,
                 'Host':'api.geetest.com',
                 'Pragma':'no-cache',
-                'Referer':'https://www.geetest.com/',
+                'Referer':'https://xinghuo.xfyun.cn/',
                 'Sec-Ch-Ua':'"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
                 'Sec-Ch-Ua-Mobile':'?0',
                 'Sec-Ch-Ua-Platform':"Windows",
@@ -237,9 +244,8 @@ const get_lastphp=async (req,res)=>{
                 'Accept-Encoding':'gzip, deflate, br',
                 'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
                 'Connection': 'keep-alive',
-                'Cookie':'GeeTestAjaxUser=ccc241e8ed96eb795ed528364e9648c3; GeeTestUser=63efe0d48128ebc4a0eb45e3b7a077f5; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%7D',
                 'Host': 'api.geetest.com',
-                'Referer':'https://www.geetest.com/',
+                'Referer':'https://xinghuo.xfyun.cn/',
                 'Sec-Ch-Ua':'"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
                 'Sec-Ch-Ua-Mobile':'?0',
                 'Sec-Ch-Ua-Platform':'"Windows"',
@@ -326,9 +332,8 @@ const sendlastajax=async (req,res)=>{
                 'Accept-Encoding':'gzip, deflate, br',
                 'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
                 'Connection': 'keep-alive',
-                'Cookie':'GeeTestAjaxUser=ccc241e8ed96eb795ed528364e9648c3; GeeTestUser=63efe0d48128ebc4a0eb45e3b7a077f5; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E8%87%AA%E7%84%B6%E6%90%9C%E7%B4%A2%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC%22%2C%22%24latest_referrer%22%3A%22https%3A%2F%2Fwww.google.com%2F%22%2C%22%24latest_landing_page%22%3A%22https%3A%2F%2Fwww.geetest.com%2F%22%7D%2C%22%24device_id%22%3A%221888f3e109be0a-01203cae759203d-26031a51-2073600-1888f3e109dc5%22%7D',
                 'Host': 'api.geetest.com',
-                'Referer':'https://www.geetest.com/',
+                'Referer':'https://xinghuo.xfyun.cn/',
                 'Sec-Ch-Ua':'"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
                 'Sec-Ch-Ua-Mobile':'?0',
                 'Sec-Ch-Ua-Platform':'"Windows"',
@@ -342,7 +347,7 @@ const sendlastajax=async (req,res)=>{
                 challenge,
                 lang: 'zh-cn',
                 $_BCX: 0,
-                client_type: web,
+                client_type: 'web',
                 w,
                 callback:callback
             }
@@ -367,6 +372,7 @@ const sendlastajax=async (req,res)=>{
             })
         }
     }catch(error){
+        console.log(error)
         res.json({
             errorcode:500,
             message:'系统错误',

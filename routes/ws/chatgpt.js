@@ -232,7 +232,9 @@ router.ws('/xfyunUnOfficalChat',checkWsTokenMiddleware, (ws, req) => {
       }
       let options={}
       try{
+        console.log(data)
          options=JSON.parse(data)
+
       }catch(error){
         console.log(error)
         ws.send('[ERROR]')
