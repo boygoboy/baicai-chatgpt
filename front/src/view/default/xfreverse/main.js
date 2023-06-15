@@ -363,5 +363,7 @@ const passCheck=async(gt,challenge,w)=>{
     // 发送第二次ajax.php接口请求
     let checkresult=await passCheck(gt,challenge,w)
     console.log(checkresult)
+    checkresult.challenge=challenge
+    return checkresult
  }
 

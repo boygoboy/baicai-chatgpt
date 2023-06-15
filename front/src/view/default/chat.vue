@@ -422,67 +422,13 @@ export default {
       xfyunchatObj:{},
       poechatObj:{},
       chatglmchatObj:{},
+      isveryed:false,
     };
   },
   methods: {
-    test(){
-// 使用示例
-// loadCryptoJS(() => {
-//     getCanvasFingerprint((canvasFingerprint) => {
-//         // 这里canvasFingerprint是你要的值，你可以把它放到你的对象属性中
-//         info.canvas2DFP=canvasFingerprint
-//         // 打印或使用这个对象
-//         console.log(get_i_arrstring(info))
-//      let a={
-//     "gt":"019924a82c70bb123aae90d483087f94",
-//     "challenge":"97d573b14c1ac80d787a9f6a11ff12d3",
-//     "offline":false,
-//     "new_captcha":true,
-//     "product":"float",
-//     "width":"300px",
-//     "https":true,
-//     "api_server":"apiv6.geetest.com",
-//     "protocol":"https://",
-//     "type":"fullpage",
-//     "static_servers":[
-//         "static.geetest.com/",
-//         "dn-staticdown.qbox.me/"
-//     ],
-//     "beeline":"/static/js/beeline.1.0.1.js",
-//     "voice":"/static/js/voice.1.2.3.js",
-//     "click":"/static/js/click.3.0.9.js",
-//     "fullpage":"/static/js/fullpage.9.1.4.js",
-//     "slide":"/static/js/slide.7.9.0.js",
-//     "geetest":"/static/js/geetest.6.0.9.js",
-//     "aspect_radio":{
-//         "slide":103,
-//         "click":128,
-//         "voice":128,
-//         "beeline":50
-//     },
-//     "cc":8,
-//     "ww":true,
-//     // "i":"7285!!11376!!CSS1Compat!!1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!2!!3!!1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!-1!!3!!-1!!-1!!-1!!0!!0!!0!!0!!1920!!929!!1920!!1032!!zh-CN!!zh-CN,zh!!-1!!1!!24!!Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36!!1!!1!!1920!!1080!!1920!!1032!!1!!1!!1!!-1!!Windows!!1!!-8!!8ec1b6326b1ce95da3c79317a3ffdf60!!0!!internal-pdf-viewer,mhjfbmdgcfjbbpaeojofohoefgiehjai,internal-nacl-plugin!!10!!-1!!0!!8!!Arial,ArialBlack,ArialNarrow,BookAntiqua,BookmanOldStyle,Calibri,Cambria,CambriaMath,Century,CenturyGothic,ComicSansMS,Consolas,Courier,CourierNew,Garamond,Georgia,Helvetica,Impact,LucidaConsole,LucidaSansUnicode,MicrosoftSansSerif,MonotypeCorsiva,MSGothic,MSPGothic,MSReferenceSansSerif,MSSansSerif,MSSerif,PalatinoLinotype,SegoePrint,SegoeScript,SegoeUI,SegoeUILight,SegoeUISemibold,SegoeUISymbol,Tahoma,Times,TimesNewRoman,TrebuchetMS,Verdana,Wingdings,Wingdings2,Wingdings3!!1686469109451!!-1!!-1!!-1!!14!!-1!!-1!!-1!!6!!-1"
-//     "i":get_i_arrstring(info)
-// }
-// function random_t() { return (65536 * (1+Math.random()) | 0).toString(16).substring(1)}
-// //生成O_b
-// const getO_b= function (){
-// 	return random_t()+random_t()+random_t()+random_t()
-// }
-// let b=getO_b()
-// console.log('key',b)
-// console.log(a)
-// let o=window.getO['encrypt1'](JSON.stringify(a),b)
-// console.log(o)
-// let i= window.getI["\u0024\u005f\u0048\u0045\u0066"](o)
-// console.log(i)
-
-
-        
-//     });
-// });
-startpass()
+   async test(){
+  let validateresult= await startpass()
+  console.log(validateresult)
     },
     // 复制粘贴功能
     initClipboard() {
@@ -800,6 +746,7 @@ startpass()
           newWebSocket.sendMsg(JSON.stringify(this.huggingchatObj));
       }
       if(this.chatParams.chatchannel == "xfyun非官方"){
+        this.isveryed=false
           let resultgtToken= await this.getXyyunGtToken()
             console.log(resultgtToken)
           this.xfyunchatObj = {
@@ -1199,7 +1146,7 @@ startpass()
       }
     },
     // 处理xfyun非官方聊天消息
-            handleXfyunUnofficalMessage(data){
+          async  handleXfyunUnofficalMessage(data){
       console.log(data);
       if (data == "token校验失败!" || data == "缺少token!") {
         this.notifyInstance = this.$notify({
@@ -1212,6 +1159,35 @@ startpass()
       }
       if(data.startsWith('[ERROR]')){
         this.loading=false
+      }
+
+      // 如果是[VERIFY]开头的消息，说明需要验证
+      if (data.startsWith("[VERIFY]")) {
+        if(this.isveryed){
+          return
+        }
+        this.isveryed=true
+       console.log(this.xfyunchatObj)
+       console.log(this.messageData)
+         let validateresult= await startpass()
+        console.log(validateresult)
+        let validate=''
+        let Challlenge=''
+        if(validateresult&&validateresult.success==1){
+          validate=validateresult.validate
+          Challlenge=validateresult.challenge
+        }
+
+          if(this.messageData.length==2){
+            this.xfyunchatObj.conversationId=null
+          }else{
+            this.xfyunchatObj.conversationId=this.messageData[this.messageData.length-1].xfyunchatObj.conversationId
+          }
+          this.xfyunchatObj.Validate=validate
+          this.xfyunchatObj.Seccode=window.btoa(`${validate}|jordan)`)
+          this.xfyunchatObj.Challenge=Challlenge
+          newWebSocket.sendMsg(JSON.stringify(this.xfyunchatObj));
+        return;
       }
 
       if (data == "[START]") {

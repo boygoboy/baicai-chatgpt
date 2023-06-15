@@ -133,7 +133,7 @@ const sendMessage = async (options,handleMessage) => {
       handleMessage('[ERROR]')
       return
     }
-    let {fd,chatId,message,GtToken,cookie}=options
+    let {fd,chatId,message,GtToken,cookie,Validate,Seccode,Challenge}=options
       if(!fd||!message||!GtToken||!cookie){
         handleMessage('[ERROR]')
         return
@@ -180,9 +180,17 @@ const sendMessage = async (options,handleMessage) => {
                 'Accept-Encoding': 'gzip, deflate, br',
                 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
                 'Cookie': cookie,
+                // 'Validate':'b3c50849f3dfcac30290e02a5946f7ee',
+                // 'Seccode':'YjNjNTA4NDlmM2RmY2FjMzAyOTBlMDJhNTk0NmY3ZWV8am9yZGFu',
+                // 'Challenge':'d855489e9a385d5ff6f6bbaa15a28dc9el'
             },
             data: data,
             responseType: "stream"
+        }
+        if(Seccode&&Validate&&Challenge){
+            config.headers['Seccode']=Seccode
+            config.headers['Validate']=Validate
+            config.headers['Challenge']=Challenge
         }
         let res = await axios(config)
         let isOver=false
@@ -192,7 +200,14 @@ const sendMessage = async (options,handleMessage) => {
                 return
             }
             let encoded_data = chunk.toString().replace(/data:/g,"");
+            console.log('------------------')
             console.log(encoded_data)
+            if(encoded_data.includes('当前请求已被拦截，请完成验证后重试')){
+                isOver=true
+                handleMessage('[VERIFY]')
+                return
+            }
+            console.log('------------------')
             // 如果聊天id失效或者错误则新建聊天窗口
             if(encoded_data.startsWith('[belongerr]')){
                 if(retryCount>2){

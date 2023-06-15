@@ -39,4 +39,15 @@ aa中 t属性破解：
  t=gt+challenge.slice(0,32)+ o['passtime']
  window.geto_rp("019924a82c70bb123aae90d483087f94a5085efdd8c72566e76cef86281619fb373")
  
+ 案例
+ 讯飞星火验证
+ 获取
+validate 验证码后
+需要向聊天接口的请求头中额外传两个参数
+a2f0614eb8d36831912ee77600d6f093|jordan
 
+Seccode:
+window.btoa(validate|jordan)
+
+Validate:
+validate
