@@ -2,6 +2,7 @@ const axios=require('axios');
 const chatglmList=require('../../../db/models/chatgpt/chatGlmListSchema');
 const keyUnOffical=require('../../../db/models/chatgpt/keyUnOfficalSchema');
 const moment=require('moment');
+const EventSource = require('eventsource');
 // 获取当前时间一个月后的时间
 const getNextMonthDateTime=() =>{
     const nextMonthDateTime = moment().add(1, 'months').format('YYYY-MM-DD HH:mm:ss');
@@ -315,52 +316,94 @@ const sendGlmMessage=async (options,handleMessage)=>{
             }
       }
       // 发送聊天消息获取回复
-      let config = {
-          method: "GET",
-          baseURL: "https://chatglm.cn/chatglm/backend-api/v1/stream",
-          headers: {
-              'Accept-Encoding':'gzip, deflate, br',
-              'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
-              'Cache-Control':'no-cache',
-              'Referer':'https://chatglm.cn/detail',
-              'Sec-Ch-Ua':'"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
-              'Sec-Ch-Ua-Mobile':'?0',
-              'Sec-Ch-Ua-Platform':"Windows",
-              'Sec-Fetch-Dest':'empty',
-              'Sec-Fetch-Mode':'cors',
-              'Sec-Fetch-Site':'same-origin',
-              'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
-              "Authorization":`Bearer ${token}`,
-              'Cookie': `chatglm_token=${token};chatglm_token_expires=${getNextMonthDateTime()};chatglm_refresh_token=${cookie}`,
-          },
-          params: {
-              context_id: contextId,
-          },
-          responseType: "stream"
-      }
-      let res=await axios(config);
-      res.data.on('data',async(chunk)=>{
-          let allstr=chunk.toString();
-          console.log(allstr)
-          allstr=allstr.split('\n\n')
-          console.log(allstr)
-          allstr.forEach(str=>{
-            if(str=='')return
-            if(str.indexOf('event:id')!=-1){
-             return
-            }
-            if(str.indexOf('event:finish')!=-1){
-                const resultObj={
-                    taskId,
-                    isRefresh
-                }
-                handleMessage(`[DONE]${JSON.stringify(resultObj)}`)
-                return
-            }
-            str=str.replace(/data:/g,'').replace(/event:add/g,'')
-           handleMessage(str)
-          })
-      })
+    //   let config = {
+    //       method: "GET",
+    //       baseURL: "https://chatglm.cn/chatglm/backend-api/v1/stream",
+    //       headers: {
+    //           'Accept-Encoding':'gzip, deflate, br',
+    //           'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
+    //           'Cache-Control':'no-cache',
+    //           'Referer':'https://chatglm.cn/detail',
+    //           'Sec-Ch-Ua':'"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+    //           'Sec-Ch-Ua-Mobile':'?0',
+    //           'Sec-Ch-Ua-Platform':"Windows",
+    //           'Sec-Fetch-Dest':'empty',
+    //           'Sec-Fetch-Mode':'cors',
+    //           'Sec-Fetch-Site':'same-origin',
+    //           'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    //           "Authorization":`Bearer ${token}`,
+    //           'Cookie': `chatglm_token=${token};chatglm_token_expires=${getNextMonthDateTime()};chatglm_refresh_token=${cookie}`,
+    //       },
+    //       params: {
+    //           context_id: contextId,
+    //       },
+    //       responseType: "stream"
+    //   }
+    //   let res=await axios(config);
+    //   res.data.on('data',async(chunk)=>{
+    //       let allstr=chunk.toString();
+    //       console.log(allstr)
+    //     //   allstr=allstr.split('\n\n')
+    //     // //   console.log(allstr)
+    //     //   allstr.forEach(str=>{
+    //     //     if(str=='')return
+    //     //     if(str.indexOf('event:id')!=-1){
+    //     //      return
+    //     //     }
+    //     //     if(str.indexOf('event:finish')!=-1){
+    //     //         const resultObj={
+    //     //             taskId,
+    //     //             isRefresh
+    //     //         }
+    //     //         handleMessage(`[DONE]${JSON.stringify(resultObj)}`)
+    //     //         return
+    //     //     }
+    //     //     str=str.replace(/data:/g,'').replace(/event:add/g,'')
+    //     //    handleMessage(str)
+    //     //   })
+
+
+    //   })
+
+    const url = 'https://chatglm.cn/chatglm/backend-api/v1/stream?context_id=' + contextId;
+
+const headers = {
+    'Accept-Encoding':'gzip, deflate, br',
+    'Accept-Language':'zh-CN,zh;q=0.9,en;q=0.8',
+    'Cache-Control':'no-cache',
+    'Referer':'https://chatglm.cn/detail',
+    'Sec-Ch-Ua':'"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+    'Sec-Ch-Ua-Mobile':'?0',
+    'Sec-Ch-Ua-Platform':"Windows",
+    'Sec-Fetch-Dest':'empty',
+    'Sec-Fetch-Mode':'cors',
+    'Sec-Fetch-Site':'same-origin',
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    "Authorization":`Bearer ${token}`,
+    'Cookie': `chatglm_token=${token};chatglm_token_expires=${getNextMonthDateTime()};chatglm_refresh_token=${cookie}`,
+};
+
+const es = new EventSource(url, { headers });
+
+es.onopen = (event) => {
+  console.log('Connection to server opened');
+};
+
+es.onerror = (event) => {
+  console.log('Error occurred:', event);
+
+};
+
+
+// 对 'add' 事件进行监听
+es.addEventListener('add', function(event) {
+  console.log('Add event:', event.data);
+}, false);
+// 对 'add' 事件进行监听
+es.addEventListener('finish', function(event) {
+    console.log('Add finish:', event.data);
+    es.close();
+  }, false);
 
     }catch(error){
         handleMessage('[ERROR]')
