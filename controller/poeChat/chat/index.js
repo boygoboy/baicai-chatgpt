@@ -1,10 +1,10 @@
 const {
     decrypt
 } = require('../../../utils/encryption.js')
-const {
-    PoeClient,
-    BotNickNameEnum
-} = require('../utils/poeClient.js')
+// const {
+//     PoeClient,
+//     BotNickNameEnum
+// } = require('../utils/poeClient.js')
 let modelObj = {
     'Claude-instant': 'a2',
     'Claude+': 'a2_2',
@@ -16,6 +16,7 @@ let modelObj = {
 }
 
 const poeChatMessage = async (opt, handleMessage) => {
+    const {BotNickNameEnum, PoeClient, sleep} = await import("poe-node-api")
     try{
         let {
             cookie,
@@ -29,7 +30,6 @@ const poeChatMessage = async (opt, handleMessage) => {
         const client = new PoeClient({
             cookie: cookie,
             env: envConfig, // pass {"poe-formkey": "xxx", "buildId": "xxx" ......} after fetch them first from client1.init()
-            logLevel: 'debug'
         });
         const env = await client.init(false)
         console.log(`env:`, JSON.stringify(env, null, 2))

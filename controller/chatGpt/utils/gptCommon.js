@@ -5,10 +5,6 @@ const {huggingchat}=require('../../HuggingChat/utils/message.js')
 const {getXfyunWs}=require('../../../routes/ws/chatgpt.js')
 const {sendMessage,getChatList,deleteChatList}=require('../../xfYun/utils/message.js')
 const {sendGlmMessage,deleteGLmChat}=require('../../chatGlm/utils/message.js')
-const {
-    PoeClient,
-    BotNickNameEnum
-} = require('../../poeChat/utils/poeClient.js')
 const computedMoney=async (apikey,lastday)=>{
         const subscription_url = `${process.env.OPEN_AI_BASE_URL||'https://api.openai.com'}/v1/dashboard/billing/subscription`;
         const headers = {
@@ -192,6 +188,7 @@ const computedMoney=async (apikey,lastday)=>{
             let cookies = `__Secure-1PSID=${token}`;
             let bot = new Bard(cookies);
             let response = await bot.ask('hello');
+
             console.log(response); 
             if(response){
                 return true
@@ -318,17 +315,23 @@ let poeCookies=new Map()
 const poeIsLive=async(cookie)=>{
     try{
         let envConfig=poeCookies.get(cookie)
+        const {BotNickNameEnum, PoeClient, sleep} = await import("poe-node-api")
+
         const client = new PoeClient({
             cookie: cookie,
             env: envConfig?envConfig:{}, // pass {"poe-formkey": "xxx", "buildId": "xxx" ......} after fetch them first from client1.init()
-            logLevel: 'debug'
         });
         let env = await client.init(false)
+        console.log('-----------------------')
+        console.log(BotNickNameEnum)
         env=JSON.parse(JSON.stringify(env, null, 2))
+
         if(envConfig&&envConfig.poe-formkey){
             poeCookies.set(cookie,env)
         }
         console.log(`env:`, JSON.stringify(env, null, 2))
+        console.log(BotNickNameEnum)
+        console.log('-----------------------')
         let result = await client.sendMessage('hello', BotNickNameEnum.capybara, false, (data) => {
             console.log(`${data}`)
         })
@@ -339,6 +342,7 @@ const poeIsLive=async(cookie)=>{
                 return false
             }
     }catch(error){
+        console.log(error)
       return false
     }
 }

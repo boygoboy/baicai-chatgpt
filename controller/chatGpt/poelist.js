@@ -67,6 +67,7 @@ const postPoeList=async(req,res)=>{
                 "sequence_value": 0
             })
         }
+        console.log('token:',token)
        let islive= await poeIsLive(token)
        if(!islive){
         return res.json({

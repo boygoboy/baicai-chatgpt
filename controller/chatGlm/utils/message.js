@@ -342,7 +342,6 @@ const sendGlmMessage=async (options,handleMessage)=>{
       res.data.on('data',async(chunk)=>{
           let allstr=chunk.toString();
           console.log(allstr)
-          console.log('------------------')
           allstr=allstr.split('\n\n')
           console.log(allstr)
           allstr.forEach(str=>{
